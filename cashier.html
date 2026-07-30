@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Restaurant Cashier</title>
+  <style>
+    :root { --navy:#111827; --panel:#1f2937; --line:#374151; --text:#f9fafb; --muted:#9ca3af; --orange:#f97316; }
+    * { box-sizing:border-box; }
+    body { margin:0; min-height:100vh; background:#0b1120; color:var(--text); font-family:system-ui,-apple-system,sans-serif; }
+    header { display:flex; align-items:center; gap:16px; padding:18px 24px; background:var(--navy); border-bottom:1px solid var(--line); }
+    header h1 { margin:0; font-size:1.35rem; flex:1; }
+    header a { color:#d1d5db; text-decoration:none; }
+    button { font:inherit; cursor:pointer; }
+    .sound { border:1px solid var(--line); background:transparent; color:white; border-radius:8px; padding:8px 12px; }
+    nav { display:flex; gap:8px; padding:16px 24px 0; }
+    .tab { border:1px solid var(--line); background:var(--panel); color:#d1d5db; border-radius:8px; padding:9px 14px; }
+    .tab.active { background:var(--orange); border-color:var(--orange); color:white; font-weight:700; }
+    main { padding:20px 24px 40px; }
+    .panel { display:none; }
+    .panel.active { display:block; }
+    .summary { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:18px; }
+    .metric { background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:12px 16px; min-width:130px; }
+    .metric strong { display:block; font-size:1.4rem; color:#fb923c; }
+    .metric span { color:var(--muted); font-size:.8rem; }
+    .board { display:grid; grid-template-columns:repeat(4,minmax(250px,1fr)); gap:14px; overflow-x:auto; align-items:start; }
+    .column { min-width:250px; background:#111827; border:1px solid var(--line); border-radius:12px; padding:12px; }
+    .column h2 { margin:2px 2px 12px; font-size:.9rem; color:#d1d5db; text-transform:uppercase; letter-spacing:.05em; }
+    .order { background:var(--panel); border:1px solid var(--line); border-left:4px solid var(--orange); border-radius:10px; padding:13px; margin-bottom:10px; }
+    .order-head { display:flex; justify-content:space-between; gap:10px; margin-bottom:8px; }
+    .order-number { font-weight:800; }
+    .time { color:var(--muted); font-size:.75rem; }
+    .table { color:#fdba74; font-weight:700; margin-bottom:8px; }
+    .item { display:flex; justify-content:space-between; gap:8px; color:#e5e7eb; font-size:.85rem; padding:3px 0; }
+    .note { margin-top:9px; padding:8px; background:#451a03; color:#fed7aa; border-radius:7px; font-size:.82rem; }
+    .total { display:flex; justify-content:space-between; margin:10px 0; padding-top:8px; border-top:1px solid var(--line); font-weight:800; }
+    .order-actions { display:flex; gap:7px; flex-wrap:wrap; }
+    .action { border:0; border-radius:7px; padding:7px 9px; background:#2563eb; color:white; font-size:.78rem; font-weight:700; }
+    .action.danger { background:#b91c1c; }
+    .empty { color:#6b7280; text-align:center; padding:20px 5px; font-size:.85rem; }
+    .card { max-width:900px; background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:18px; margin-bottom:16px; }
+    .card h2 { margin:0 0 14px; font-size:1.05rem; }
+    .form { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px; }
+    input { min-width:140px; flex:1; padding:10px 11px; color:white; background:#111827; border:1px solid var(--line); border-radius:8px; }
+    .primary { border:0; border-radius:8px; background:var(--orange); color:white; font-weight:700; padding:10px 14px; }
+    .setup-row { display:flex; align-items:center; gap:12px; padding:10px 0; border-top:1px solid var(--line); }
+    .setup-row .grow { flex:1; }
+    .setup-row small { color:var(--muted); display:block; }
+    .link { color:#93c5fd; font-size:.78rem; overflow-wrap:anywhere; }
+    .toggle { border:1px solid var(--line); border-radius:7px; padding:6px 9px; background:#111827; color:white; }
+    .error { padding:12px; margin-bottom:14px; border:1px solid #7f1d1d; background:#450a0a; color:#fecaca; border-radius:9px; }
+    @media (max-width:700px) { header, main { padding-left:14px; padding-right:14px; } nav { padding-left:14px; } .board { grid-template-columns:repeat(4,82vw); } header a { display:none; } }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🍽️ Restaurant Cashier</h1>
+    <a href="/login" onclick="localStorage.removeItem('restaurant_token')">Logout</a>
+    <button id="soundButton" class="sound" onclick="enableSound()">🔕 Enable order sound</button>
+  </header>
+  <nav>
+    <button class="tab active" onclick="showTab('orders', this)">Live Orders</button>
+    <button class="tab" onclick="showTab('menu', this)">Menu</button>
+    <button class="tab" onclick="showTab('tables', this)">Table QR Links</button>
+  </nav>
+  <main>
+    <div id="error" class="error" hidden></div>
+    <section id="ordersPanel" class="panel active">
+      <div id="summary" class="summary"></div>
+      <div class="board">
+        <div class="column"><h2>🆕 New</h2><div id="pendingOrders"></div></div>
+        <div class="column"><h2>✅ Confirmed</h2><div id="confirmedOrders"></div></div>
+        <div class="column"><h2>👨‍🍳 Preparing</h2><div id="preparingOrders"></div></div>
+        <div class="column"><h2>🔔 Ready</h2><div id="readyOrders"></div></div>
+      </div>
+    </section>
+
+    <section id="menuPanel" class="panel">
+      <div class="card">
+        <h2>Add menu item</h2>
+        <form class="form" onsubmit="addMenuItem(event)">
+          <input id="menuCategory" required maxlength="80" placeholder="Category" />
+          <input id="menuName" required maxlength="120" placeholder="Item name" />
+          <input id="menuDescription" maxlength="500" placeholder="Description" />
+          <input id="menuPrice" required min="1" step="0.01" type="number" placeholder="Price" />
+          <button class="primary">Add item</button>
+        </form>
+        <div id="menuList"></div>
+      </div>
+    </section>
+
+    <section id="tablesPanel" class="panel">
+      <div class="card">
+        <h2>Table ordering links</h2>
+        <p style="color:var(--muted)">Turn each link into a QR code and place it on the matching table.</p>
+        <form class="form" onsubmit="addTable(event)">
+          <input id="tableNameInput" required maxlength="80" placeholder="e.g. Patio Table 1" />
+          <button class="primary">Add table</button>
+        </form>
+        <div id="tableList"></div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    let orders = [];
+    let knownOrderIds = new Set();
+    let firstLoad = true;
+    let audioContext = null;
+    const terminalStatuses = new Set(["served", "cancelled"]);
+    const money = value => new Intl.NumberFormat("en-PH", {style:"currency", currency:"PHP"}).format(value);
+    const escapeHtml = value => {
+      const div = document.createElement("div");
+      div.textContent = value == null ? "" : String(value);
+      return div.innerHTML;
+    };
+
+    function headers() {
+      const token = localStorage.getItem("restaurant_token");
+      if (!token) { location.href = "/login"; return {}; }
+      return {"Content-Type":"application/json", Authorization:`Bearer ${token}`};
+    }
+
+    async function api(path, options = {}) {
+      options.headers = {...headers(), ...(options.headers || {})};
+      const response = await fetch(path, options);
+      if (response.status === 401) { location.href = "/login"; throw new Error("Please sign in."); }
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data.detail || "Request failed.");
+      return data;
+    }
+
+    function showError(message) {
+      const box = document.getElementById("error");
+      box.textContent = message;
+      box.hidden = false;
+      setTimeout(() => box.hidden = true, 5000);
+    }
+
+    async function loadOrders() {
+      try {
+        const latest = await api("/api/orders");
+        const newOrders = latest.filter(order => !knownOrderIds.has(order.id) && order.status === "pending");
+        if (!firstLoad && newOrders.length) playOrderSound();
+        latest.forEach(order => knownOrderIds.add(order.id));
+        firstLoad = false;
+        orders = latest;
+        renderOrders();
+      } catch (error) {
+        showError(error.message);
+      }
+    }
+
+    function renderOrders() {
+      const active = orders.filter(order => !terminalStatuses.has(order.status));
+      const counts = Object.fromEntries(["pending","confirmed","preparing","ready"].map(status => [status, active.filter(order => order.status === status).length]));
+      document.getElementById("summary").innerHTML = `
+        <div class="metric"><strong>${active.length}</strong><span>Active orders</span></div>
+        <div class="metric"><strong>${counts.pending}</strong><span>Waiting confirmation</span></div>
+        <div class="metric"><strong>${counts.ready}</strong><span>Ready to serve</span></div>`;
+      ["pending","confirmed","preparing","ready"].forEach(status => {
+        const list = active.filter(order => order.status === status);
+        document.getElementById(`${status}Orders`).innerHTML = list.map(orderCard).join("") || `<div class="empty">No orders</div>`;
+      });
+    }
+
+    function orderCard(order) {
+      const next = {pending:"confirmed", confirmed:"preparing", preparing:"ready", ready:"served"}[order.status];
+      const nextLabel = {confirmed:"Confirm", preparing:"Start preparing", ready:"Mark ready", served:"Served"}[next];
+      const time = new Date(`${order.created_at.replace(" ", "T")}Z`).toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"});
+      return `<article class="order">
+        <div class="order-head"><span class="order-number">${escapeHtml(order.order_number)}</span><span class="time">${time}</span></div>
+        <div class="table">${escapeHtml(order.table_name)}</div>
+        ${order.items.map(item => `<div class="item"><span>${item.quantity}× ${escapeHtml(item.item_name)}</span><span>${money(item.line_total)}</span></div>`).join("")}
+        ${order.customer_note ? `<div class="note">📝 ${escapeHtml(order.customer_note)}</div>` : ""}
+        <div class="total"><span>Total</span><span>${money(order.total)}</span></div>
+        <div class="order-actions">
+          <button class="action" onclick="setStatus(${order.id}, '${next}')">${nextLabel}</button>
+          ${order.status !== "ready" ? `<button class="action danger" onclick="setStatus(${order.id}, 'cancelled')">Cancel</button>` : ""}
+        </div>
+      </article>`;
+    }
+
+    async function setStatus(orderId, status) {
+      try {
+        await api(`/api/orders/${orderId}/status`, {method:"PATCH", body:JSON.stringify({status})});
+        await loadOrders();
+      } catch (error) { showError(error.message); }
+    }
+
+    function enableSound() {
+      audioContext = audioContext || new (window.AudioContext || window.webkitAudioContext)();
+      audioContext.resume();
+      document.getElementById("soundButton").textContent = "🔔 Order sound on";
+      playOrderSound();
+    }
+
+    function playOrderSound() {
+      if (!audioContext) return;
+      [0, .18].forEach(delay => {
+        const oscillator = audioContext.createOscillator();
+        const gain = audioContext.createGain();
+        oscillator.frequency.value = 880;
+        gain.gain.setValueAtTime(.12, audioContext.currentTime + delay);
+        gain.gain.exponentialRampToValueAtTime(.001, audioContext.currentTime + delay + .13);
+        oscillator.connect(gain).connect(audioContext.destination);
+        oscillator.start(audioContext.currentTime + delay);
+        oscillator.stop(audioContext.currentTime + delay + .14);
+      });
+    }
+
+    function showTab(name, button) {
+      document.querySelectorAll(".panel").forEach(panel => panel.classList.remove("active"));
+      document.querySelectorAll(".tab").forEach(tab => tab.classList.remove("active"));
+      document.getElementById(`${name}Panel`).classList.add("active");
+      button.classList.add("active");
+      if (name === "menu") loadMenu();
+      if (name === "tables") loadTables();
+    }
+
+    async function loadMenu() {
+      try {
+        const items = await api("/api/menu");
+        document.getElementById("menuList").innerHTML = items.map(item => `
+          <div class="setup-row">
+            <div class="grow"><strong>${escapeHtml(item.name)}</strong><small>${escapeHtml(item.category)} · ${money(item.price)} · ${escapeHtml(item.description)}</small></div>
+            <button class="toggle" onclick="toggleItem(${item.id}, ${!item.available})">${item.available ? "Available" : "Unavailable"}</button>
+          </div>`).join("");
+      } catch (error) { showError(error.message); }
+    }
+
+    async function addMenuItem(event) {
+      event.preventDefault();
+      try {
+        await api("/api/menu", {method:"POST", body:JSON.stringify({
+          category:document.getElementById("menuCategory").value,
+          name:document.getElementById("menuName").value,
+          description:document.getElementById("menuDescription").value,
+          price:Number(document.getElementById("menuPrice").value)
+        })});
+        event.target.reset();
+        await loadMenu();
+      } catch (error) { showError(error.message); }
+    }
+
+    async function toggleItem(itemId, available) {
+      try {
+        await api(`/api/menu/${itemId}/availability`, {method:"PATCH", body:JSON.stringify({available})});
+        await loadMenu();
+      } catch (error) { showError(error.message); }
+    }
+
+    async function loadTables() {
+      try {
+        const tables = await api("/api/tables");
+        document.getElementById("tableList").innerHTML = tables.map(table => {
+          const url = `${location.origin}/order?table=${encodeURIComponent(table.access_code)}`;
+          return `<div class="setup-row">
+            <div class="grow"><strong>${escapeHtml(table.name)}</strong><small class="link">${escapeHtml(url)}</small></div>
+            <button class="toggle" onclick='copyLink(${JSON.stringify(url)})'>Copy link</button>
+          </div>`;
+        }).join("");
+      } catch (error) { showError(error.message); }
+    }
+
+    async function addTable(event) {
+      event.preventDefault();
+      try {
+        await api("/api/tables", {method:"POST", body:JSON.stringify({name:document.getElementById("tableNameInput").value})});
+        event.target.reset();
+        await loadTables();
+      } catch (error) { showError(error.message); }
+    }
+
+    async function copyLink(url) {
+      try {
+        await navigator.clipboard.writeText(url);
+      } catch (_) {
+        prompt("Copy this table link:", url);
+      }
+    }
+
+    loadOrders();
+    setInterval(loadOrders, 3000);
+  </script>
+</body>
+</html>

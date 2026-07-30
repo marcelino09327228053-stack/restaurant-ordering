@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Table Ordering</title>
+  <style>
+    :root { --red:#b91c1c; --cream:#fffaf0; --ink:#292524; --muted:#78716c; --line:#e7e5e4; }
+    * { box-sizing:border-box; }
+    body { margin:0; font-family:system-ui,-apple-system,sans-serif; background:var(--cream); color:var(--ink); }
+    header { padding:24px 18px 20px; color:white; background:linear-gradient(135deg,#7f1d1d,#dc2626); }
+    header .wrap, main { max-width:760px; margin:auto; }
+    h1 { margin:0 0 5px; font-size:1.65rem; }
+    header p { margin:0; opacity:.85; }
+    main { padding:18px 16px 110px; }
+    .notice { padding:14px; border-radius:12px; background:white; border:1px solid var(--line); margin-bottom:16px; }
+    .error { color:#991b1b; background:#fef2f2; border-color:#fecaca; }
+    .category { margin:24px 0 10px; font-size:1.05rem; }
+    .menu { display:grid; gap:12px; }
+    .item { display:grid; grid-template-columns:1fr auto; gap:12px; padding:16px; background:white; border:1px solid var(--line); border-radius:14px; box-shadow:0 3px 12px #451a030c; }
+    .item h3 { margin:0 0 4px; font-size:1rem; }
+    .description { margin:0 0 10px; color:var(--muted); font-size:.86rem; line-height:1.4; }
+    .price { color:var(--red); font-weight:800; }
+    .quantity { align-self:center; display:flex; align-items:center; gap:9px; }
+    .quantity button { width:34px; height:34px; border:1px solid var(--line); border-radius:50%; background:white; font-size:1.2rem; cursor:pointer; }
+    .quantity span { min-width:18px; text-align:center; font-weight:700; }
+    .cart-bar { position:fixed; left:0; right:0; bottom:0; padding:12px 16px; background:#fff; border-top:1px solid var(--line); box-shadow:0 -5px 20px #29252418; }
+    .cart-inner { max-width:760px; margin:auto; display:flex; align-items:center; gap:14px; }
+    .cart-total { flex:1; }
+    .cart-total small { display:block; color:var(--muted); }
+    .cart-total strong { font-size:1.2rem; }
+    .primary { border:0; border-radius:12px; padding:13px 18px; background:var(--red); color:white; font-weight:800; cursor:pointer; }
+    .primary:disabled { opacity:.45; cursor:not-allowed; }
+    .modal { position:fixed; inset:0; background:#29252499; display:none; align-items:flex-end; z-index:3; }
+    .modal.open { display:flex; }
+    .sheet { width:100%; max-width:760px; max-height:88vh; overflow:auto; margin:0 auto; background:white; border-radius:22px 22px 0 0; padding:22px 18px 28px; }
+    .sheet h2 { margin:0 0 14px; }
+    .cart-line { display:flex; justify-content:space-between; gap:12px; padding:10px 0; border-bottom:1px solid var(--line); }
+    textarea { width:100%; margin:14px 0; padding:12px; border:1px solid var(--line); border-radius:10px; min-height:78px; font:inherit; resize:vertical; }
+    .actions { display:flex; gap:10px; }
+    .actions button { flex:1; }
+    .secondary { border:1px solid var(--line); border-radius:12px; padding:13px 18px; background:white; font-weight:700; cursor:pointer; }
+    .success-card { text-align:center; padding:28px 18px; background:white; border:1px solid var(--line); border-radius:16px; }
+    .success-card .check { font-size:3rem; }
+    .status { display:inline-block; margin:12px 0; padding:7px 12px; border-radius:999px; background:#fef3c7; color:#92400e; font-weight:800; text-transform:capitalize; }
+    [hidden] { display:none !important; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <h1 id="restaurantName">Restaurant Menu</h1>
+      <p id="tableName">Loading your table…</p>
+    </div>
+  </header>
+  <main>
+    <div id="message" class="notice">Loading menu…</div>
+    <div id="menu"></div>
+    <section id="confirmation" class="success-card" hidden>
+      <div class="check">✅</div>
+      <h2>Order sent!</h2>
+      <p>No need to call a waiter. The cashier can see your order now.</p>
+      <div id="orderStatus" class="status">Pending</div>
+      <p><strong id="orderNumber"></strong></p>
+      <p id="statusHelp">Please wait while the restaurant confirms your order.</p>
+      <button class="secondary" onclick="startAnotherOrder()">Add another order</button>
+    </section>
+  </main>
+
+  <div id="cartBar" class="cart-bar" hidden>
+    <div class="cart-inner">
+      <div class="cart-total"><small id="cartCount">0 items</small><strong id="cartTotal">₱0.00</strong></div>
+      <button id="reviewButton" class="primary" onclick="openCart()">Review order</button>
+    </div>
+  </div>
+
+  <div id="cartModal" class="modal" onclick="closeOnBackdrop(event)">
+    <div class="sheet">
+      <h2>Your order</h2>
+      <div id="cartLines"></div>
+      <textarea id="customerNote" maxlength="500" placeholder="Special request (optional), e.g. no onions"></textarea>
+      <div class="actions">
+        <button class="secondary" onclick="closeCart()">Go back</button>
+        <button id="placeButton" class="primary" onclick="placeOrder()">Send order</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const accessCode = new URLSearchParams(location.search).get("table") || "";
+    let menuItems = [];
+    let cart = {};
+    let currentOrder = null;
+    let statusTimer = null;
+
+    const money = value => new Intl.NumberFormat("en-PH", {style:"currency", currency:"PHP"}).format(value);
+    const escapeHtml = value => {
+      const div = document.createElement("div");
+      div.textContent = value == null ? "" : String(value);
+      return div.innerHTML;
+    };
+
+    async function api(path, options = {}) {
+      const response = await fetch(path, options);
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data.detail || "Something went wrong. Please try again.");
+      return data;
+    }
+
+    async function loadMenu() {
+      if (!accessCode) return showError("This table link is incomplete. Please scan the QR code on your table.");
+      try {
+        const data = await api(`/api/public/${encodeURIComponent(accessCode)}/menu`);
+        document.title = `${data.restaurant_name} — Order`;
+        document.getElementById("restaurantName").textContent = data.restaurant_name;
+        document.getElementById("tableName").textContent = `${data.table_name} · Order from your phone`;
+        menuItems = data.items;
+        document.getElementById("message").hidden = true;
+        renderMenu();
+      } catch (error) {
+        showError(error.message);
+      }
+    }
+
+    function showError(message) {
+      const box = document.getElementById("message");
+      box.hidden = false;
+      box.className = "notice error";
+      box.textContent = message;
+    }
+
+    function renderMenu() {
+      const groups = {};
+      menuItems.forEach(item => (groups[item.category] ||= []).push(item));
+      document.getElementById("menu").innerHTML = Object.entries(groups).map(([category, items]) => `
+        <h2 class="category">${escapeHtml(category)}</h2>
+        <div class="menu">${items.map(item => `
+          <article class="item">
+            <div>
+              <h3>${escapeHtml(item.name)}</h3>
+              <p class="description">${escapeHtml(item.description)}</p>
+              <span class="price">${money(item.price)}</span>
+            </div>
+            <div class="quantity">
+              <button aria-label="Remove ${escapeHtml(item.name)}" onclick="changeQuantity(${item.id}, -1)">−</button>
+              <span>${cart[item.id] || 0}</span>
+              <button aria-label="Add ${escapeHtml(item.name)}" onclick="changeQuantity(${item.id}, 1)">+</button>
+            </div>
+          </article>`).join("")}
+        </div>`).join("") || `<div class="notice">The menu is currently unavailable.</div>`;
+    }
+
+    function changeQuantity(itemId, delta) {
+      cart[itemId] = Math.max(0, Math.min(50, (cart[itemId] || 0) + delta));
+      if (!cart[itemId]) delete cart[itemId];
+      renderMenu();
+      updateCartBar();
+    }
+
+    function selectedLines() {
+      return menuItems.filter(item => cart[item.id]).map(item => ({...item, quantity:cart[item.id]}));
+    }
+
+    function updateCartBar() {
+      const lines = selectedLines();
+      const count = lines.reduce((sum, item) => sum + item.quantity, 0);
+      const total = lines.reduce((sum, item) => sum + item.price * item.quantity, 0);
+      document.getElementById("cartBar").hidden = count === 0;
+      document.getElementById("cartCount").textContent = `${count} item${count === 1 ? "" : "s"}`;
+      document.getElementById("cartTotal").textContent = money(total);
+    }
+
+    function openCart() {
+      document.getElementById("cartLines").innerHTML = selectedLines().map(item => `
+        <div class="cart-line"><span>${item.quantity}× ${escapeHtml(item.name)}</span><strong>${money(item.price * item.quantity)}</strong></div>
+      `).join("");
+      document.getElementById("cartModal").classList.add("open");
+    }
+    function closeCart() { document.getElementById("cartModal").classList.remove("open"); }
+    function closeOnBackdrop(event) { if (event.target.id === "cartModal") closeCart(); }
+
+    async function placeOrder() {
+      const button = document.getElementById("placeButton");
+      button.disabled = true;
+      button.textContent = "Sending…";
+      try {
+        currentOrder = await api(`/api/public/${encodeURIComponent(accessCode)}/orders`, {
+          method:"POST",
+          headers:{"Content-Type":"application/json"},
+          body:JSON.stringify({
+            items:selectedLines().map(item => ({menu_item_id:item.id, quantity:item.quantity})),
+            customer_note:document.getElementById("customerNote").value
+          })
+        });
+        closeCart();
+        document.getElementById("menu").hidden = true;
+        document.getElementById("cartBar").hidden = true;
+        document.getElementById("confirmation").hidden = false;
+        updateOrderStatus(currentOrder);
+        statusTimer = setInterval(refreshOrderStatus, 4000);
+      } catch (error) {
+        alert(error.message);
+      } finally {
+        button.disabled = false;
+        button.textContent = "Send order";
+      }
+    }
+
+    async function refreshOrderStatus() {
+      if (!currentOrder) return;
+      try {
+        currentOrder = await api(`/api/public/${encodeURIComponent(accessCode)}/orders/${encodeURIComponent(currentOrder.order_number)}`);
+        updateOrderStatus(currentOrder);
+      } catch (_) {}
+    }
+
+    function updateOrderStatus(order) {
+      document.getElementById("orderNumber").textContent = order.order_number;
+      document.getElementById("orderStatus").textContent = order.status;
+      const help = {
+        pending:"Please wait while the restaurant confirms your order.",
+        confirmed:"Your order has been confirmed.",
+        preparing:"The kitchen is preparing your food.",
+        ready:"Your food is ready and will be served shortly.",
+        served:"Enjoy your meal!",
+        cancelled:"Please ask the cashier about this cancelled order."
+      };
+      document.getElementById("statusHelp").textContent = help[order.status] || "";
+      if (["served", "cancelled"].includes(order.status)) clearInterval(statusTimer);
+    }
+
+    function startAnotherOrder() {
+      clearInterval(statusTimer);
+      currentOrder = null;
+      cart = {};
+      document.getElementById("customerNote").value = "";
+      document.getElementById("confirmation").hidden = true;
+      document.getElementById("menu").hidden = false;
+      renderMenu();
+      updateCartBar();
+    }
+
+    loadMenu();
+  </script>
+</body>
+</html>
