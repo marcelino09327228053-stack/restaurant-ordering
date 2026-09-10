@@ -8,7 +8,6 @@ import os
 import re
 import sqlite3
 from pathlib import Path
-from typing import Any
 
 from dotenv import load_dotenv
 
@@ -56,7 +55,12 @@ class PostgresCursorCompat:
     @staticmethod
     def _convert_sql(sql: str) -> str:
         # Existing repository queries use SQLite's datetime('now') and ? placeholders.
-        sql = re.sub(r"datetime\s*\(\s*['\"]now['\"]\s*\)", "CURRENT_TIMESTAMP", sql, flags=re.I)
+        sql = re.sub(
+            r"datetime\s*\(\s*['\"]now['\"]\s*\)",
+            "(CURRENT_TIMESTAMP::text)",
+            sql,
+            flags=re.I,
+        )
         return sql.replace("?", "%s")
 
     def execute(self, sql: str, params: tuple | list = ()):
@@ -100,7 +104,6 @@ class PostgresCursorCompat:
             return self._lastrowid
         if not self._last_insert_table:
             return None
-        # All generated IDs in the PostgreSQL schema below use SERIAL sequences.
         with self._connection.cursor() as cur:
             cur.execute(
                 "SELECT currval(pg_get_serial_sequence(%s, 'id'))",
@@ -114,6 +117,10 @@ class PostgresCursorCompat:
 class PostgresConnectionCompat:
     def __init__(self, connection):
         self._connection = connection
+
+    @property
+    def closed(self):
+        return self._connection.closed
 
     def cursor(self):
         return PostgresCursorCompat(self._connection)
