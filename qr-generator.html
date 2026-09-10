@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>QR Generator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #090b0b;
+      --panel: #141618;
+      --panel-2: #1b1e21;
+      --line: #2c3136;
+      --text: #f4f1ec;
+      --muted: #9a9590;
+      --orange: #ff6a1a;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; min-height: 100vh; color: var(--text);
+      font-family: Outfit, system-ui, sans-serif;
+      background:
+        radial-gradient(ellipse 70% 45% at 10% 0%, #2a1408 0%, transparent 50%),
+        radial-gradient(ellipse 50% 40% at 100% 100%, #1a1008 0%, transparent 45%),
+        var(--bg);
+    }
+    button, input, textarea { font: inherit; color: inherit; }
+    a { color: inherit; }
+    [hidden] { display: none !important; }
+
+    header {
+      display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+      padding: 14px 20px; border-bottom: 1px solid #ffffff14;
+      background: #0a0b0ccc; backdrop-filter: blur(12px);
+      position: sticky; top: 0; z-index: 10;
+    }
+    .mark {
+      width: 40px; height: 40px; border-radius: 50%;
+      background: linear-gradient(145deg, var(--orange), #b91c1c);
+      display: grid; place-items: center;
+      font-family: "Bebas Neue", Impact, sans-serif; font-size: 1.15rem;
+    }
+    header h1 {
+      margin: 0; font-family: "Bebas Neue", Impact, sans-serif;
+      font-size: 1.6rem; letter-spacing: .06em; font-weight: 400;
+    }
+    header h1 span { color: var(--orange); }
+    .grow { flex: 1; }
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+      min-height: 40px; padding: 8px 14px; border-radius: 12px; cursor: pointer;
+      border: 1px solid var(--line); background: var(--panel); text-decoration: none;
+      font-weight: 700; white-space: nowrap;
+    }
+    .btn:hover { border-color: #555; }
+    .btn.solid {
+      border: 0; background: linear-gradient(135deg, #ff7a18, #e9430a); color: #fff;
+      box-shadow: 0 8px 22px #ff6a1a44;
+    }
+    .btn.solid:disabled { opacity: .55; cursor: not-allowed; }
+
+    main { max-width: 1100px; margin: 0 auto; padding: 24px 18px 60px; }
+
+    .hero-card {
+      background: var(--panel); border: 1px solid var(--line); border-radius: 20px;
+      padding: 22px; margin-bottom: 22px;
+    }
+    .hero-card h2 { margin: 0 0 6px; font-size: 1.15rem; }
+    .hero-card h2::after {
+      content: ""; display: block; width: 40px; height: 3px; margin-top: 8px;
+      border-radius: 3px; background: var(--orange);
+    }
+    .hint { color: var(--muted); margin: 0 0 16px; line-height: 1.45; font-size: .92rem; }
+    .lan {
+      margin-bottom: 16px; padding: 12px 14px; border-radius: 12px;
+      background: #1a140e; border: 1px solid #7c2d12; color: #fed7aa; font-size: .86rem;
+    }
+    label { display: block; font-size: .82rem; font-weight: 700; margin: 0 0 6px; color: #d4d4d8; }
+
+    .field { margin-bottom: 12px; }
+    .field input, .field textarea {
+      width: 100%; padding: 12px 14px; border-radius: 12px;
+      border: 1px solid var(--line); background: var(--panel-2); outline: 0;
+    }
+    .field input:focus, .field textarea:focus {
+      border-color: #ff6a1a88; box-shadow: 0 0 0 3px #ff6a1a22;
+    }
+    .field textarea { min-height: 64px; resize: vertical; }
+    .row-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+    .gen-form {
+      display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end;
+    }
+    .gen-form .field { flex: 1; min-width: 180px; margin: 0; }
+    .chips { display: flex; gap: 8px; flex-wrap: wrap; margin: 0 0 14px; }
+    .chip {
+      border: 1px solid var(--line); background: var(--panel-2); color: var(--text);
+      border-radius: 999px; padding: 7px 12px; cursor: pointer; font-size: .8rem; font-weight: 700;
+    }
+    .chip:hover { border-color: var(--orange); color: #fed7aa; }
+
+    .result {
+      margin-top: 22px; display: none; text-align: center;
+      padding: 28px 20px; border-radius: 18px;
+      background: linear-gradient(180deg, #1a1d20, #121416);
+      border: 1px solid #ffffff18;
+      animation: pop .35s ease;
+    }
+    .result.show { display: block; }
+    @keyframes pop {
+      from { opacity: 0; transform: translateY(10px) scale(.98); }
+      to { opacity: 1; transform: none; }
+    }
+    .result .label {
+      margin: 0 0 6px; color: var(--orange); font-size: .75rem;
+      font-weight: 900; letter-spacing: .18em; text-transform: uppercase;
+    }
+    .result h3 {
+      margin: 0 0 10px; font-family: "Bebas Neue", Impact, sans-serif;
+      font-size: 2.2rem; letter-spacing: .04em;
+    }
+    .caption-preview {
+      margin: 0 auto 16px; max-width: 360px; color: #e5e5e5;
+      font-size: 1rem; font-weight: 700; line-height: 1.35;
+    }
+    .qr-frame {
+      width: min(280px, 72vw); aspect-ratio: 1; margin: 0 auto 16px;
+      padding: 14px; border-radius: 18px; background: #fff;
+      box-shadow: 0 16px 40px #0008;
+    }
+    .qr-frame img { width: 100%; height: 100%; display: block; }
+    .result .link-below {
+      display: block; margin: 0 auto 16px; max-width: 520px;
+      padding: 12px 14px; border-radius: 12px;
+      background: #0c0e10; border: 1px solid #ffffff18;
+      color: #fdba74; font-size: .88rem; overflow-wrap: anywhere; word-break: break-all;
+    }
+    .result .actions { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+
+    .grid {
+      display: grid; gap: 16px;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    }
+    .qr-card {
+      background: var(--panel); border: 1px solid var(--line); border-radius: 18px;
+      padding: 18px 16px 16px; text-align: center;
+      display: flex; flex-direction: column; align-items: center;
+    }
+    .qr-card strong { display: block; margin-bottom: 8px; font-size: 1.05rem; }
+    .qr-card .card-caption {
+      margin: 0 0 10px; min-height: 2.4em; color: #e7e5e4;
+      font-size: .9rem; font-weight: 700; line-height: 1.3;
+    }
+    .qr-card .mini-qr {
+      width: 168px; height: 168px; padding: 10px; border-radius: 14px;
+      background: #fff; margin-bottom: 12px;
+    }
+    .qr-card .mini-qr img { width: 100%; height: 100%; display: block; }
+    .qr-card .link-below {
+      width: 100%; margin: 0 0 10px; padding: 10px;
+      border-radius: 10px; background: #0c0e10; border: 1px solid #ffffff14;
+      color: #fdba74; font-size: .72rem; overflow-wrap: anywhere; word-break: break-all;
+      text-align: left; line-height: 1.35;
+    }
+    .qr-card .edit-cap {
+      width: 100%; margin: 0 0 10px; padding: 9px 10px; border-radius: 10px;
+      border: 1px solid var(--line); background: var(--panel-2); outline: 0; font-size: .82rem;
+    }
+    .qr-card .row { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; width: 100%; }
+    .qr-card .row .btn { flex: 1; min-width: 70px; font-size: .8rem; padding: 8px 10px; }
+
+    .error {
+      padding: 12px 14px; margin-bottom: 14px; border: 1px solid #7f1d1d;
+      background: #2a1214; color: #fecaca; border-radius: 12px;
+    }
+    .ok {
+      padding: 12px 14px; margin-bottom: 14px; border: 1px solid #14532d;
+      background: #052e16; color: #bbf7d0; border-radius: 12px;
+    }
+    .empty { color: var(--muted); text-align: center; padding: 28px; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="mark">QR</div>
+    <h1>QR <span>GENERATOR</span></h1>
+    <div class="grow"></div>
+    <a class="btn" href="/cashier">← Cashier</a>
+    <a class="btn" href="/">Home</a>
+  </header>
+
+  <main>
+    <div id="flash" hidden></div>
+
+    <section class="hero-card">
+      <h2>QR text (editable)</h2>
+      <p class="hint">Default text sa lahat ng QR. Pwede mong baguhin — o maglagay ng iba per table sa baba.</p>
+      <div class="chips">
+        <button type="button" class="chip" onclick="usePreset('Scan the QR code to order')">Scan to order</button>
+        <button type="button" class="chip" onclick="usePreset('Scan to connect with cashier')">Connect cashier</button>
+        <button type="button" class="chip" onclick="usePreset('I-scan para umorder')">Tagalog order</button>
+        <button type="button" class="chip" onclick="usePreset('Scan · Order · Enjoy')">Scan · Order · Enjoy</button>
+      </div>
+      <div class="field">
+        <label for="defaultCaption">Default text</label>
+        <input id="defaultCaption" maxlength="120" placeholder="Scan the QR code to order" />
+      </div>
+      <div class="row-actions">
+        <button class="btn solid" type="button" onclick="saveDefaultCaption()">Save default text</button>
+      </div>
+    </section>
+
+    <section class="hero-card">
+      <h2>Generate table QR</h2>
+      <p class="hint">Type a table name and generate. Malaking QR + text + link sa baba.</p>
+      <div class="lan" id="lanBanner">Detecting WiFi address…</div>
+      <form onsubmit="generateQr(event)">
+        <div class="gen-form" style="margin-bottom:10px">
+          <div class="field">
+            <label for="tableName">Table name</label>
+            <input id="tableName" maxlength="80" required placeholder="e.g. Table 1" autocomplete="off" />
+          </div>
+        </div>
+        <div class="field">
+          <label for="tableCaption">Text on this QR (optional — blank = use default)</label>
+          <input id="tableCaption" maxlength="120" placeholder="Leave blank to use default text" />
+        </div>
+        <button class="btn solid" id="genBtn" type="submit">Generate QR</button>
+      </form>
+
+      <div class="result" id="result">
+        <p class="label">Generated</p>
+        <h3 id="resultName">Table</h3>
+        <p class="caption-preview" id="resultCaption"></p>
+        <div class="qr-frame">
+          <img id="resultQr" alt="Generated QR code" />
+        </div>
+        <code class="link-below" id="resultLink"></code>
+        <div class="actions">
+          <button class="btn" type="button" onclick="copyResult()">Copy link</button>
+          <button class="btn" type="button" onclick="printResult()">Print</button>
+          <a class="btn solid" id="resultDownload" download="table-qr.png">Download QR</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="hero-card">
+      <h2>Your generated QRs</h2>
+      <p class="hint">I-edit ang text per card, then Save text. Link always under the QR.</p>
+      <div class="grid" id="qrGrid"><div class="empty">No QR yet. Generate one above.</div></div>
+    </section>
+  </main>
+
+  <script>
+    let latest = null;
+    let defaultCaption = "Scan the QR code to order";
+    const escapeHtml = v => {
+      const d = document.createElement("div");
+      d.textContent = v == null ? "" : String(v);
+      return d.innerHTML;
+    };
+
+    function headers() {
+      const token = localStorage.getItem("restaurant_token");
+      if (!token) { location.href = "/login"; return {}; }
+      return { "Content-Type": "application/json", Authorization: `Bearer ${token}` };
+    }
+
+    async function api(path, options = {}) {
+      options.headers = { ...headers(), ...(options.headers || {}) };
+      const res = await fetch(path, options);
+      if (res.status === 401) { location.href = "/login"; throw new Error("Please sign in."); }
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.detail || "Request failed.");
+      return data;
+    }
+
+    function flash(msg, ok = false) {
+      const el = document.getElementById("flash");
+      el.hidden = false;
+      el.className = ok ? "ok" : "error";
+      el.textContent = msg;
+      clearTimeout(flash._t);
+      flash._t = setTimeout(() => { el.hidden = true; }, 3500);
+    }
+
+    function usePreset(text) {
+      document.getElementById("defaultCaption").value = text;
+    }
+
+    async function saveDefaultCaption() {
+      const qr_caption = document.getElementById("defaultCaption").value.trim();
+      if (!qr_caption) { flash("Enter a default text first."); return; }
+      try {
+        const settings = await api("/api/settings/qr-caption", {
+          method: "PATCH",
+          body: JSON.stringify({ qr_caption }),
+        });
+        defaultCaption = settings.qr_caption;
+        document.getElementById("defaultCaption").value = defaultCaption;
+        await loadAll();
+        flash("Default QR text saved.", true);
+      } catch (e) { flash(e.message); }
+    }
+
+    function showResult(table) {
+      latest = table;
+      document.getElementById("result").classList.add("show");
+      document.getElementById("resultName").textContent = table.name;
+      document.getElementById("resultCaption").textContent = table.display_caption || defaultCaption;
+      document.getElementById("resultQr").src = table.qr_url;
+      document.getElementById("resultLink").textContent = table.order_url;
+      const dl = document.getElementById("resultDownload");
+      dl.href = table.qr_url;
+      dl.download = `${table.name.replace(/\s+/g, "-").toLowerCase()}-qr.png`;
+    }
+
+    async function generateQr(event) {
+      event.preventDefault();
+      const name = document.getElementById("tableName").value.trim();
+      const qr_caption = document.getElementById("tableCaption").value.trim();
+      const btn = document.getElementById("genBtn");
+      if (!name) return;
+      btn.disabled = true;
+      btn.textContent = "Generating…";
+      try {
+        const table = await api("/api/tables", {
+          method: "POST",
+          body: JSON.stringify({ name, qr_caption }),
+        });
+        document.getElementById("tableName").value = "";
+        document.getElementById("tableCaption").value = "";
+        showResult(table);
+        await loadAll();
+        flash("QR generated.", true);
+        document.getElementById("result").scrollIntoView({ behavior: "smooth", block: "center" });
+      } catch (e) {
+        flash(e.message);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Generate QR";
+      }
+    }
+
+    function copyResult() {
+      if (!latest) return;
+      copyLink(latest.order_url);
+    }
+
+    function printResult() {
+      if (!latest) return;
+      printQr(latest.name, latest.qr_url, latest.order_url, latest.display_caption || defaultCaption);
+    }
+
+    async function copyLink(url) {
+      try {
+        await navigator.clipboard.writeText(url);
+        flash("Link copied.", true);
+      } catch (_) {
+        prompt("Copy this link:", url);
+      }
+    }
+
+    function printQr(name, qrSrc, link, caption) {
+      const win = window.open("", "_blank", "width=440,height=700");
+      if (!win) { flash("Allow pop-ups to print."); return; }
+      win.document.write(`<!DOCTYPE html><html><head><title>${escapeHtml(name)} QR</title>
+        <style>
+          body{font-family:system-ui,sans-serif;text-align:center;padding:40px;color:#111}
+          h1{font-size:26px;margin:0 0 8px}
+          .cap{margin:0 0 18px;font-size:18px;font-weight:700;max-width:340px;margin-inline:auto;line-height:1.35}
+          img{width:280px;height:280px;background:#fff;padding:12px;border-radius:12px}
+          .link{margin-top:18px;font-size:13px;color:#444;overflow-wrap:anywhere}
+        </style></head>
+        <body onload="window.print()">
+          <h1>${escapeHtml(name)}</h1>
+          <p class="cap">${escapeHtml(caption || "Scan the QR code to order")}</p>
+          <img src="${qrSrc}" alt="QR" />
+          <p class="link">${escapeHtml(link || "")}</p>
+        </body></html>`);
+      win.document.close();
+    }
+
+    async function saveTableCaption(tableId) {
+      const input = document.getElementById(`cap-${tableId}`);
+      try {
+        await api(`/api/tables/${tableId}/caption`, {
+          method: "PATCH",
+          body: JSON.stringify({ qr_caption: input.value.trim() }),
+        });
+        await loadAll();
+        flash("Table QR text saved.", true);
+      } catch (e) { flash(e.message); }
+    }
+
+    async function loadAll() {
+      try {
+        const data = await api("/api/tables");
+        const conn = data.connection || {};
+        const settings = data.settings || {};
+        const tables = data.tables || [];
+        defaultCaption = settings.qr_caption || "Scan the QR code to order";
+        document.getElementById("defaultCaption").value = defaultCaption;
+        document.getElementById("lanBanner").innerHTML =
+          `<strong>WiFi connect base:</strong> ${escapeHtml(conn.lan_base || "—")}<br>${escapeHtml(conn.hint || "")}`;
+        document.getElementById("qrGrid").innerHTML = tables.length
+          ? tables.map(t => `
+            <article class="qr-card">
+              <strong>${escapeHtml(t.name)}</strong>
+              <p class="card-caption">${escapeHtml(t.display_caption || defaultCaption)}</p>
+              <div class="mini-qr"><img src="${escapeHtml(t.qr_url)}" alt="QR ${escapeHtml(t.name)}" /></div>
+              <code class="link-below">${escapeHtml(t.order_url)}</code>
+              <input class="edit-cap" id="cap-${t.id}" maxlength="120"
+                value="${escapeHtml(t.qr_caption || "")}"
+                placeholder="Custom text (blank = default)" />
+              <div class="row">
+                <button class="btn" type="button" onclick="saveTableCaption(${t.id})">Save text</button>
+                <button class="btn" type="button" onclick='copyLink(${JSON.stringify(t.order_url)})'>Copy</button>
+                <button class="btn" type="button" onclick='printQr(${JSON.stringify(t.name)}, ${JSON.stringify(t.qr_url)}, ${JSON.stringify(t.order_url)}, ${JSON.stringify(t.display_caption || defaultCaption)})'>Print</button>
+                <a class="btn solid" href="${escapeHtml(t.qr_url)}" download="${escapeHtml(t.name)}-qr.png">Save</a>
+              </div>
+            </article>`).join("")
+          : `<div class="empty">No QR yet. Generate one above.</div>`;
+      } catch (e) {
+        flash(e.message);
+      }
+    }
+
+    loadAll();
+  </script>
+</body>
+</html>

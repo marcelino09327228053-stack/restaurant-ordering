@@ -1,4 +1,4 @@
-"""Cashier authentication helpers."""
+"""Cashier and owner authentication helpers."""
 
 import os
 from datetime import datetime, timedelta, timezone
@@ -28,21 +28,46 @@ def verify_password(password: str, password_hash: str) -> bool:
 def create_access_token() -> str:
     payload = {
         "sub": "cashier",
+        "role": "cashier",
         "exp": datetime.now(timezone.utc) + timedelta(hours=JWT_EXPIRE_HOURS),
     }
     return jwt.encode(payload, SECRET_KEY, algorithm=JWT_ALGORITHM)
 
 
-def require_cashier(
-    credentials: HTTPAuthorizationCredentials | None = Depends(bearer_scheme),
-) -> None:
+def create_owner_token(owner_id: int, email: str) -> str:
+    payload = {
+        "sub": f"owner:{owner_id}",
+        "role": "owner",
+        "owner_id": owner_id,
+        "email": email,
+        "exp": datetime.now(timezone.utc) + timedelta(hours=JWT_EXPIRE_HOURS),
+    }
+    return jwt.encode(payload, SECRET_KEY, algorithm=JWT_ALGORITHM)
+
+
+def _decode(credentials: HTTPAuthorizationCredentials | None) -> dict:
     if credentials is None:
         raise HTTPException(status_code=401, detail="Authentication required.")
     try:
-        payload = jwt.decode(
+        return jwt.decode(
             credentials.credentials, SECRET_KEY, algorithms=[JWT_ALGORITHM]
         )
     except jwt.PyJWTError as exc:
         raise HTTPException(status_code=401, detail="Invalid or expired token.") from exc
-    if payload.get("sub") != "cashier":
+
+
+def require_cashier(
+    credentials: HTTPAuthorizationCredentials | None = Depends(bearer_scheme),
+) -> None:
+    payload = _decode(credentials)
+    if payload.get("role") != "cashier" and payload.get("sub") != "cashier":
         raise HTTPException(status_code=401, detail="Invalid token.")
+
+
+def require_owner(
+    credentials: HTTPAuthorizationCredentials | None = Depends(bearer_scheme),
+) -> dict:
+    payload = _decode(credentials)
+    if payload.get("role") != "owner" or not payload.get("owner_id"):
+        raise HTTPException(status_code=401, detail="Owner login required.")
+    return payload
