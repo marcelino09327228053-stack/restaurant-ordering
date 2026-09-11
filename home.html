@@ -5,17 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>MB Business Hub</title>
   <style>
-    :root { --bg:#08090b; --panel:#111318; --line:#292d35; --text:#f7f7f5; --muted:#9da3ae; --accent:#f97316; --accent2:#ea580c; }
+    :root { --bg:#08090b; --panel:#111318; --line:#292d35; --text:#f7f7f5; --muted:#9da3ae; --accent:#f97316; --accent2:#ea580c; --brand-logo:url("data:image/jpeg;base64,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"); }
     * { box-sizing:border-box; }
     body { margin:0; min-height:100vh; font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif; color:var(--text); background:radial-gradient(circle at 15% 15%,#4a220e88,transparent 34%),radial-gradient(circle at 85% 80%,#7c2d1233,transparent 30%),var(--bg); }
     .wrap { width:min(1120px,calc(100% - 32px)); margin:auto; }
     header { min-height:76px; display:flex; align-items:center; gap:14px; border-bottom:1px solid #ffffff12; }
     .brand { display:flex; align-items:center; gap:12px; text-decoration:none; color:inherit; }
-    .logo { width:50px; height:50px; border-radius:16px; display:grid; place-items:center; position:relative; background:linear-gradient(145deg,var(--accent),#b91c1c); box-shadow:0 10px 30px #f9731630; font-weight:900; font-size:1.05rem; }
-    .logo .burger { position:absolute; font-size:28px; opacity:.92; transform:translateY(1px); }
-    .logo .mb { position:relative; z-index:2; font-size:.86rem; color:#fff; text-shadow:0 2px 5px #000; }
+    .logo { width:54px; height:54px; border-radius:50%; background-image:var(--brand-logo); background-size:cover; background-position:center; box-shadow:0 10px 30px #f9731630; flex:none; }
     .brand strong { display:block; font-size:1.05rem; letter-spacing:.02em; }
-    .brand small { color:var(--muted); }
+    .brand small { display:block; color:var(--muted); }
     .grow { flex:1; }
     nav { display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; }
     .btn { border:1px solid var(--line); background:#14171c; color:var(--text); text-decoration:none; padding:10px 15px; border-radius:12px; font-weight:750; cursor:pointer; font:inherit; }
@@ -24,62 +22,48 @@
     .btn.danger { border-color:#6f2424; color:#fecaca; background:#2a1214; }
     main { padding:70px 0 48px; }
     .hero { display:grid; grid-template-columns:1.1fr .9fr; gap:44px; align-items:center; }
-    .eyebrow { color:#fdba74; font-size:.82rem; font-weight:900; letter-spacing:.16em; text-transform:uppercase; }
     h1 { font-size:clamp(2.8rem,7vw,6.3rem); line-height:.9; margin:12px 0 18px; letter-spacing:-.055em; }
     h1 span { color:var(--accent); }
     .lead { color:#c7c9cf; font-size:clamp(1rem,2vw,1.2rem); line-height:1.65; max-width:680px; }
     .actions { display:flex; gap:10px; flex-wrap:wrap; margin-top:26px; }
     .card { border:1px solid #ffffff16; border-radius:28px; padding:28px; background:linear-gradient(180deg,#171a20dd,#0f1115ee); box-shadow:0 30px 80px #0008; }
-    .restaurant-logo { width:130px; height:130px; margin:0 auto 20px; border-radius:38px; display:grid; place-items:center; position:relative; background:linear-gradient(145deg,#f97316,#991b1b); box-shadow:0 20px 55px #f9731633; }
-    .restaurant-logo .burger { font-size:78px; }
-    .restaurant-logo .mb { position:absolute; font-size:1.45rem; font-weight:1000; bottom:19px; background:#090a0cdd; padding:3px 9px; border-radius:999px; }
+    .restaurant-logo { width:180px; height:180px; margin:0 auto 20px; border-radius:50%; background-image:var(--brand-logo); background-size:cover; background-position:center; box-shadow:0 20px 55px #f9731633; }
     .card h2 { margin:0; text-align:center; font-size:2rem; }
     .card p { text-align:center; color:var(--muted); margin:8px 0 0; }
     .status { margin-top:20px; padding:14px; border-radius:14px; border:1px solid var(--line); background:#0b0d11; color:var(--muted); text-align:center; }
-    .account-box { margin-top:18px; display:none; gap:8px; justify-content:center; flex-wrap:wrap; }
     footer { color:#777d88; font-size:.84rem; padding:32px 0 40px; }
-    @media(max-width:760px){ .hero{grid-template-columns:1fr}.card{order:-1}.brand small{display:none} header{align-items:flex-start;padding:14px 0} nav{max-width:54%} }
+    @media(max-width:760px){ .hero{grid-template-columns:1fr}.card{order:-1}.brand small{display:none} header{align-items:flex-start;padding:14px 0} nav{max-width:62%} }
   </style>
 </head>
 <body>
   <header class="wrap">
     <a class="brand" href="/">
-      <div class="logo"><span class="burger">🍔</span><span class="mb">MB</span></div>
+      <div class="logo" aria-label="MB Bite & Brew logo"></div>
       <div><strong>MB Business Hub</strong><small>Business Management Platform</small></div>
     </a>
     <div class="grow"></div>
-    <nav id="guestNav">
-      <a class="btn" href="/account?mode=login">Log In</a>
-      <a class="btn primary" href="/account?mode=create">Create Account</a>
-    </nav>
-    <nav id="ownerNav" hidden>
-      <a class="btn primary" href="/owner" id="myAccountButton">My Account</a>
-      <button class="btn" type="button" onclick="lockOwner()">Lock</button>
-      <button class="btn danger" type="button" onclick="logoutOwner()">Logout</button>
+    <nav>
+      <a class="btn primary" href="/owner" id="myAccountButton" hidden>My Account</a>
+      <button class="btn" type="button" id="lockButton" hidden onclick="toggleOwnerLock()">Lock Account</button>
+      <a class="btn primary" href="/account" id="authButton">Log In / Create Account</a>
     </nav>
   </header>
 
   <main class="wrap">
     <section class="hero">
       <div>
-        <div class="eyebrow">MB Butcher Tech · Business Software</div>
         <h1>MB <span>Business Hub</span></h1>
         <p class="lead">One home for restaurant ordering, business pages, tables and QR, payments, cashier operations, and the tools you add next.</p>
         <div class="actions" id="guestActions">
-          <a class="btn primary" href="/account?mode=create">Create your account</a>
-          <a class="btn" href="/account?mode=login">Log in</a>
-          <a class="btn" href="/order">Open customer order page</a>
-          <a class="btn" href="/login">Cashier login</a>
+          <a class="btn primary" href="/account">Log In / Create Account</a>
         </div>
-        <div class="account-box" id="ownerActions">
+        <div class="actions" id="ownerActions" hidden>
           <a class="btn primary" href="/owner">Open Design Your Page</a>
-          <a class="btn" href="/order">Customer order page</a>
-          <a class="btn" href="/login">Cashier login</a>
         </div>
       </div>
 
       <aside class="card">
-        <div class="restaurant-logo"><span class="burger">🍔</span><span class="mb">MB</span></div>
+        <div class="restaurant-logo" aria-label="MB Bite & Brew logo"></div>
         <h2>MB Bite &amp; Brew</h2>
         <p>Restaurant demo brand inside MB Business Hub</p>
         <div class="status" id="sessionStatus">Checking account…</div>
@@ -92,30 +76,37 @@
   <script>
     const OWNER_TOKEN = "owner_token";
     const OWNER_LOCKED = "owner_locked";
+    const myAccountButton = document.getElementById("myAccountButton");
+    const lockButton = document.getElementById("lockButton");
+    const authButton = document.getElementById("authButton");
+    const guestActions = document.getElementById("guestActions");
+    const ownerActions = document.getElementById("ownerActions");
 
     function setSignedIn(owner) {
-      document.getElementById("guestNav").hidden = true;
-      document.getElementById("ownerNav").hidden = false;
-      document.getElementById("guestActions").style.display = "none";
-      document.getElementById("ownerActions").style.display = "flex";
       const locked = localStorage.getItem(OWNER_LOCKED) === "1";
+      lockButton.hidden = false;
+      lockButton.textContent = locked ? "Unlock Account" : "Lock Account";
+      myAccountButton.hidden = locked;
+      authButton.textContent = "Logout";
+      authButton.href = "#";
+      authButton.className = "btn danger";
+      authButton.onclick = event => { event.preventDefault(); logoutOwner(); };
+      guestActions.hidden = true;
+      ownerActions.hidden = locked;
       document.getElementById("sessionStatus").textContent = locked
         ? `Owner account locked${owner?.email ? ` · ${owner.email}` : ""}`
         : `Signed in${owner?.restaurant_name ? ` · ${owner.restaurant_name}` : ""}`;
-      if (locked) {
-        const account = document.getElementById("myAccountButton");
-        account.href = "/account?unlock=1";
-        account.textContent = "Unlock Account";
-        document.querySelector("#ownerActions .primary").href = "/account?unlock=1";
-        document.querySelector("#ownerActions .primary").textContent = "Unlock Owner Account";
-      }
     }
 
     function setSignedOut() {
-      document.getElementById("guestNav").hidden = false;
-      document.getElementById("ownerNav").hidden = true;
-      document.getElementById("guestActions").style.display = "flex";
-      document.getElementById("ownerActions").style.display = "none";
+      myAccountButton.hidden = true;
+      lockButton.hidden = true;
+      authButton.textContent = "Log In / Create Account";
+      authButton.href = "/account";
+      authButton.className = "btn primary";
+      authButton.onclick = null;
+      guestActions.hidden = false;
+      ownerActions.hidden = true;
       document.getElementById("sessionStatus").textContent = "Create an account or log in to manage your business.";
     }
 
@@ -133,9 +124,14 @@
       }
     }
 
-    function lockOwner() {
+    function toggleOwnerLock() {
+      const locked = localStorage.getItem(OWNER_LOCKED) === "1";
+      if (locked) {
+        location.href = "/account?unlock=1";
+        return;
+      }
       localStorage.setItem(OWNER_LOCKED, "1");
-      location.href = "/";
+      loadSession();
     }
 
     async function logoutOwner() {
@@ -144,10 +140,10 @@
       if (!confirm("Log out of the owner account? The owner will receive a security notice.")) return;
       try {
         await fetch("/api/owner/logout-notify", {method:"POST", headers:{Authorization:`Bearer ${token}`}});
-      } catch (_) { /* Logout must still complete if notification delivery is unavailable. */ }
+      } catch (_) { }
       localStorage.removeItem(OWNER_TOKEN);
       localStorage.removeItem(OWNER_LOCKED);
-      location.href = "/";
+      setSignedOut();
     }
 
     loadSession();
