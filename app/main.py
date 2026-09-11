@@ -47,15 +47,17 @@ def create_app() -> FastAPI:
     @application.get("/owner")
     async def owner_page():
         html = Path("owner.html").read_text(encoding="utf-8")
+        # The legacy builder is still the storage container for controls that the
+        # studio moves into its panels during boot. Keep those controls in the DOM,
+        # but never render the old builder itself while the studio initializes.
         boot_guard = """
         <style id="owner-studio-boot-guard">
           body > .top,
           body > .shell { display: none !important; }
         </style>
         """
-        cleanup_script = '<script src="/static/owner-ui-cleanup.js"></script>'
+        html = html.replace("<title>Site Builder</title>", "<title>Design Your Page</title>", 1)
         html = html.replace("</head>", f"{boot_guard}</head>", 1)
-        html = html.replace("</body>", f"{cleanup_script}</body>", 1)
         return HTMLResponse(html)
 
     @application.get("/r/{slug}")
