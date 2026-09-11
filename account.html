@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MB Business Hub Account</title>
+  <style>
+    :root{--bg:#090a0c;--panel:#15181d;--line:#2b3038;--text:#f7f7f5;--muted:#9ca3af;--accent:#f97316;--bad:#fca5a5;--ok:#86efac}
+    *{box-sizing:border-box} body{margin:0;min-height:100vh;display:grid;place-items:center;padding:24px 16px;color:var(--text);font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;background:radial-gradient(circle at 20% 20%,#4a220e88,transparent 34%),radial-gradient(circle at 80% 80%,#7c2d1238,transparent 30%),var(--bg)}
+    .card{width:min(450px,96vw);border:1px solid var(--line);border-radius:24px;padding:28px;background:#15181dee;box-shadow:0 28px 70px #0008}
+    .brand{display:flex;align-items:center;gap:12px;margin-bottom:20px}.logo{width:54px;height:54px;border-radius:16px;background:linear-gradient(145deg,#f97316,#b91c1c);display:grid;place-items:center;position:relative}.burger{font-size:32px}.mb{position:absolute;font-weight:1000;font-size:.78rem;text-shadow:0 2px 5px #000}
+    h1{margin:0;font-size:1.45rem}.sub{color:var(--muted);margin:4px 0 0}.mode{margin:16px 0 18px;padding:12px 14px;border:1px solid #ffffff12;background:#0e1014;border-radius:14px;color:#d8dae0}
+    label{display:block;font-size:.84rem;font-weight:700;margin:0 0 7px}input{width:100%;padding:13px 14px;border:1px solid var(--line);border-radius:12px;background:#0f1115;color:var(--text);font:inherit;outline:0;margin-bottom:13px}input:focus{border-color:#f9731688;box-shadow:0 0 0 3px #f9731622}
+    .btn{width:100%;border:1px solid var(--line);border-radius:999px;padding:13px 16px;font:inherit;font-weight:850;cursor:pointer;background:#171a20;color:var(--text);margin-top:8px}.btn.primary{border:0;background:linear-gradient(135deg,#f97316,#ea580c)}.btn:disabled{opacity:.6;cursor:wait}.back{display:block;text-align:center;color:#d4d4d8;text-decoration:none;margin-top:14px}
+    .msg{min-height:1.4em;margin-top:12px;font-size:.9rem;color:var(--muted)}.msg.bad{color:var(--bad)}.msg.ok{color:var(--ok)}#verifyStep{display:none}
+  </style>
+</head>
+<body>
+  <main class="card">
+    <div class="brand"><div class="logo"><span class="burger">🍔</span><span class="mb">MB</span></div><div><h1>MB Business Hub</h1><p class="sub">Owner account</p></div></div>
+    <div class="mode" id="modeText">Create an account or log in with your email.</div>
+
+    <section id="emailStep">
+      <label for="email">Owner email</label>
+      <input id="email" type="email" autocomplete="email" placeholder="owner@example.com" />
+      <button class="btn primary" id="sendButton" type="button" onclick="sendCode()">Send verification code</button>
+    </section>
+
+    <section id="verifyStep">
+      <label for="code">6-digit verification code</label>
+      <input id="code" inputmode="numeric" maxlength="6" autocomplete="one-time-code" placeholder="123456" />
+      <button class="btn primary" id="verifyButton" type="button" onclick="verifyCode()">Verify and continue</button>
+      <button class="btn" type="button" onclick="editEmail()">Use another email</button>
+    </section>
+
+    <div class="msg" id="message" role="status" aria-live="polite"></div>
+    <a class="back" href="/">← Back to Home</a>
+  </main>
+
+  <script>
+    const OWNER_TOKEN="owner_token"; const OWNER_LOCKED="owner_locked";
+    const params=new URLSearchParams(location.search); const unlocking=params.get("unlock")==="1";
+    let pendingEmail="";
+
+    function msg(text,type=""){const el=document.getElementById("message");el.textContent=text;el.className=`msg ${type}`.trim();}
+    function setBusy(id,busy,text,normal){const b=document.getElementById(id);b.disabled=busy;b.textContent=busy?text:normal;}
+
+    async function prepareUnlock(){
+      if(!unlocking) return;
+      document.getElementById("modeText").textContent="Unlock the owner account with a verification code sent to the owner's email.";
+      const token=localStorage.getItem(OWNER_TOKEN);
+      if(!token){localStorage.removeItem(OWNER_LOCKED);return;}
+      try{
+        const r=await fetch("/api/owner/me",{headers:{Authorization:`Bearer ${token}`}});
+        if(r.ok){const owner=await r.json();document.getElementById("email").value=owner.email||"";}
+      }catch(_){ }
+    }
+
+    async function sendCode(){
+      const email=document.getElementById("email").value.trim().toLowerCase();
+      if(!email){msg("Enter the owner email.","bad");return;}
+      setBusy("sendButton",true,"Sending…","Send verification code"); msg("");
+      try{
+        const r=await fetch("/api/auth/email/start",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email})});
+        const data=await r.json(); if(!r.ok) throw new Error(data.detail||"Could not send code.");
+        pendingEmail=email; document.getElementById("emailStep").style.display="none"; document.getElementById("verifyStep").style.display="block"; document.getElementById("code").focus();
+        msg(data.dev_code?`Verification code: ${data.dev_code}`:"Verification code sent to the owner email.","ok");
+      }catch(e){msg(e.message,"bad");}
+      finally{setBusy("sendButton",false,"Sending…","Send verification code");}
+    }
+
+    async function verifyCode(){
+      const code=document.getElementById("code").value.trim(); if(!/^\d{6}$/.test(code)){msg("Enter the 6-digit code.","bad");return;}
+      setBusy("verifyButton",true,"Verifying…","Verify and continue"); msg("");
+      try{
+        const r=await fetch("/api/auth/email/verify",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email:pendingEmail,code})});
+        const data=await r.json(); if(!r.ok) throw new Error(data.detail||"Verification failed.");
+        localStorage.setItem(OWNER_TOKEN,data.token); localStorage.removeItem(OWNER_LOCKED); location.href="/owner";
+      }catch(e){msg(e.message,"bad");}
+      finally{setBusy("verifyButton",false,"Verifying…","Verify and continue");}
+    }
+
+    function editEmail(){document.getElementById("verifyStep").style.display="none";document.getElementById("emailStep").style.display="block";document.getElementById("code").value="";msg("");}
+    document.getElementById("code").addEventListener("keydown",e=>{if(e.key==="Enter")verifyCode();});
+    document.getElementById("email").addEventListener("keydown",e=>{if(e.key==="Enter")sendCode();});
+    prepareUnlock();
+  </script>
+</body>
+</html>
