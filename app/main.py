@@ -3,11 +3,13 @@
 import os
 from pathlib import Path
 
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
 
+from app import repository as repo
+from app.auth import require_owner
 from app.cloudinary_routes import router as cloudinary_router
 from app.db import init_db
 from app.repository import ensure_defaults
@@ -47,18 +49,39 @@ def create_app() -> FastAPI:
     @application.get("/owner")
     async def owner_page():
         html = Path("owner.html").read_text(encoding="utf-8")
-        # The legacy builder is still the storage container for controls that the
-        # studio moves into its panels during boot. Keep those controls in the DOM,
-        # but never render the old builder itself while the studio initializes.
+        # Keep the legacy controls in the DOM because the studio reuses them, but
+        # never flash the legacy SITE BUILDER shell while the studio initializes.
         boot_guard = """
         <style id="owner-studio-boot-guard">
           body > .top,
           body > .shell { display: none !important; }
         </style>
+        <script>
+          // Compatibility guard for the legacy iframe onload handler. The owner
+          // page references this name even in builds where the helper is absent.
+          window.sendMenuPreviewTheme = window.sendMenuPreviewTheme || function () {};
+        </script>
         """
         html = html.replace("<title>Site Builder</title>", "<title>Design Your Page</title>", 1)
         html = html.replace("</head>", f"{boot_guard}</head>", 1)
-        return HTMLResponse(html)
+        return HTMLResponse(
+            html,
+            headers={
+                "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0",
+                "Pragma": "no-cache",
+            },
+        )
+
+    # This route is intentionally registered before app.router's /api/owner/me.
+    # A stale owner JWT can survive a database migration and still decode even
+    # though its owner row no longer exists. Return 401 so the existing frontend
+    # clears that token and sends the user through owner login again.
+    @application.get("/api/owner/me")
+    async def owner_me_guard(owner=Depends(require_owner)):
+        data = repo.get_owner(owner["owner_id"])
+        if data is None:
+            raise HTTPException(status_code=401, detail="Owner session is stale. Please log in again.")
+        return data
 
     @application.get("/r/{slug}")
     async def restaurant_storefront(slug: str):
