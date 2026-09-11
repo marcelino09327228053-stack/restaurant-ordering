@@ -17,7 +17,7 @@ SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
 SMTP_USER = os.getenv("SMTP_USER", "").strip()
 SMTP_PASSWORD = os.getenv("SMTP_PASSWORD", "").strip()
 SMTP_FROM = os.getenv("SMTP_FROM", SMTP_USER or "noreply@restaurant.local")
-APP_NAME = os.getenv("RESTAURANT_NAME", "Bite & Brew Ordering")
+APP_NAME = os.getenv("RESTAURANT_NAME", "MB Business Hub")
 
 
 def generate_code() -> str:
@@ -32,18 +32,9 @@ def smtp_configured() -> bool:
     return bool(SMTP_HOST and SMTP_USER and SMTP_PASSWORD)
 
 
-def send_confirmation_email(to_email: str, code: str) -> None:
-    """Send confirmation number. Falls back to console when SMTP is not set."""
-    subject = f"{APP_NAME} confirmation number"
-    body = (
-        f"Your confirmation number is: {code}\n\n"
-        f"Enter this code on the website to open your menu setup.\n"
-        f"It expires in {OTP_MINUTES} minutes.\n\n"
-        "If you did not request this, you can ignore this email."
-    )
-
+def _send_email(to_email: str, subject: str, body: str) -> None:
     if not smtp_configured():
-        print(f"[DEV OTP] {to_email} -> {code}")
+        print(f"[DEV EMAIL] {to_email} | {subject} | {body}")
         return
 
     message = EmailMessage()
@@ -57,3 +48,26 @@ def send_confirmation_email(to_email: str, code: str) -> None:
         server.starttls(context=context)
         server.login(SMTP_USER, SMTP_PASSWORD)
         server.send_message(message)
+
+
+def send_confirmation_email(to_email: str, code: str) -> None:
+    """Send confirmation number. Falls back to console when SMTP is not set."""
+    subject = f"{APP_NAME} confirmation number"
+    body = (
+        f"Your confirmation number is: {code}\n\n"
+        f"Enter this code on the website to open your business account.\n"
+        f"It expires in {OTP_MINUTES} minutes.\n\n"
+        "If you did not request this, you can ignore this email."
+    )
+    _send_email(to_email, subject, body)
+
+
+def send_security_email(to_email: str, event_name: str, details: str = "") -> None:
+    """Notify an owner about an account security event such as a full logout."""
+    subject = f"{APP_NAME} security notice"
+    body = (
+        f"Security activity: {event_name}\n\n"
+        f"{details.strip()}\n\n" if details.strip() else f"Security activity: {event_name}\n\n"
+    )
+    body += "If this was not you, sign in again and review who has access to this device."
+    _send_email(to_email, subject, body)
