@@ -1,10 +1,11 @@
 """FastAPI entrypoint for restaurant table ordering."""
 
 import os
+from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
 
 from app.cloudinary_routes import router as cloudinary_router
@@ -45,7 +46,17 @@ def create_app() -> FastAPI:
 
     @application.get("/owner")
     async def owner_page():
-        return FileResponse("owner.html")
+        html = Path("owner.html").read_text(encoding="utf-8")
+        boot_guard = """
+        <style id="owner-studio-boot-guard">
+          body > .top,
+          body > .shell { display: none !important; }
+        </style>
+        """
+        cleanup_script = '<script src="/static/owner-ui-cleanup.js"></script>'
+        html = html.replace("</head>", f"{boot_guard}</head>", 1)
+        html = html.replace("</body>", f"{cleanup_script}</body>", 1)
+        return HTMLResponse(html)
 
     @application.get("/r/{slug}")
     async def restaurant_storefront(slug: str):
