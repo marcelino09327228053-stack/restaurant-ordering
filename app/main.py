@@ -7,6 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
+from app.cloudinary_routes import router as cloudinary_router
 from app.db import init_db
 from app.repository import ensure_defaults
 from app.router import router
@@ -66,6 +67,9 @@ def create_app() -> FastAPI:
     async def health():
         return {"status": "ok"}
 
+    # Register persistent Cloudinary upload routes before the legacy local-file
+    # routes so Render uses Cloudinary while the rest of the API remains unchanged.
+    application.include_router(cloudinary_router)
     application.include_router(router)
     init_db()
     ensure_defaults()
