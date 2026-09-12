@@ -32,19 +32,13 @@ def without_legacy_samples(items: list[dict]) -> list[dict]:
 
 
 def prepare_owner_menu_storage() -> None:
-    """Make menu names unique per owner instead of globally on PostgreSQL."""
+    """Allow repeated dish names while keeping owner scoping in application logic."""
     if not using_postgres():
         return
     conn = get_connection()
     cursor = conn.cursor()
     cursor.execute("ALTER TABLE restaurant_menu_items DROP CONSTRAINT IF EXISTS restaurant_menu_items_name_key")
-    cursor.execute(
-        """
-        CREATE UNIQUE INDEX IF NOT EXISTS idx_owner_menu_name_unique
-        ON restaurant_menu_items (owner_id, LOWER(name))
-        WHERE owner_id IS NOT NULL
-        """
-    )
+    cursor.execute("DROP INDEX IF EXISTS idx_owner_menu_name_unique")
     conn.commit()
 
 
@@ -58,7 +52,7 @@ def install_owner_menu_fixes() -> None:
             SELECT id, category, name, description, price, image_url, available, owner_id
             FROM restaurant_menu_items
             WHERE owner_id = ? AND available = 1
-            ORDER BY category ASC, name ASC
+            ORDER BY category ASC, name ASC, id ASC
             """,
             (owner_id,),
         )
@@ -75,32 +69,6 @@ def install_owner_menu_fixes() -> None:
         conn = get_connection()
         cursor = conn.cursor()
         clean_name = name.strip()
-        cursor.execute(
-            """
-            SELECT id, available FROM restaurant_menu_items
-            WHERE owner_id = ? AND LOWER(name) = LOWER(?)
-            """,
-            (owner_id, clean_name),
-        )
-        existing = cursor.fetchone()
-        if existing:
-            if int(existing["available"] or 0) == 1:
-                return None
-            cursor.execute(
-                """
-                UPDATE restaurant_menu_items
-                SET category = ?, name = ?, description = ?, price = ?, image_url = ?, available = 1
-                WHERE id = ? AND owner_id = ?
-                """,
-                (
-                    category.strip(), clean_name, description.strip(), round(price, 2),
-                    image_url.strip(), existing["id"], owner_id,
-                ),
-            )
-            conn.commit()
-            cursor.execute("SELECT * FROM restaurant_menu_items WHERE id = ?", (existing["id"],))
-            return dict(cursor.fetchone())
-
         cursor.execute(
             """
             INSERT INTO restaurant_menu_items
@@ -130,15 +98,6 @@ def install_owner_menu_fixes() -> None:
         conn = get_connection()
         cursor = conn.cursor()
         clean_name = name.strip()
-        cursor.execute(
-            """
-            SELECT id FROM restaurant_menu_items
-            WHERE owner_id = ? AND LOWER(name) = LOWER(?) AND id <> ? AND available = 1
-            """,
-            (owner_id, clean_name, item_id),
-        )
-        if cursor.fetchone():
-            raise ValueError("A menu item with that name already exists.")
         cursor.execute(
             """
             UPDATE restaurant_menu_items
@@ -329,6 +288,21 @@ def create_app() -> FastAPI:
         html = html.replace(
             'document.getElementById("menuPhonePreview").setAttribute("aria-pressed","false");',
             "",
+            1,
+        )
+        html = html.replace(
+            'button.disabled = true;\n        document.getElementById("menuPhotoHint").textContent = "Uploading photo…";',
+            'button.disabled = true;\n        button.textContent = "Uploading photo…";\n        document.getElementById("menuPhotoHint").textContent = "Uploading photo… please wait";\n        document.getElementById("menuFeedback").textContent = "Please wait for the photo upload to finish before adding the menu item.";',
+            1,
+        )
+        html = html.replace(
+            'document.getElementById("menuPhotoHint").textContent = "photo ready ✓";\n          toast("Dish photo ready — fill details & add.", true);',
+            'document.getElementById("menuPhotoHint").textContent = "photo ready ✓";\n          document.getElementById("menuFeedback").textContent = "Photo ready. You can add the menu item now.";\n          toast("Dish photo ready — fill details & add.", true);',
+            1,
+        )
+        html = html.replace(
+            'if (kind === "menu") document.getElementById("addMenuButton").disabled = false;',
+            'if (kind === "menu") {\n          const menuButton = document.getElementById("addMenuButton");\n          menuButton.disabled = false;\n          menuButton.textContent = editingMenuId ? "Save changes" : "Add to menu";\n        }',
             1,
         )
         html = html.replace("</head>", f"{boot_guard}</head>", 1)
