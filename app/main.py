@@ -11,10 +11,33 @@ from fastapi.staticfiles import StaticFiles
 from app import repository as repo
 from app.auth import require_owner
 from app.cloudinary_routes import router as cloudinary_router
-from app.db import init_db
+from app.db import get_connection, init_db
 from app.mail import send_security_email
 from app.repository import ensure_defaults
 from app.router import router
+
+
+def remove_legacy_sample_menu() -> None:
+    """Remove only the original six seeded demo dishes, leaving owner-added dishes intact."""
+    conn = get_connection()
+    cursor = conn.cursor()
+    samples = (
+        ("Rice Meals", "Chicken Inasal", "Grilled chicken, rice, and atchara", 149.0),
+        ("Rice Meals", "Pork Sisig", "Sizzling pork sisig served with rice", 169.0),
+        ("Rice Meals", "Beef Tapa", "Tender beef tapa, egg, and garlic rice", 179.0),
+        ("Noodles", "Pancit Canton", "Stir-fried noodles with vegetables", 139.0),
+        ("Drinks", "Iced Tea", "House-blended iced tea", 49.0),
+        ("Desserts", "Leche Flan", "Creamy caramel custard", 79.0),
+    )
+    for category, name, description, price in samples:
+        cursor.execute(
+            """
+            DELETE FROM restaurant_menu_items
+            WHERE category = ? AND name = ? AND description = ? AND price = ?
+            """,
+            (category, name, description, price),
+        )
+    conn.commit()
 
 
 def create_app() -> FastAPI:
@@ -83,9 +106,6 @@ def create_app() -> FastAPI:
     @application.get("/owner")
     async def owner_page():
         html = Path("owner.html").read_text(encoding="utf-8")
-        # Keep legacy controls because the studio moves and reuses them. Hide the
-        # old shell during boot, and add the small navigation compatibility layer
-        # without duplicating the large owner editor file.
         boot_guard = """
         <style id="owner-studio-boot-guard">
           body > .top,
@@ -104,8 +124,6 @@ def create_app() -> FastAPI:
           }
         </style>
         <script>
-          // A locked owner session stays on the device, but the editor cannot be
-          // reopened until the owner verifies the account again.
           if (localStorage.getItem("owner_locked") === "1") {
             location.replace("/account?unlock=1");
           } else {
@@ -134,9 +152,6 @@ def create_app() -> FastAPI:
               }
             });
           }
-
-          // Compatibility guard for the legacy iframe onload handler. The owner
-          // page references this name even in builds where the helper is absent.
           window.sendMenuPreviewTheme = window.sendMenuPreviewTheme || function () {};
         </script>
         """
@@ -146,10 +161,6 @@ def create_app() -> FastAPI:
             "",
             1,
         )
-        # The phone-preview button is intentionally removed above. Remove the
-        # legacy JavaScript line that still tries to access that deleted element;
-        # otherwise opening Menu throws before refreshMenuCustomerPage() runs and
-        # leaves the customer preview as a blank white iframe.
         html = html.replace(
             'document.getElementById("menuPhonePreview").setAttribute("aria-pressed","false");',
             "",
@@ -164,10 +175,6 @@ def create_app() -> FastAPI:
             },
         )
 
-    # This route is intentionally registered before app.router's /api/owner/me.
-    # A stale owner JWT can survive a database migration and still decode even
-    # though its owner row no longer exists. Return 401 so the existing frontend
-    # clears that token and sends the user through owner login again.
     @application.get("/api/owner/me")
     async def owner_me_guard(owner=Depends(require_owner)):
         data = repo.get_owner(owner["owner_id"])
@@ -189,7 +196,6 @@ def create_app() -> FastAPI:
                     f"Business: {data.get('restaurant_name') or 'MB Business Hub'}\nA full logout was requested from a signed-in device.",
                 )
             except Exception as exc:
-                # Never trap the user in a session because email delivery failed.
                 print(f"[SECURITY EMAIL ERROR] {exc}")
         return {"ok": True}
 
@@ -213,12 +219,11 @@ def create_app() -> FastAPI:
     async def health():
         return {"status": "ok"}
 
-    # Register persistent Cloudinary upload routes before the legacy local-file
-    # routes so Render uses Cloudinary while the rest of the API remains unchanged.
     application.include_router(cloudinary_router)
     application.include_router(router)
     init_db()
     ensure_defaults()
+    remove_legacy_sample_menu()
     return application
 
 
