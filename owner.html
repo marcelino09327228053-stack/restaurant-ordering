@@ -436,6 +436,13 @@
       position:absolute; inset:8px 12px 12px; width:auto; grid-column:1;
       border:1px solid #ffffff24; border-radius:16px; box-shadow:none;
     }
+    .design-room:not(.canvas-tools-visible) #menuPanel {
+      left:50%; right:auto; transform:translateX(-50%);
+      width:min(1120px,calc(100% - 32px));
+      top:calc(var(--studio-header-height,64px) + 16px); bottom:16px;
+    }
+    #menuCustomerPreview { max-width:100%; margin-inline:auto; }
+    #menuPhonePreview[aria-pressed="true"] { border-color:#f97316;background:#f9731625; }
   </style>
   <script src="/static/vendor/fabric.min.js"></script>
   <script src="/static/design-templates.js"></script>
@@ -474,20 +481,21 @@
         <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
           <button class="btn solid" type="button" onclick="openMenuForm()">+ Add Menu</button>
           <button class="btn" type="button" onclick="document.getElementById('menuItemsPanel').hidden=!document.getElementById('menuItemsPanel').hidden">Edit / Delete</button>
+          <button class="btn" id="menuPhonePreview" type="button" aria-pressed="false" onclick="toggleMenuPhonePreview()">Phone preview</button>
         </div>
-        <label for="menuPreviewTable">Customer page</label><select id="menuPreviewTable" onchange="refreshMenuCustomerPage()" style="width:100%;margin-bottom:10px"></select>
-        <div style="overflow:auto;margin-bottom:12px"><iframe id="menuCustomerPreview" title="Customer menu page" style="display:block;border:1px solid var(--line);width:100%;height:520px;background:#fff" onload="sendMenuPreviewTheme()"></iframe></div>
+
+        <div style="margin-bottom:12px"><iframe id="menuCustomerPreview" title="Customer menu page" style="display:block;border:1px solid var(--line);width:100%;height:520px;background:#fff" scrolling="no" onload="setupMenuFrameSize();sendMenuPreviewTheme()"></iframe></div>
         <details style="margin-bottom:18px" ontoggle="if(this.open)previewMenuDesign()">
           <summary style="cursor:pointer;font-weight:700">Menu design &amp; customer preview</summary>
           <div class="row2" style="margin-top:12px">
-            <div><label for="menuBackground">Menu background</label><input id="menuBackground" type="color" value="#0b0b0d" oninput="previewMenuDesign()" /></div>
-            <div><label for="menuCardColor">Card background</label><input id="menuCardColor" type="color" value="#17171b" oninput="previewMenuDesign()" /></div>
-            <div><label for="menuTextColor">Text color</label><input id="menuTextColor" type="color" value="#f5f5f4" oninput="previewMenuDesign()" /></div>
+            <div><label for="menuBackground">Menu background</label><input id="menuBackground" type="color" value="#0b0b0d" oninput="previewMenuDesign()" onchange="saveMenuDesign()" /></div>
+            <div><label for="menuCardColor">Card background</label><input id="menuCardColor" type="color" value="#17171b" oninput="previewMenuDesign()" onchange="saveMenuDesign()" /></div>
+            <div><label for="menuTextColor">Text color</label><input id="menuTextColor" type="color" value="#f5f5f4" oninput="previewMenuDesign()" onchange="saveMenuDesign()" /></div>
           </div>
-          <button class="btn solid" id="saveMenuDesignButton" type="button" onclick="saveMenuDesign()">Save menu design</button>
-          <button class="btn" id="menuPhonePreview" type="button" aria-pressed="false" onclick="toggleMenuPhonePreview()">Phone preview</button>
-          
-          <p class="hint">Preview changes before saving. Save menu design publishes the colors to your restaurant menu.</p>
+
+
+
+          <p class="hint">Color changes save automatically to your restaurant menu.</p>
 
         </details>
         <div id="menuDishForm" hidden>
@@ -1633,16 +1641,28 @@
       document.getElementById("menuDishForm").scrollIntoView({block:"start",behavior:"smooth"});
     }
     function refreshMenuCustomerPage() {
-      const select = document.getElementById("menuPreviewTable");
-      const previous = select.value;
-      select.replaceChildren();
-      tables.forEach(table => select.add(new Option(table.name, table.access_code)));
-      if (tables.some(table => table.access_code === previous)) select.value = previous;
-      select.hidden = !tables.length;
       const frame = document.getElementById("menuCustomerPreview");
-      if (select.value) frame.src = `/order?table=${encodeURIComponent(select.value)}#menu`;
+      frame.style.height = "520px";
+      if (tables.length) frame.src = `/order?table=${encodeURIComponent(tables[0].access_code)}#menu`;
       else if (owner?.slug) frame.src = `/r/${encodeURIComponent(owner.slug)}?menuPreview=1#menu`;
     }
+    let menuFrameObserver;
+    function setupMenuFrameSize() {
+      menuFrameObserver?.disconnect();
+      const frame = document.getElementById("menuCustomerPreview");
+      const doc = frame.contentDocument;
+      if (!doc?.body) return;
+      doc.documentElement.style.overflow = "hidden";
+      doc.body.style.setProperty("min-height","0","important");
+      const resize = () => {
+        const height = Math.max(520, Math.ceil(doc.body.getBoundingClientRect().height));
+        if (frame.style.height !== `${height}px`) frame.style.height = `${height}px`;
+      };
+      menuFrameObserver = new ResizeObserver(resize);
+      menuFrameObserver.observe(doc.body);
+      resize();
+    }
+
     function editMenuItem(id) {
       if (document.getElementById("addMenuButton").disabled) return;
       const item = menu.find(item => item.id === id);
@@ -1695,13 +1715,11 @@
       else sendMenuPreviewTheme();
     }
     async function saveMenuDesign() {
-      const button = document.getElementById("saveMenuDesignButton");
-      button.disabled = true;
+      if (!owner) return;
       try {
         owner = await api("/api/owner/site", {method:"PATCH",body:JSON.stringify({custom_design:{...owner.custom_design,menuTheme:menuThemeDraft()}})});
         toast("Menu design saved.", true);
       } catch (e) { toast(e.message); }
-      finally { button.disabled = false; }
     }
 
     async function addMenuItem() {
