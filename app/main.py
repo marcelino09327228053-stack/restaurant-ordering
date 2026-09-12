@@ -45,7 +45,36 @@ def create_app() -> FastAPI:
 
     @application.get("/order")
     async def order_page():
-        return FileResponse("order.html")
+        html = Path("order.html").read_text(encoding="utf-8")
+        order_cleanup = """
+        <style id="mb-order-cleanup">
+          .search { display: none !important; }
+          #heroCta { display: none !important; }
+        </style>
+        """
+        html = html.replace("</head>", f"{order_cleanup}</head>", 1)
+        html = html.replace(
+            'document.title = `${data.restaurant_name} — Order`;',
+            'document.title = "MB Business Hub — Order";',
+            1,
+        )
+        html = html.replace(
+            'document.getElementById("brandName").textContent = data.restaurant_name;',
+            'document.getElementById("brandName").textContent = "MB Business Hub";',
+            1,
+        )
+        html = html.replace(
+            'document.getElementById("sheetTable").textContent = `${data.table_name} · ${data.restaurant_name}`;',
+            'document.getElementById("sheetTable").textContent = `${data.table_name} · MB Business Hub`;',
+            1,
+        )
+        return HTMLResponse(
+            html,
+            headers={
+                "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0",
+                "Pragma": "no-cache",
+            },
+        )
 
     @application.get("/cashier")
     async def cashier_page():
@@ -112,6 +141,11 @@ def create_app() -> FastAPI:
         </script>
         """
         html = html.replace("<title>Site Builder</title>", "<title>Design Your Page · MB Business Hub</title>", 1)
+        html = html.replace(
+            '<button class="btn" id="menuPhonePreview" type="button" aria-pressed="false" onclick="toggleMenuPhonePreview()">Phone preview</button>',
+            "",
+            1,
+        )
         html = html.replace("</head>", f"{boot_guard}</head>", 1)
         return HTMLResponse(
             html,
