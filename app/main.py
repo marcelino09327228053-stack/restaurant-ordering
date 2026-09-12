@@ -17,6 +17,20 @@ from app.repository import ensure_defaults
 from app.router import router
 
 
+LEGACY_SAMPLE_NAMES = {
+    "Chicken Inasal",
+    "Pork Sisig",
+    "Beef Tapa",
+    "Pancit Canton",
+    "Iced Tea",
+    "Leche Flan",
+}
+
+
+def without_legacy_samples(items: list[dict]) -> list[dict]:
+    return [item for item in items if str(item.get("name") or "").strip() not in LEGACY_SAMPLE_NAMES]
+
+
 def remove_legacy_sample_menu() -> None:
     """Detach only the original six seeded demo dishes from owner menus.
 
@@ -187,6 +201,45 @@ def create_app() -> FastAPI:
         if data is None:
             raise HTTPException(status_code=401, detail="Owner session is stale. Please log in again.")
         return data
+
+    @application.get("/api/owner/menu")
+    async def owner_menu_without_samples(owner=Depends(require_owner)):
+        return without_legacy_samples(repo.list_owner_menu(owner["owner_id"]))
+
+    @application.get("/api/public/site/{slug}")
+    async def public_site_without_samples(slug: str):
+        owner = repo.get_owner_by_slug(slug)
+        if owner is None:
+            raise HTTPException(status_code=404, detail="Restaurant page not found.")
+        menu = without_legacy_samples(repo.list_owner_menu(owner["id"]))
+        tables = repo.list_owner_tables(owner["id"])
+        return {
+            "restaurant_name": owner["restaurant_name"],
+            "slug": owner["slug"],
+            "logo_url": owner.get("logo_url") or "",
+            "about_text": owner.get("about_text") or "",
+            "hero_images": owner.get("hero_images") or [],
+            "custom_design": owner.get("custom_design") or {},
+            "slideshow_style": owner.get("slideshow_style") or "fade",
+            "menu": [item for item in menu if item.get("available")],
+            "tables": tables,
+        }
+
+    @application.get("/api/public/{access_code}/menu")
+    async def public_table_menu_without_samples(access_code: str):
+        table = repo.get_public_table(access_code)
+        if table is None:
+            raise HTTPException(status_code=404, detail="Invalid or inactive table QR code.")
+        owner_id = table.get("owner_id")
+        items = repo.list_owner_menu(owner_id) if owner_id is not None else repo.list_menu(available_only=True)
+        items = [item for item in without_legacy_samples(items) if item.get("available")]
+        return {
+            "restaurant_name": table["restaurant_name"],
+            "table_name": table["name"],
+            "menu_theme": ((repo.get_owner(owner_id) or {}).get("custom_design", {}).get("menuTheme", {}) if owner_id is not None else {}),
+            "items": items,
+            "payment_methods": repo.list_payment_methods(owner_id, active_only=True) if owner_id is not None else [],
+        }
 
     @application.post("/api/owner/logout-notify")
     async def owner_logout_notify(owner=Depends(require_owner)):
