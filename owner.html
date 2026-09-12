@@ -461,6 +461,12 @@
       </section>
 
       <section class="block" id="menuBuilder">
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+          <button class="btn solid" type="button" onclick="openMenuForm()">+ Add Menu</button>
+          <button class="btn" type="button" onclick="document.getElementById('menuItemsPanel').hidden=!document.getElementById('menuItemsPanel').hidden">Edit / Delete</button>
+        </div>
+        <label for="menuPreviewTable">Customer page</label><select id="menuPreviewTable" onchange="refreshMenuCustomerPage()" style="width:100%;margin-bottom:10px"></select>
+        <div style="overflow:auto;margin-bottom:12px"><iframe id="menuCustomerPreview" title="Customer menu page" style="display:block;border:1px solid var(--line);width:100%;height:520px;background:#fff" onload="sendMenuPreviewTheme()"></iframe></div>
         <details style="margin-bottom:18px" ontoggle="if(this.open)previewMenuDesign()">
           <summary style="cursor:pointer;font-weight:700">Menu design &amp; customer preview</summary>
           <div class="row2" style="margin-top:12px">
@@ -472,8 +478,10 @@
           <button class="btn" type="button" onclick="previewMenuDesign('phone')">Phone preview</button>
           <button class="btn" type="button" onclick="previewMenuDesign('desktop')">Desktop preview</button>
           <p class="hint">Preview changes before saving. Save menu design publishes the colors to your restaurant menu.</p>
-          <div style="overflow:auto"><iframe id="menuCustomerPreview" title="Customer menu preview" style="display:block;border:1px solid var(--line);width:100%;height:520px;background:#fff" onload="sendMenuPreviewTheme()"></iframe></div>
+
         </details>
+        <div id="menuDishForm" hidden>
+        <button class="btn" type="button" onclick="document.getElementById('menuDishForm').hidden=true">Close form</button>
         <h2 id="menuFormTitle">Menu dish</h2>
         <p class="hint">Add a dish with an optional photo. Customers see it on your public page.</p>
         <div class="drop" id="menuDrop" data-kind="menu" style="min-height:88px;margin-bottom:10px">
@@ -504,7 +512,8 @@
         <button id="addMenuButton" class="btn solid" type="button" style="width:100%" onclick="addMenuItem()">Add to menu</button>
         <button class="btn" id="cancelMenuEdit" hidden type="button" onclick="cancelMenuEdit()">Cancel edit</button>
         <p id="menuFeedback" class="hint" role="status" aria-live="polite"></p>
-        <div id="menuList"></div>
+        </div>
+        <div id="menuItemsPanel" hidden><div id="menuList"></div></div>
       </section>
 
       <section class="block" id="tablesBuilder">
@@ -918,6 +927,7 @@
       setCanvasToolsVisible(!shouldOpen);
       syncTopToolbar();
       if (id === "previewPanel" && shouldOpen) renderPreview();
+      if (id === "menuPanel" && shouldOpen) refreshMenuCustomerPage();
     }
     let activeEditorTool = null;
     const editorToolGroups = [
@@ -1602,10 +1612,28 @@
       });
     });
 
+    function openMenuForm() {
+      if (document.getElementById("addMenuButton").disabled) return;
+      cancelMenuEdit();
+      document.getElementById("menuDishForm").hidden = false;
+      document.getElementById("menuDishForm").scrollIntoView({block:"start",behavior:"smooth"});
+    }
+    function refreshMenuCustomerPage() {
+      const select = document.getElementById("menuPreviewTable");
+      const previous = select.value;
+      select.replaceChildren();
+      tables.forEach(table => select.add(new Option(table.name, table.access_code)));
+      if (tables.some(table => table.access_code === previous)) select.value = previous;
+      select.hidden = !tables.length;
+      const frame = document.getElementById("menuCustomerPreview");
+      if (select.value) frame.src = `/order?table=${encodeURIComponent(select.value)}#menu`;
+      else if (owner?.slug) frame.src = `/r/${encodeURIComponent(owner.slug)}?menuPreview=1#menu`;
+    }
     function editMenuItem(id) {
       if (document.getElementById("addMenuButton").disabled) return;
       const item = menu.find(item => item.id === id);
       if (!item) return;
+      document.getElementById("menuDishForm").hidden = false;
       editingMenuId = id;
       document.getElementById("menuCategory").value = item.category;
       toggleCustomCategory();
@@ -1706,6 +1734,8 @@
         renderPreview();
         toast(savedMessage, true);
         feedback.textContent = savedMessage;
+        document.getElementById("menuDishForm").hidden = true;
+        refreshMenuCustomerPage();
       } catch (e) {
         feedback.textContent = e.message;
         toast(e.message);
