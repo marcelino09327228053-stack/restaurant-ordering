@@ -18,7 +18,11 @@ from app.router import router
 
 
 def remove_legacy_sample_menu() -> None:
-    """Remove only the original six seeded demo dishes, leaving owner-added dishes intact."""
+    """Detach only the original six seeded demo dishes from owner menus.
+
+    Keeping the rows preserves any historical order-line foreign keys while
+    owner/customer menu queries stop showing these legacy samples.
+    """
     conn = get_connection()
     cursor = conn.cursor()
     samples = (
@@ -32,8 +36,10 @@ def remove_legacy_sample_menu() -> None:
     for category, name, description, price in samples:
         cursor.execute(
             """
-            DELETE FROM restaurant_menu_items
-            WHERE category = ? AND name = ? AND description = ? AND price = ?
+            UPDATE restaurant_menu_items
+            SET owner_id = NULL, available = 0
+            WHERE owner_id IS NOT NULL
+              AND category = ? AND name = ? AND description = ? AND price = ?
             """,
             (category, name, description, price),
         )
