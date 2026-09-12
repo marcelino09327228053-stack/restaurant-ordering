@@ -426,6 +426,16 @@
       .design-room:not(.canvas-tools-visible) .design-work.tool-panel-open { grid-template-columns:0 0 minmax(0,1fr); }
       .design-room:not(.canvas-tools-visible) .tool-panel { left:12px;width:min(244px,calc(100% - 24px)); }
     }
+    .design-room:not(.canvas-tools-visible) .design-board-wrap { display:none; }
+    .design-room:not(.canvas-tools-visible) .studio-panel {
+      left:12px; right:12px; bottom:12px; width:auto; max-height:none;
+      box-shadow:none;
+    }
+    .design-room:not(.canvas-tools-visible) .design-work.tool-panel-open { grid-template-columns:minmax(0,1fr); }
+    .design-room:not(.canvas-tools-visible) .tool-panel {
+      position:absolute; inset:8px 12px 12px; width:auto; grid-column:1;
+      border:1px solid #ffffff24; border-radius:16px; box-shadow:none;
+    }
   </style>
   <script src="/static/vendor/fabric.min.js"></script>
   <script src="/static/design-templates.js"></script>
@@ -475,8 +485,8 @@
             <div><label for="menuTextColor">Text color</label><input id="menuTextColor" type="color" value="#f5f5f4" oninput="previewMenuDesign()" /></div>
           </div>
           <button class="btn solid" id="saveMenuDesignButton" type="button" onclick="saveMenuDesign()">Save menu design</button>
-          <button class="btn" type="button" onclick="previewMenuDesign('phone')">Phone preview</button>
-          <button class="btn" type="button" onclick="previewMenuDesign('desktop')">Desktop preview</button>
+          <button class="btn" id="menuPhonePreview" type="button" aria-pressed="false" onclick="toggleMenuPhonePreview()">Phone preview</button>
+          
           <p class="hint">Preview changes before saving. Save menu design publishes the colors to your restaurant menu.</p>
 
         </details>
@@ -927,7 +937,11 @@
       setCanvasToolsVisible(!shouldOpen);
       syncTopToolbar();
       if (id === "previewPanel" && shouldOpen) renderPreview();
-      if (id === "menuPanel" && shouldOpen) refreshMenuCustomerPage();
+      if (id === "menuPanel" && shouldOpen) {
+        document.getElementById("menuCustomerPreview").style.width = "100%";
+        document.getElementById("menuPhonePreview").setAttribute("aria-pressed","false");
+        refreshMenuCustomerPage();
+      }
     }
     let activeEditorTool = null;
     const editorToolGroups = [
@@ -1667,6 +1681,12 @@
     }
     function sendMenuPreviewTheme() {
       document.getElementById("menuCustomerPreview").contentWindow?.postMessage({type:"menu-theme-preview",theme:menuThemeDraft()}, location.origin);
+    }
+    function toggleMenuPhonePreview() {
+      const button = document.getElementById("menuPhonePreview");
+      const phone = button.getAttribute("aria-pressed") !== "true";
+      button.setAttribute("aria-pressed",String(phone));
+      previewMenuDesign(phone ? "phone" : "desktop");
     }
     function previewMenuDesign(device) {
       const frame = document.getElementById("menuCustomerPreview");
