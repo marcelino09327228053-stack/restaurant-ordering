@@ -146,6 +146,15 @@ def create_app() -> FastAPI:
             "",
             1,
         )
+        # The phone-preview button is intentionally removed above. Remove the
+        # legacy JavaScript line that still tries to access that deleted element;
+        # otherwise opening Menu throws before refreshMenuCustomerPage() runs and
+        # leaves the customer preview as a blank white iframe.
+        html = html.replace(
+            'document.getElementById("menuPhonePreview").setAttribute("aria-pressed","false");',
+            "",
+            1,
+        )
         html = html.replace("</head>", f"{boot_guard}</head>", 1)
         return HTMLResponse(
             html,
