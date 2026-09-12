@@ -11,7 +11,7 @@ from fastapi.staticfiles import StaticFiles
 from app import repository as repo
 from app.auth import require_owner
 from app.cloudinary_routes import router as cloudinary_router
-from app.db import get_connection, init_db
+from app.db import get_connection, init_db, using_postgres
 from app.mail import send_security_email
 from app.repository import ensure_defaults
 from app.router import router
@@ -31,12 +31,157 @@ def without_legacy_samples(items: list[dict]) -> list[dict]:
     return [item for item in items if str(item.get("name") or "").strip() not in LEGACY_SAMPLE_NAMES]
 
 
-def remove_legacy_sample_menu() -> None:
-    """Detach only the original six seeded demo dishes from owner menus.
+def prepare_owner_menu_storage() -> None:
+    """Make menu names unique per owner instead of globally on PostgreSQL."""
+    if not using_postgres():
+        return
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("ALTER TABLE restaurant_menu_items DROP CONSTRAINT IF EXISTS restaurant_menu_items_name_key")
+    cursor.execute(
+        """
+        CREATE UNIQUE INDEX IF NOT EXISTS idx_owner_menu_name_unique
+        ON restaurant_menu_items (owner_id, LOWER(name))
+        WHERE owner_id IS NOT NULL
+        """
+    )
+    conn.commit()
 
-    Keeping the rows preserves any historical order-line foreign keys while
-    owner/customer menu queries stop showing these legacy samples.
-    """
+
+def install_owner_menu_fixes() -> None:
+    """Provide reliable owner-scoped add/edit/delete behavior."""
+
+    def list_owner_menu(owner_id: int) -> list[dict]:
+        cursor = get_connection().cursor()
+        cursor.execute(
+            """
+            SELECT id, category, name, description, price, image_url, available, owner_id
+            FROM restaurant_menu_items
+            WHERE owner_id = ? AND available = 1
+            ORDER BY category ASC, name ASC
+            """,
+            (owner_id,),
+        )
+        return [dict(row) for row in cursor.fetchall()]
+
+    def create_owner_menu_item(
+        owner_id: int,
+        category: str,
+        name: str,
+        description: str,
+        price: float,
+        image_url: str = "",
+    ) -> dict | None:
+        conn = get_connection()
+        cursor = conn.cursor()
+        clean_name = name.strip()
+        cursor.execute(
+            """
+            SELECT id, available FROM restaurant_menu_items
+            WHERE owner_id = ? AND LOWER(name) = LOWER(?)
+            """,
+            (owner_id, clean_name),
+        )
+        existing = cursor.fetchone()
+        if existing:
+            if int(existing["available"] or 0) == 1:
+                return None
+            cursor.execute(
+                """
+                UPDATE restaurant_menu_items
+                SET category = ?, name = ?, description = ?, price = ?, image_url = ?, available = 1
+                WHERE id = ? AND owner_id = ?
+                """,
+                (
+                    category.strip(), clean_name, description.strip(), round(price, 2),
+                    image_url.strip(), existing["id"], owner_id,
+                ),
+            )
+            conn.commit()
+            cursor.execute("SELECT * FROM restaurant_menu_items WHERE id = ?", (existing["id"],))
+            return dict(cursor.fetchone())
+
+        cursor.execute(
+            """
+            INSERT INTO restaurant_menu_items
+                (category, name, description, price, image_url, owner_id, available)
+            VALUES (?, ?, ?, ?, ?, ?, 1)
+            """,
+            (
+                category.strip(), clean_name, description.strip(), round(price, 2),
+                image_url.strip(), owner_id,
+            ),
+        )
+        item_id = cursor.lastrowid
+        conn.commit()
+        cursor.execute("SELECT * FROM restaurant_menu_items WHERE id = ?", (item_id,))
+        return dict(cursor.fetchone())
+
+    def update_owner_menu_item(
+        owner_id: int,
+        item_id: int,
+        *,
+        category: str,
+        name: str,
+        description: str,
+        price: float,
+        image_url: str = "",
+    ) -> dict | None:
+        conn = get_connection()
+        cursor = conn.cursor()
+        clean_name = name.strip()
+        cursor.execute(
+            """
+            SELECT id FROM restaurant_menu_items
+            WHERE owner_id = ? AND LOWER(name) = LOWER(?) AND id <> ? AND available = 1
+            """,
+            (owner_id, clean_name, item_id),
+        )
+        if cursor.fetchone():
+            raise ValueError("A menu item with that name already exists.")
+        cursor.execute(
+            """
+            UPDATE restaurant_menu_items
+            SET category = ?, name = ?, description = ?, price = ?, image_url = ?, available = 1
+            WHERE id = ? AND owner_id = ?
+            """,
+            (
+                category.strip(), clean_name, description.strip(), round(price, 2),
+                image_url.strip(), item_id, owner_id,
+            ),
+        )
+        if cursor.rowcount == 0:
+            conn.rollback()
+            return None
+        conn.commit()
+        cursor.execute("SELECT * FROM restaurant_menu_items WHERE id = ?", (item_id,))
+        return dict(cursor.fetchone())
+
+    def delete_owner_menu_item(owner_id: int, item_id: int) -> bool:
+        conn = get_connection()
+        cursor = conn.cursor()
+        cursor.execute(
+            """
+            UPDATE restaurant_menu_items
+            SET available = 0
+            WHERE id = ? AND owner_id = ? AND available = 1
+            """,
+            (item_id, owner_id),
+        )
+        changed = cursor.rowcount > 0
+        if changed:
+            conn.commit()
+        else:
+            conn.rollback()
+        return changed
+
+    repo.list_owner_menu = list_owner_menu
+    repo.create_owner_menu_item = create_owner_menu_item
+    repo.update_owner_menu_item = update_owner_menu_item
+    repo.delete_owner_menu_item = delete_owner_menu_item
+
+
+def remove_legacy_sample_menu() -> None:
     conn = get_connection()
     cursor = conn.cursor()
     samples = (
@@ -221,7 +366,7 @@ def create_app() -> FastAPI:
             "hero_images": owner.get("hero_images") or [],
             "custom_design": owner.get("custom_design") or {},
             "slideshow_style": owner.get("slideshow_style") or "fade",
-            "menu": [item for item in menu if item.get("available")],
+            "menu": menu,
             "tables": tables,
         }
 
@@ -232,7 +377,7 @@ def create_app() -> FastAPI:
             raise HTTPException(status_code=404, detail="Invalid or inactive table QR code.")
         owner_id = table.get("owner_id")
         items = repo.list_owner_menu(owner_id) if owner_id is not None else repo.list_menu(available_only=True)
-        items = [item for item in without_legacy_samples(items) if item.get("available")]
+        items = without_legacy_samples(items)
         return {
             "restaurant_name": table["restaurant_name"],
             "table_name": table["name"],
@@ -281,6 +426,8 @@ def create_app() -> FastAPI:
     application.include_router(cloudinary_router)
     application.include_router(router)
     init_db()
+    prepare_owner_menu_storage()
+    install_owner_menu_fixes()
     ensure_defaults()
     remove_legacy_sample_menu()
     return application
