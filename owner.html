@@ -1186,7 +1186,7 @@
         const description=document.createElement("small");description.textContent=template.description;
         button.append(preview,title,description);button.onclick=()=>applyRestaurantTemplate(template.id);panel.appendChild(button);
         const canvas=new fabric.StaticCanvas(document.createElement("canvas"),{width:225,height:125,backgroundColor:template.bg,enableRetinaScaling:false});
-        canvas.setZoom(.25);buildRestaurantTemplate(template.id,"Your Restaurant","").forEach(item=>canvas.add(item));canvas.renderAll();
+        canvas.setZoom(.25);buildRestaurantTemplate(template.id,"Your Business Name","").forEach(item=>canvas.add(item));canvas.renderAll();
         preview.src=canvas.toDataURL({format:"png"});canvas.dispose();
       });
     }
@@ -1194,7 +1194,7 @@
       const template=restaurantTemplates.find(item=>item.id===id);
       if(!template || !designCanvas || designRestoring)return;
       if(!confirm(`Apply ${template.name}? This replaces the current board. You can use Undo to restore it.`))return;
-      const objects=buildRestaurantTemplate(id,owner?.restaurant_name || "Your Restaurant",owner?.about_text || "");
+      const objects=buildRestaurantTemplate(id,"Your Business Name",owner?.about_text || "");
       designSnapshot();designRestoring=true;designCanvas.clear();
       designCanvas.setBackgroundColor(template.bg,()=>{});
       objects.forEach(item=>designCanvas.add(item));
@@ -1206,7 +1206,7 @@
       designRestoring = true;
       designCanvas.clear();
       designCanvas.setBackgroundColor("#f4efe5", () => {});
-      const restaurant = (owner?.restaurant_name || "Your Restaurant").toUpperCase();
+      const restaurant = "YOUR BUSINESS NAME";
       const tagline = owner?.about_text || "Seasonal plates, thoughtfully made.";
       const objects = [
         new fabric.Rect({left:0,top:0,width:342,height:500,fill:"#173d31",selectable:true}),
