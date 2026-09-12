@@ -1193,7 +1193,6 @@
     function applyRestaurantTemplate(id) {
       const template=restaurantTemplates.find(item=>item.id===id);
       if(!template || !designCanvas || designRestoring)return;
-      if(!confirm(`Apply ${template.name}? This replaces the current board. You can use Undo to restore it.`))return;
       const objects=buildRestaurantTemplate(id,"Your Business Name",owner?.about_text || "");
       designSnapshot();designRestoring=true;designCanvas.clear();
       designCanvas.setBackgroundColor(template.bg,()=>{});
@@ -1202,7 +1201,8 @@
       toast(`${template.name} applied. Edit any text or shape, then Save Design.`,true);
     }
     function applyElegantTemplate(automatic = false) {
-      if (!designCanvas || (!automatic && !confirm("Apply Elegant Editorial template? This will replace the current board."))) return;
+      if (!designCanvas || designRestoring) return;
+      designSnapshot();
       designRestoring = true;
       designCanvas.clear();
       designCanvas.setBackgroundColor("#f4efe5", () => {});
