@@ -309,6 +309,7 @@
 
     <section id="ordersPanel" class="panel active">
       <div id="summary" class="summary"></div>
+      <section id="tableBills" aria-label="Table bills" style="margin:16px 0"></section>
       <div class="board">
         <div class="column"><h2>🆕 New</h2><div id="pendingOrders"></div></div>
         <div class="column"><h2>✅ Confirmed</h2><div id="confirmedOrders"></div></div>
@@ -492,9 +493,50 @@
         firstLoad = false;
         orders = latest;
         renderOrders();
+        await loadTableBills();
       } catch (error) {
         showError(error.message);
       }
+    }
+
+    let tableBills = [];
+    let billPaymentBusy = false;
+    async function loadTableBills() {
+      tableBills = await api("/api/table-bills");
+      document.getElementById("tableBills").innerHTML = `<h2>Table bills</h2><p>Pay Together covers the unpaid orders shown. Pay Separately records one customer's order. Confirm only after receiving cash or checking the transfer.</p>` + tableBills.map(bill => {
+        const unpaid = bill.orders.filter(o => o.status !== "cancelled" && o.payment_status !== "verified");
+        return `<article class="order" style="margin-bottom:12px">
+          <strong>${escapeHtml(bill.table_name)}</strong>
+          <p>Total ${money(bill.total)} · Paid ${money(bill.paid)} · Balance <strong>${money(bill.balance)}</strong></p>
+          ${bill.orders.map(o => `<div class="item"><span>${escapeHtml(o.order_number)} · ${escapeHtml(o.status)} · ${o.status === "cancelled" ? "Excluded" : o.payment_status === "verified" ? "Paid" : "Unpaid"}</span><span>${money(o.total)} ${o.status !== "cancelled" && o.payment_status !== "verified" ? `<button class="action" onclick="payBill(${bill.table_id}, [${o.id}])">Pay Separately</button>` : ""}</span></div>`).join("")}
+          <div class="order-actions" style="margin-top:10px">
+            ${unpaid.length ? `<button class="action" onclick='payBill(${bill.table_id}, ${JSON.stringify(unpaid.map(o=>o.id))})'>Pay Together · ${money(bill.balance)}</button>` : ""}
+            ${bill.can_close ? `<button class="action" onclick='closeBill(${bill.table_id}, ${JSON.stringify(bill.orders.map(o=>o.id))})'>Close Bill</button>` : ""}
+          </div></article>`;
+      }).join("");
+    }
+    async function payBill(tableId, ids) {
+      if (billPaymentBusy) return;
+      const bill = tableBills.find(b => b.table_id === tableId);
+      const selected = bill.orders.filter(o => ids.includes(o.id) && o.payment_status !== "verified" && o.status !== "cancelled");
+      const amount = selected.reduce((sum,o) => sum + o.total, 0);
+      if (!selected.length || !confirm(`Received ${money(amount)} for ${bill.table_name}? Record these orders as paid?`)) return;
+      billPaymentBusy = true;
+      try {
+        await api(`/api/table-bills/${tableId}/pay`, {method:"POST",body:JSON.stringify({order_ids:ids})});
+        await loadOrders();
+      } catch (error) { showError(error.message); }
+      finally { billPaymentBusy = false; }
+    }
+    async function closeBill(tableId, ids) {
+      if (billPaymentBusy) return;
+      billPaymentBusy = true;
+      try {
+        const result = await api(`/api/table-bills/${tableId}/close`, {method:"POST",body:JSON.stringify({order_ids:ids})});
+        if (!result.closed_orders) showError("Bill changed. All orders must be served and paid before closing.");
+        await loadTableBills();
+      } catch (error) { showError(error.message); }
+      finally { billPaymentBusy = false; }
     }
 
     function renderOrders() {

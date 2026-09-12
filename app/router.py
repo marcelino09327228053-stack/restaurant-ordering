@@ -771,3 +771,22 @@ def public_send_room_message(access_code: str, body: RoomMessageCreate):
         )
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+
+class TableBillSelection(BaseModel):
+    order_ids: list[int] = Field(min_length=1, max_length=1000)
+
+
+@router.get("/table-bills")
+def table_bills(_=Depends(require_cashier)):
+    return repo.list_table_bills()
+
+
+@router.post("/table-bills/{table_id}/pay")
+def pay_table_bill(table_id: int, body: TableBillSelection, _=Depends(require_cashier)):
+    return repo.settle_table_orders(table_id, body.order_ids)
+
+
+@router.post("/table-bills/{table_id}/close")
+def close_bill(table_id: int, body: TableBillSelection, _=Depends(require_cashier)):
+    return repo.close_table_bill(table_id, body.order_ids)

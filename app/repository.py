@@ -460,12 +460,10 @@ def set_order_payment_proof(order_id: int, proof_url: str) -> dict | None:
         """
         UPDATE restaurant_orders
         SET payment_proof_url = ?, payment_status = 'pending', updated_at = datetime('now')
-        WHERE id = ?
+        WHERE id = ? AND payment_status <> 'verified' AND status <> 'cancelled'
         """,
         (proof_url.strip(), order_id),
     )
-    if cursor.rowcount == 0:
-        return None
     conn.commit()
     return get_order_by_id(order_id)
 
@@ -480,12 +478,10 @@ def update_payment_status(order_id: int, status: str) -> dict | None:
         f"""
         UPDATE restaurant_orders
         SET payment_status = ?, payment_verified_at = {verified_at}, updated_at = datetime('now')
-        WHERE id = ?
+        WHERE id = ? AND payment_status <> 'verified' AND status <> 'cancelled'
         """,
         (status, order_id),
     )
-    if cursor.rowcount == 0:
-        return None
     conn.commit()
     return get_order_by_id(order_id)
 
@@ -580,11 +576,14 @@ def update_order_status(order_id: int, status: str) -> tuple[dict | None, str | 
         """
         UPDATE restaurant_orders
         SET status = ?, updated_at = datetime('now')
-        WHERE id = ?
+        WHERE id = ? AND (? <> 'cancelled' OR payment_status <> 'verified')
         """,
-        (status, order_id),
+        (status, order_id, status),
     )
+    changed = cursor.rowcount
     conn.commit()
+    if not changed:
+        return get_order_by_id(order_id), "invalid_transition"
     return get_order_by_id(order_id), None
 
 
@@ -1293,3 +1292,65 @@ def update_owner_menu_item(owner_id: int, item_id: int, *, category: str, name: 
                  (category.strip(), name.strip(), description.strip(), round(price, 2), image_url.strip(), item_id, owner_id))
     conn.commit()
     return dict(conn.execute("SELECT * FROM restaurant_menu_items WHERE id=?", (item_id,)).fetchone())
+
+
+def list_table_bills() -> list[dict]:
+    from decimal import Decimal
+    cursor = get_connection().cursor()
+    cursor.execute("""SELECT o.*, t.name AS table_name FROM restaurant_orders o
+        JOIN restaurant_tables t ON t.id = o.table_id
+        WHERE NOT EXISTS (SELECT 1 FROM closed_bill_orders b WHERE b.order_id = o.id)
+        ORDER BY o.table_id, o.id""")
+    grouped = {}
+    for row in cursor.fetchall():
+        order = dict(row)
+        bill = grouped.setdefault(order["table_id"], {
+            "table_id": order["table_id"], "table_name": order["table_name"], "orders": []})
+        bill["orders"].append(order)
+    for bill in grouped.values():
+        chargeable = [o for o in bill["orders"] if o["status"] != "cancelled"]
+        total = sum((Decimal(str(o["total"])) for o in chargeable), Decimal(0))
+        paid = sum((Decimal(str(o["total"])) for o in chargeable if o["payment_status"] == "verified"), Decimal(0))
+        bill.update(total=float(total), paid=float(paid), balance=float(total-paid))
+        bill["can_close"] = all(o["status"] == "cancelled" or
+            (o["status"] == "served" and o["payment_status"] == "verified") for o in bill["orders"])
+    return list(grouped.values())
+
+
+def settle_table_orders(table_id: int, order_ids: list[int]) -> dict:
+    # A single conditional UPDATE makes retries and simultaneous cashiers idempotent.
+    ids = sorted(set(order_ids))
+    placeholders = ",".join("?" for _ in ids)
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute(f"""UPDATE restaurant_orders
+        SET payment_status = 'verified', payment_verified_at = datetime('now'),
+            updated_at = datetime('now')
+        WHERE table_id = ? AND id IN ({placeholders}) AND status <> 'cancelled'
+          AND payment_status <> 'verified'
+          AND NOT EXISTS (SELECT 1 FROM closed_bill_orders b WHERE b.order_id = restaurant_orders.id)
+        RETURNING id, total""", (table_id, *ids))
+    rows = cursor.fetchall()
+    conn.commit()
+    from decimal import Decimal
+    return {"paid_order_ids": [r["id"] for r in rows],
+            "amount_recorded": float(sum((Decimal(str(r["total"])) for r in rows), Decimal(0)))}
+
+
+def close_table_bill(table_id: int, order_ids: list[int]) -> dict:
+    # Only the displayed, fully settled orders close; newly arriving orders stay open.
+    ids = sorted(set(order_ids))
+    placeholders = ",".join("?" for _ in ids)
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute(f"""INSERT INTO closed_bill_orders (order_id, closed_at)
+        SELECT o.id, datetime('now') FROM restaurant_orders o
+        WHERE o.table_id = ? AND o.id IN ({placeholders})
+          AND (o.status = 'cancelled' OR (o.status = 'served' AND o.payment_status = 'verified'))
+          AND NOT EXISTS (SELECT 1 FROM restaurant_orders x WHERE x.table_id = ?
+              AND x.id IN ({placeholders}) AND x.status <> 'cancelled'
+              AND (x.status <> 'served' OR x.payment_status <> 'verified'))
+        ON CONFLICT (order_id) DO NOTHING""", (table_id, *ids, table_id, *ids))
+    count = cursor.rowcount
+    conn.commit()
+    return {"closed_orders": count}

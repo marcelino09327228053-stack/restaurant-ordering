@@ -509,3 +509,11 @@ def init_db() -> None:
         _init_postgres_db()
     else:
         _init_sqlite_db()
+
+    # Keep closed bills out of the next party's balance without deleting orders.
+    conn = get_connection()
+    conn.cursor().execute("""CREATE TABLE IF NOT EXISTS closed_bill_orders (
+        order_id INTEGER PRIMARY KEY REFERENCES restaurant_orders(id),
+        closed_at TEXT NOT NULL
+    )""")
+    conn.commit()
