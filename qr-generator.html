@@ -404,7 +404,7 @@
         defaultCaption = settings.qr_caption || "Scan the QR code to order";
         document.getElementById("defaultCaption").value = defaultCaption;
         document.getElementById("lanBanner").innerHTML =
-          `<strong>WiFi connect base:</strong> ${escapeHtml(conn.lan_base || "—")}<br>${escapeHtml(conn.hint || "")}`;
+          `<strong>${conn.mode === "online" ? "Website address:" : "Local Wi-Fi address:"}</strong> ${escapeHtml(conn.lan_base || "—")}<br>${escapeHtml(conn.hint || "")}`;
         document.getElementById("qrGrid").innerHTML = tables.length
           ? tables.map(t => `
             <article class="qr-card">

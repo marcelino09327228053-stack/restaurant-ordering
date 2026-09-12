@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import os
 import socket
+from urllib.parse import urlsplit
 
 
 def preferred_lan_ip() -> str:
@@ -38,10 +39,23 @@ def preferred_lan_ip() -> str:
 
 def connection_info(port: int | None = None) -> dict:
     port = int(port or os.getenv("PORT", "8030"))
+    public_base = (os.getenv("PUBLIC_BASE_URL") or os.getenv("RENDER_EXTERNAL_URL") or "").strip().rstrip("/")
+    if public_base:
+        parsed = urlsplit(public_base)
+        if parsed.scheme not in {"http", "https"} or not parsed.hostname:
+            raise ValueError("PUBLIC_BASE_URL must be a full http:// or https:// URL.")
+        return {
+            "mode": "online", "base_url": public_base,
+            "lan_ip": parsed.hostname, "port": parsed.port or (443 if parsed.scheme == "https" else 80),
+            "lan_base": public_base, "local_base": f"http://127.0.0.1:{port}",
+            "offline_ready": False,
+            "hint": "Online website: customers can scan using mobile data or any Wi-Fi with internet.",
+        }
     lan_ip = preferred_lan_ip()
     lan_base = f"http://{lan_ip}:{port}"
     local_base = f"http://127.0.0.1:{port}"
     return {
+        "mode": "local", "base_url": lan_base,
         "lan_ip": lan_ip,
         "port": port,
         "lan_base": lan_base,

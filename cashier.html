@@ -284,7 +284,7 @@
         <div class="logo">🍔</div>
         <div class="brand-copy">
           <strong>Cashier Board</strong>
-          <small>Orders + table chat · same Wi‑Fi OK offline</small>
+          <small>Orders, payments & table chat</small>
         </div>
       </div>
       <div class="header-actions">
@@ -321,7 +321,7 @@
     <section id="roomsPanel" class="panel">
       <div class="lan-banner">
         <strong>Cashier control hub.</strong> Create group rooms (Kitchen, Warehouse, Bar…).
-        Print / share QR + link so staff can connect — no internet needed on same WiFi.
+        Print or share QR codes and links so staff can connect.
       </div>
       <div class="card">
         <h2>Create ops room</h2>
@@ -410,7 +410,7 @@
       <div class="card">
         <h2>QR Generator</h2>
         <p>Type a table name → Generate. QR text + link appear under the code.</p>
-        <div id="lanBanner" class="lan-banner">Detecting LAN address…</div>
+        <div id="lanBanner" class="lan-banner">Loading QR connection…</div>
         <div class="inline-actions">
           <a class="solid" href="/qr-generator" target="_blank" rel="noopener">Open full QR Generator page</a>
         </div>
@@ -473,7 +473,7 @@
       const response = await fetch(path, options);
       if (response.status === 401) { location.href = "/login"; throw new Error("Please sign in."); }
       const data = await response.json().catch(() => ({}));
-      if (!response.ok) throw new Error(data.detail || "Request failed.");
+      if (!response.ok) throw new Error(`${data.detail || "Request failed"} (${response.status}: ${path}).`);
       return data;
     }
 
@@ -910,7 +910,7 @@
         defaultCaption = settings.qr_caption || "Scan the QR code to order";
         document.getElementById("defaultCaptionInput").value = defaultCaption;
         document.getElementById("lanBanner").innerHTML =
-          `<strong>WiFi connect:</strong> ${escapeHtml(conn.lan_base || "—")}<br>${escapeHtml(conn.hint || "")}`;
+          `<strong>${conn.mode === "online" ? "Website address:" : "Local Wi-Fi address:"}</strong> ${escapeHtml(conn.lan_base || "—")}<br>${escapeHtml(conn.hint || "")}`;
         document.getElementById("tableList").innerHTML = tables.length
           ? tables.map(table => `
             <article class="qr-card">

@@ -42,11 +42,11 @@
   <div class="toolbar">
     <div>
       <h1>Table QR Codes</h1>
-      <p id="subtitle">Scan to connect to the cashier — same Wi‑Fi works without internet.</p>
+      <p id="subtitle">Scan to order and connect to the cashier.</p>
     </div>
     <button class="noprint" onclick="window.print()">Print QR Codes</button>
   </div>
-  <div class="banner noprint" id="banner">Loading LAN connection…</div>
+  <div class="banner noprint" id="banner">Loading QR connection…</div>
   <main class="sheet" id="sheet"></main>
   <div class="error" id="error" hidden></div>
 
@@ -69,7 +69,7 @@
         const tables = data.tables || [];
         document.getElementById("banner").textContent = conn.hint || "";
         document.getElementById("subtitle").textContent =
-          `Wi‑Fi connect URL base: ${conn.lan_base || "—"}. Customer & cashier can chat after scanning.`;
+          `${conn.mode === "online" ? "Website address" : "Local Wi-Fi address"}: ${conn.lan_base || "—"}. Customer & cashier can chat after scanning.`;
         document.getElementById("sheet").innerHTML = tables.map(table => `
           <article class="card">
             <div class="brand">Restaurant Table</div>
