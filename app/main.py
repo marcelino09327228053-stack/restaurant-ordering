@@ -305,6 +305,16 @@ def create_app() -> FastAPI:
             'if (kind === "menu") {\n          const menuButton = document.getElementById("addMenuButton");\n          menuButton.disabled = false;\n          menuButton.textContent = editingMenuId ? "Save changes" : "Add to menu";\n        }',
             1,
         )
+        html = html.replace(
+            '        await api(editingMenuId ? `/api/owner/menu/${editingMenuId}` : "/api/owner/menu", {',
+            '        const savedItem = await api(editingMenuId ? `/api/owner/menu/${editingMenuId}` : "/api/owner/menu", {',
+            1,
+        )
+        html = html.replace(
+            '        menu = await api("/api/owner/menu");\n        renderMenuList();',
+            '        const savedIndex = menu.findIndex(item => item.id === savedItem.id);\n        if (savedIndex >= 0) menu[savedIndex] = savedItem;\n        else menu.push(savedItem);\n        renderMenuList();\n        setTimeout(async () => {\n          try {\n            menu = await api("/api/owner/menu");\n            renderMenuList();\n          } catch (_) {}\n        }, 800);',
+            1,
+        )
         html = html.replace("</head>", f"{boot_guard}</head>", 1)
         return HTMLResponse(
             html,
