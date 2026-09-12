@@ -990,9 +990,7 @@
       action("video","document.getElementById('designVideoInput')");control("video","#designVideoInput");
       control("background","#designBg");
       const colors=document.createElement("div"); colors.id="backgroundColorEditor";
-      colors.innerHTML=`<div id="backgroundSwatches" class="background-swatches"></div>
-        <label for="backgroundHex">Hex color</label><input id="backgroundHex" maxlength="7" value="#f4efe5" onchange="setBackgroundColor(this.value)" />
-        ${["Red","Green","Blue"].map((name,i)=>`<label for="backgroundChannel${i}">${name}</label><input id="backgroundChannel${i}" type="range" min="0" max="255" oninput="setBackgroundChannels()" />`).join("")}`;
+      colors.innerHTML=`<div id="backgroundSwatches" class="background-swatches"></div>`;
       move("background",colors);
       ["#ffffff","#f4efe5","#111111","#173d31","#f97316","#c69a48","#ef4444","#3b82f6","#a855f7","#ec4899","#22c55e","#06b6d4"].forEach(color=>{
         const swatch=document.createElement("button");swatch.type="button";swatch.style.background=color;swatch.title=color;swatch.setAttribute("aria-label",`Background ${color}`);swatch.onclick=()=>setBackgroundColor(color);document.getElementById("backgroundSwatches").appendChild(swatch);
@@ -1035,7 +1033,7 @@
       outline.className = "object-color-editor";
       outline.innerHTML = `<legend>Shape outline</legend>
         <label for="shapeLineWidth">Line Thickness (px)</label>
-        <input id="shapeLineWidth" type="number" min="0" max="100" step="1" value="0" onchange="applyShapeOutline('width', this.value)" />
+        <input id="shapeLineWidth" type="range" min="0" max="100" step="1" value="0" style="width:100%;accent-color:#f97316" oninput="applyShapeOutline('width', this.value)" />
         <label for="shapeLineColor">Line Color</label>
         <input id="shapeLineColor" type="color" value="#173d31" style="width:100%;height:42px" oninput="applyShapeOutline('color', this.value)" />
         <label style="display:flex;align-items:center;gap:8px"><input id="shapeNoFill" type="checkbox" style="width:auto" onchange="applyShapeOutline('fill', this.checked)" /> No Fill (transparent inside)</label>
@@ -1123,15 +1121,6 @@
         button.title=color;button.setAttribute("aria-label",`${kind} color ${color}`);
         button.onclick=()=>applyObjectEditorColor(kind,color);swatches.appendChild(button);
       });
-      const label=document.createElement("label");label.htmlFor=`${kind}ColorHex`;label.textContent="Hex color";
-      const hex=document.createElement("input");hex.id=label.htmlFor;hex.maxLength=7;
-      hex.onchange=()=>applyObjectEditorColor(kind,hex.value);fieldset.append(label,hex);
-      ["Red","Green","Blue"].forEach((name,index)=>{
-        const label=document.createElement("label");label.htmlFor=`${kind}ColorChannel${index}`;label.textContent=name;
-        const range=document.createElement("input");range.id=label.htmlFor;range.type="range";range.min=0;range.max=255;
-        range.oninput=()=>applyObjectEditorColor(kind,"#"+[0,1,2].map(i=>Number(document.getElementById(`${kind}ColorChannel${i}`).value).toString(16).padStart(2,"0")).join(""));
-        fieldset.append(label,range);
-      });
       input.after(fieldset);
       input.addEventListener("input",()=>syncObjectColorEditor(kind,input.value,input.disabled || !!designCanvas?.getActiveObject()?.lockMovementX));
       syncObjectColorEditor(kind,input.value,kind === "text");
@@ -1140,8 +1129,6 @@
       const fieldset=document.getElementById(`${kind}ColorEditor`);if(!fieldset)return;
       fieldset.disabled=disabled;
       if(!/^#[0-9a-f]{6}$/i.test(color || ""))return;
-      document.getElementById(`${kind}ColorHex`).value=color;
-      for(let i=0;i<3;i++)document.getElementById(`${kind}ColorChannel${i}`).value=parseInt(color.slice(1+i*2,3+i*2),16);
     }
     function applyObjectEditorColor(kind,color) {
       const input=document.getElementById(kind === "text" ? "designTextColor" : "shapeColor");
@@ -1155,18 +1142,12 @@
     }
     function syncBackgroundColors() {
       const color=designCanvas?.backgroundColor;
-      if(!/^#[0-9a-f]{6}$/i.test(color || "")) {document.getElementById("backgroundHex").value="";return;}
-      document.getElementById("backgroundHex").value=color;
-      document.getElementById("designBg").value=color;
-      for(let i=0;i<3;i++) document.getElementById(`backgroundChannel${i}`).value=parseInt(color.slice(1+i*2,3+i*2),16);
+      if(/^#[0-9a-f]{6}$/i.test(color || "")) document.getElementById("designBg").value=color;
     }
     function setBackgroundColor(color) {
       if(!/^#[0-9a-f]{6}$/i.test(color)) {toast("Use a hex color such as #173d31.");syncBackgroundColors();return;}
       if(!designCanvas)return;
       designCanvas.setBackgroundColor(color,designCanvas.renderAll.bind(designCanvas));designSnapshot();
-    }
-    function setBackgroundChannels() {
-      setBackgroundColor("#"+[0,1,2].map(i=>Number(document.getElementById(`backgroundChannel${i}`).value).toString(16).padStart(2,"0")).join(""));
     }
     const designShapePaths = {"diamond": "M50 5L90 50L50 95L10 50Z", "trapezoid": "M25 20H75L98 80H2Z", "parallelogram": "M28 20H98L72 80H2Z", "arrow": "M0 30H60V0L100 50L60 100V70H0Z", "chevron": "M0 0H40L100 50L40 100H0L60 50Z", "heart": "M50 90C-20 45 5 -10 50 25C95 -10 120 45 50 90Z", "cross": "M35 0H65V35H100V65H65V100H35V65H0V35H35Z", "speech": "M10 5H90Q100 5 100 15V65Q100 75 90 75H40L15 100V75H10Q0 75 0 65V15Q0 5 10 5Z", "drop": "M50 0C40 30 10 48 10 65A40 35 0 0 0 90 65C90 48 60 30 50 0Z", "crescent": "M75 5A48 48 0 1 0 75 95A50 50 0 0 1 75 5Z"};
     function selectedOutlineShape() {
