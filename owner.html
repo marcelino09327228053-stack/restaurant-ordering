@@ -721,6 +721,7 @@
       if (/^#[0-9a-f]{6}$/i.test(color || "")) document.getElementById("shapeColor").value = color;
       syncObjectColorEditor("text",textColor.value,!text || !!item?.lockMovementX);
       syncObjectColorEditor("shape",document.getElementById("shapeColor").value,!!item?.lockMovementX);
+      syncShapeOutlineControls();
       const layers = document.getElementById("designLayers"); layers.replaceChildren();
       [...designCanvas.getObjects()].reverse().forEach(object => {
         const button = document.createElement("button"); button.type = "button"; button.className = "btn";
@@ -1029,6 +1030,17 @@
       const hint=source.querySelector("p.hint");move("object",hint);
       installObjectColorEditor("text",document.getElementById("designTextColor"));
       installObjectColorEditor("shape",document.getElementById("shapeColor"));
+      const outline = document.createElement("fieldset");
+      outline.id = "shapeOutlineControls";
+      outline.className = "object-color-editor";
+      outline.innerHTML = `<legend>Shape outline</legend>
+        <label for="shapeLineWidth">Line Thickness (px)</label>
+        <input id="shapeLineWidth" type="number" min="0" max="100" step="1" value="0" onchange="applyShapeOutline('width', this.value)" />
+        <label for="shapeLineColor">Line Color</label>
+        <input id="shapeLineColor" type="color" value="#173d31" style="width:100%;height:42px" oninput="applyShapeOutline('color', this.value)" />
+        <label style="display:flex;align-items:center;gap:8px"><input id="shapeNoFill" type="checkbox" style="width:auto" onchange="applyShapeOutline('fill', this.checked)" /> No Fill (transparent inside)</label>
+        <p class="hint">Select a shape to edit its outline. Line shapes have no fill.</p>`;
+      move("shapes", outline);
       source.remove();
       const tooltip = document.createElement("div");
       tooltip.id = "editorToolTooltip";
@@ -1157,6 +1169,40 @@
       setBackgroundColor("#"+[0,1,2].map(i=>Number(document.getElementById(`backgroundChannel${i}`).value).toString(16).padStart(2,"0")).join(""));
     }
     const designShapePaths = {"diamond": "M50 5L90 50L50 95L10 50Z", "trapezoid": "M25 20H75L98 80H2Z", "parallelogram": "M28 20H98L72 80H2Z", "arrow": "M0 30H60V0L100 50L60 100V70H0Z", "chevron": "M0 0H40L100 50L40 100H0L60 50Z", "heart": "M50 90C-20 45 5 -10 50 25C95 -10 120 45 50 90Z", "cross": "M35 0H65V35H100V65H65V100H35V65H0V35H35Z", "speech": "M10 5H90Q100 5 100 15V65Q100 75 90 75H40L15 100V75H10Q0 75 0 65V15Q0 5 10 5Z", "drop": "M50 0C40 30 10 48 10 65A40 35 0 0 0 90 65C90 48 60 30 50 0Z", "crescent": "M75 5A48 48 0 1 0 75 95A50 50 0 0 1 75 5Z"};
+    function selectedOutlineShape() {
+      const item = designCanvas?.getActiveObject();
+      return item && ["rect","circle","triangle","ellipse","polygon","polyline","path","line"].includes(item.type) ? item : null;
+    }
+    function syncShapeOutlineControls() {
+      const panel = document.getElementById("shapeOutlineControls");
+      if (!panel) return;
+      const item = selectedOutlineShape();
+      panel.disabled = !item || !!item.lockMovementX;
+      if (!item) return;
+      document.getElementById("shapeLineWidth").value = item.stroke ? item.strokeWidth : 0;
+      if (/^#[0-9a-f]{6}$/i.test(item.stroke || "")) document.getElementById("shapeLineColor").value = item.stroke;
+      const checkbox = document.getElementById("shapeNoFill");
+      checkbox.checked = item.type === "line" || !item.fill || item.fill === "transparent" || item.fill === "rgba(0,0,0,0)";
+      checkbox.disabled = item.type === "line";
+    }
+    function applyShapeOutline(kind, value) {
+      const item = selectedOutlineShape();
+      if (!item || item.lockMovementX || designRestoring) return;
+      if (kind === "width" && (!Number.isFinite(Number(value)) || Number(value) < 0 || Number(value) > 100)) {
+        syncShapeOutlineControls(); return;
+      }
+      designSnapshot();
+      if (kind === "width") item.set({strokeWidth:Number(value), stroke:item.stroke || document.getElementById("shapeLineColor").value});
+      if (kind === "color") item.set({stroke:value, strokeWidth:item.strokeWidth > 0 ? item.strokeWidth : 2});
+      if (kind === "fill" && item.type !== "line") {
+        item.set("fill", value ? null : document.getElementById("shapeColor").value);
+        if (value && (!item.stroke || !item.strokeWidth)) item.set({stroke:document.getElementById("shapeLineColor").value, strokeWidth:2});
+      }
+      item.setCoords();
+      designCanvas.requestRenderAll();
+      designSnapshot();
+      syncShapeOutlineControls();
+    }
     function addDesignShape(type) {
       const color = document.getElementById("shapeColor").value;
       let item;
