@@ -362,7 +362,7 @@
     .wrap { max-width: 1500px; padding-inline: clamp(16px, 3vw, 42px); }
     header { background: #090b0be8; border-color: #ffffff14; }
     .bar { min-height: 82px; gap: clamp(12px, 2vw, 30px); }
-    .logo { width: 48px; height: 48px; border-radius: 50%; font-size: 23px; box-shadow: 0 0 0 5px #f9731618; }
+    .logo { width: 64px; height: 64px; flex-shrink: 0; object-fit: contain; border-radius: 12px; background: #090b0b; }
     .brand-name { font-family: Impact, "Arial Narrow", sans-serif; font-size: clamp(1.05rem, 2vw, 1.55rem); letter-spacing: .08em; }
     .search { max-width: 620px; margin-inline: auto; padding: 13px 20px; background: #17191a; border-color: #ffffff18; }
     .table-chip { padding: 8px 14px; border-left: 1px solid #ffffff1c; }
@@ -429,7 +429,7 @@
   <header>
     <div class="wrap bar">
       <div class="brand">
-        <div class="logo" aria-hidden="true">🍔</div>
+        <img class="logo" src="/static/mb-bite-brew-logo.png" alt="MB Bite &amp; Brew logo" width="64" height="64" decoding="async" />
         <div class="brand-name" id="brandName">Menu</div>
       </div>
       <label class="search">
