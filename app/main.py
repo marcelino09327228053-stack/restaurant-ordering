@@ -316,7 +316,7 @@ def create_app() -> FastAPI:
                     originY: "center",
                     top: -18
                   });
-                  const hint = new fabric.Text("Drag / resize this box • add photos in the Slideshow panel", {
+                  const hint = new fabric.Text("Drop photos in the Slideshow panel", {
                     fill: "#fdba74",
                     fontSize: 16,
                     originX: "center",
@@ -339,6 +339,10 @@ def create_app() -> FastAPI:
                   if (typeof designSnapshot === "function") designSnapshot();
                   if (typeof toast === "function") toast("Slideshow box added. Drag or resize it on the banner.", true);
                 }
+                const count = Array.isArray(owner?.hero_images) ? owner.hero_images.length : 0;
+                if (box._objects && box._objects[2]) {
+                  box._objects[2].set("text", count ? `${count} photo${count === 1 ? "" : "s"} ready • drag / resize` : "Drop photos in the Slideshow panel");
+                }
                 designCanvas.setActiveObject(box);
                 box.setCoords();
                 designCanvas.requestRenderAll();
@@ -353,10 +357,55 @@ def create_app() -> FastAPI:
                     ensureSlideshowDesignBox();
                     const panel = document.getElementById("slideshowPanel");
                     const hint = panel && panel.querySelector("p.hint");
-                    if (hint) hint.textContent = "Upload the slideshow photos here. Move and resize the slideshow box directly on the banner.";
+                    if (hint) hint.textContent = "Upload photos here. Drag and resize the slideshow box on the banner. Save Slideshow saves the photos, style, position, and size.";
+                    const button = panel && panel.querySelector('button[onclick="saveSlideshowStyle()"]');
+                    if (button) button.textContent = "Save Slideshow";
                   }, 0);
                 }
                 return result;
+              };
+
+              const originalRenderHeroThumbs = renderHeroThumbs;
+              renderHeroThumbs = function () {
+                const result = originalRenderHeroThumbs();
+                setTimeout(function () {
+                  if (typeof designCanvas !== "undefined" && designCanvas) ensureSlideshowDesignBox();
+                }, 0);
+                return result;
+              };
+
+              saveSlideshowStyle = async function () {
+                try {
+                  const box = ensureSlideshowDesignBox();
+                  if (!box) throw new Error("Slideshow box is not ready yet.");
+                  const heroes = Array.isArray(owner?.hero_images) ? owner.hero_images : [];
+                  if (!heroes.length) throw new Error("Add at least one slideshow photo first.");
+                  box.slideshowStyle = selectedSlideshowStyle || "fade";
+                  box.slideshowCount = heroes.length;
+                  box.setCoords();
+                  designCanvas.requestRenderAll();
+                  if (typeof designSnapshot === "function") designSnapshot();
+                  owner = await api("/api/owner/site", {
+                    method:"PATCH",
+                    body:JSON.stringify({
+                      slideshow_style:selectedSlideshowStyle || "fade",
+                      custom_design:{
+                        ...owner.custom_design,
+                        enabled:true,
+                        canvas:designCanvas.toJSON([
+                          "assetType","videoUrl","slideshowStyle","slideshowCount",
+                          "lockMovementX","lockMovementY","lockScalingX","lockScalingY","lockRotation",
+                          "borderColor","borderScaleFactor","cornerColor","cornerStrokeColor",
+                          "transparentCorners","cornerSize","padding"
+                        ])
+                      }
+                    })
+                  });
+                  if (typeof renderPreview === "function") renderPreview();
+                  toast("Slideshow saved: photos, style, position, and size.", true);
+                } catch (e) {
+                  toast(e.message);
+                }
               };
             };
             install();
@@ -473,7 +522,79 @@ def create_app() -> FastAPI:
 
     @application.get("/r/{slug}")
     async def restaurant_storefront(slug: str):
-        return FileResponse("storefront.html")
+        html = Path("storefront.html").read_text(encoding="utf-8")
+        slideshow_public_patch = """
+        <style id="mb-placed-slideshow-style">
+          .design-slideshow-live { position:absolute; overflow:hidden; border-radius:12px; background:#111; pointer-events:none; z-index:4; }
+          .design-slideshow-live img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; opacity:0; transform:scale(1.04); transition:opacity .8s ease, transform 1s ease; }
+          .design-slideshow-live img.on { opacity:1; transform:scale(1); }
+          .design-slideshow-live.style-slide img { transform:translateX(100%); opacity:1; }
+          .design-slideshow-live.style-slide img.on { transform:translateX(0); }
+          .design-slideshow-live.style-zoom img { transform:scale(.78); }
+          .design-slideshow-live.style-zoom img.on { transform:scale(1); }
+          .design-slideshow-live.style-blur img { filter:blur(18px); transform:scale(1.08); }
+          .design-slideshow-live.style-blur img.on { filter:blur(0); transform:scale(1); }
+        </style>
+        <script id="mb-placed-slideshow-script">
+          window.renderPlacedSlideshow = function (design, images, style) {
+            const wrap = document.getElementById("companyDesign");
+            if (!wrap || !design?.enabled || !Array.isArray(design?.canvas?.objects)) return;
+            wrap.querySelectorAll(".design-slideshow-live").forEach(el => el.remove());
+            const object = design.canvas.objects.find(item => item.assetType === "slideshow");
+            if (!object || !Array.isArray(images) || !images.length) return;
+            const box = document.createElement("div");
+            box.className = `design-slideshow-live style-${style || object.slideshowStyle || "fade"}`;
+            const width = (Number(object.width) || 560) * (Number(object.scaleX) || 1);
+            const height = (Number(object.height) || 250) * (Number(object.scaleY) || 1);
+            box.style.left = `${((Number(object.left) || 0) / 900) * 100}%`;
+            box.style.top = `${((Number(object.top) || 0) / 500) * 100}%`;
+            box.style.width = `${(width / 900) * 100}%`;
+            box.style.height = `${(height / 500) * 100}%`;
+            box.style.transform = `rotate(${Number(object.angle) || 0}deg)`;
+            box.style.transformOrigin = "center";
+            images.forEach((url, index) => {
+              const img = document.createElement("img");
+              img.src = url;
+              img.alt = "";
+              if (index === 0) img.classList.add("on");
+              box.appendChild(img);
+            });
+            wrap.appendChild(box);
+            let index = 0;
+            if (images.length > 1) {
+              setInterval(() => {
+                const slides = [...box.querySelectorAll("img")];
+                slides[index]?.classList.remove("on");
+                index = (index + 1) % slides.length;
+                slides[index]?.classList.add("on");
+              }, 3200);
+            }
+          };
+        </script>
+        """
+        html = html.replace("</head>", f"{slideshow_public_patch}</head>", 1)
+        html = html.replace(
+            'canvas.getObjects().filter(obj => obj.assetType === "video").forEach(obj => {',
+            'canvas.getObjects().filter(obj => obj.assetType === "slideshow").forEach(obj => canvas.remove(obj));\n        canvas.getObjects().filter(obj => obj.assetType === "video").forEach(obj => {',
+            1,
+        )
+        html = html.replace(
+            'renderCompanyDesign(data.custom_design);',
+            'renderCompanyDesign(data.custom_design);\n        renderPlacedSlideshow(data.custom_design, data.hero_images || [], data.slideshow_style || "fade");',
+            1,
+        )
+        html = html.replace(
+            '        if (heroes.length) {',
+            '        const hasPlacedSlideshow = !!data.custom_design?.canvas?.objects?.some(item => item.assetType === "slideshow");\n        if (heroes.length && !hasPlacedSlideshow) {',
+            1,
+        )
+        return HTMLResponse(
+            html,
+            headers={
+                "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0",
+                "Pragma": "no-cache",
+            },
+        )
 
     @application.get("/table-qrcodes")
     async def table_qrcodes_page():
