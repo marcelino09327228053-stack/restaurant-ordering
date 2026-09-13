@@ -32,13 +32,11 @@ window.buildRestaurantTemplate = function(id, restaurant, tagline) {
       plate(588,130,119,"#202020");text("FIRE\n& FEAST",602,188,213,42,"#ffffff",{textAlign:"center",fontFamily:"Impact"});break;
     case "coastal":
       rect(0,0,900,104,"#126d84");text("FRESH FROM THE COAST",55,40,780,24,"#ffffff",{charSpacing:90});
-      title(58,147,510,45,"#174c5c");caption(60,295,465,"#426b76");
-      plate(635,156,96,"#80c4ca");
+      title(58,147,510,45,"#174c5c");caption(60,295,465,"#426b76");plate(635,156,96,"#80c4ca");
       objects.push(new fabric.Path("M0 425Q150 380 300 425T600 425T900 425L900 500H0Z",{fill:"#126d84"}));
       text("SEAFOOD · SEASONAL · LOCAL",60,449,730,18,"#ffffff");break;
     case "bakery":
-      rect(42,35,816,430,"#fff8f1",{rx:100,ry:100});
-      circle(50,36,35,"#dd9e9d");circle(780,381,35,"#dd9e9d");
+      rect(42,35,816,430,"#fff8f1",{rx:100,ry:100});circle(50,36,35,"#dd9e9d");circle(780,381,35,"#dd9e9d");
       text("BAKED FRESH EVERY MORNING",150,81,600,16,"#94535c",{textAlign:"center",charSpacing:100});
       title(150,145,600,47,"#713b49","Georgia","center");caption(170,305,560,"#94535c","center");
       rect(330,384,240,42,"#713b49",{rx:21,ry:21});text("A LITTLE MOMENT OF JOY",346,398,209,13,"#fff8f1",{textAlign:"center"});break;
@@ -54,10 +52,8 @@ window.buildRestaurantTemplate = function(id, restaurant, tagline) {
       caption(160,319,580,"#614b38","center");text("BURGERS   •   SHAKES   •   GOOD TIMES",150,379,600,18,"#bd3635",{textAlign:"center"});break;
     case "noodle":
       rect(45,45,10,410,"#cf4432");text("HANDCRAFTED & HEARTWARMING",90,65,455,15,"#cf4432");title(90,130,410,46,"#232323");caption(93,298,380,"#62605a");
-      circle(594,75,127,"#cf4432");
-      objects.push(new fabric.Path("M600 236H838Q820 357 719 357Q618 357 600 236Z",{fill:"#232323"}));
-      rect(660,359,115,12,"#232323",{rx:5,ry:5});
-      rect(633,164,205,7,"#f4eee4",{angle:-14});rect(639,185,205,7,"#f4eee4",{angle:-14});
+      circle(594,75,127,"#cf4432");objects.push(new fabric.Path("M600 236H838Q820 357 719 357Q618 357 600 236Z",{fill:"#232323"}));
+      rect(660,359,115,12,"#232323",{rx:5,ry:5});rect(633,164,205,7,"#f4eee4",{angle:-14});rect(639,185,205,7,"#f4eee4",{angle:-14});
       text("SLOW BROTH. FULL FLAVOUR.",90,410,580,18,"#cf4432");break;
     case "night":
       rect(30,30,840,440,"transparent",{stroke:"#b69b64",strokeWidth:2});rect(45,45,810,410,"transparent",{stroke:"#b69b64",strokeWidth:1});
@@ -65,12 +61,10 @@ window.buildRestaurantTemplate = function(id, restaurant, tagline) {
       title(135,157,630,48,"#f7f0df","Georgia","center");caption(190,319,520,"#ccb98c","center");
       rect(345,390,210,2,"#b69b64");circle(438,57,11,"#b69b64");break;
     case "market":
-      rect(0,0,900,45,"#412f67");rect(565,45,335,455,"#d8ec65");
-      circle(617,107,106,"#ece6fa");circle(666,156,57,"#412f67");
+      rect(0,0,900,45,"#412f67");rect(565,45,335,455,"#d8ec65");circle(617,107,106,"#ece6fa");circle(666,156,57,"#412f67");
       text("YOUR NEW FAVOURITE SPOT",55,83,465,17,"#79619f");title(55,142,455,47,"#412f67","Arial");caption(58,318,420,"#6c568e");
       text("BRUNCH\nALL DAY",606,352,250,37,"#412f67",{textAlign:"center"});rect(58,420,320,4,"#412f67");break;
   }
-  // Keep long restaurant names and descriptions inside their allotted rows.
   for(const object of objects)if(object.type==="textbox"){
     const limit=object.fontSize>=37?150:65;
     while(object.height>limit && object.fontSize>12){object.set("fontSize",object.fontSize-1);}
@@ -78,28 +72,73 @@ window.buildRestaurantTemplate = function(id, restaurant, tagline) {
   return objects;
 };
 
-/* Slideshow editor preview controls. Keeps the saved Fabric box as the source of position/size. */
+/* Slideshow editor preview with live style effects. */
 (function () {
   let timer = null;
   let index = 0;
   let installed = false;
 
+  function injectEffectStyles() {
+    if (document.getElementById("mbSlideshowEditorEffects")) return;
+    const style = document.createElement("style");
+    style.id = "mbSlideshowEditorEffects";
+    style.textContent = `
+      #mbSlideshowEditorPreview img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;will-change:transform,opacity,filter,clip-path;}
+      #mbSlideshowEditorPreview .mb-slide-in{z-index:2;animation-duration:.9s;animation-fill-mode:both;animation-timing-function:cubic-bezier(.22,.8,.22,1);}
+      #mbSlideshowEditorPreview .mb-slide-out{z-index:1;animation-duration:.9s;animation-fill-mode:both;animation-timing-function:ease;}
+      #mbSlideshowEditorPreview.style-fade .mb-slide-in{animation-name:mbFadeIn}
+      #mbSlideshowEditorPreview.style-fade .mb-slide-out{animation-name:mbFadeOut}
+      #mbSlideshowEditorPreview.style-slide .mb-slide-in{animation-name:mbSlideIn}
+      #mbSlideshowEditorPreview.style-slide .mb-slide-out{animation-name:mbSlideOut}
+      #mbSlideshowEditorPreview.style-zoom .mb-slide-in{animation-name:mbZoomIn}
+      #mbSlideshowEditorPreview.style-zoom .mb-slide-out{animation-name:mbZoomOut}
+      #mbSlideshowEditorPreview.style-split .mb-slide-in{animation-name:mbSplitIn}
+      #mbSlideshowEditorPreview.style-split .mb-slide-out{animation-name:mbFadeOut}
+      #mbSlideshowEditorPreview.style-kenburns .mb-slide-in{animation-name:mbKenBurns;animation-duration:3.2s}
+      #mbSlideshowEditorPreview.style-kenburns .mb-slide-out{animation-name:mbFadeOut}
+      #mbSlideshowEditorPreview.style-flip{perspective:1100px}
+      #mbSlideshowEditorPreview.style-flip .mb-slide-in{animation-name:mbFlipIn;transform-origin:left center}
+      #mbSlideshowEditorPreview.style-flip .mb-slide-out{animation-name:mbFlipOut;transform-origin:right center}
+      #mbSlideshowEditorPreview.style-curtain .mb-slide-in{animation-name:mbCurtainIn}
+      #mbSlideshowEditorPreview.style-curtain .mb-slide-out{animation-name:mbFadeOut}
+      #mbSlideshowEditorPreview.style-blur .mb-slide-in{animation-name:mbBlurIn}
+      #mbSlideshowEditorPreview.style-blur .mb-slide-out{animation-name:mbFadeOut}
+      #mbSlideshowEditorPreview.style-rotate .mb-slide-in{animation-name:mbRotateIn}
+      #mbSlideshowEditorPreview.style-rotate .mb-slide-out{animation-name:mbFadeOut}
+      #mbSlideshowEditorPreview.style-diagonal .mb-slide-in{animation-name:mbDiagonalIn}
+      #mbSlideshowEditorPreview.style-diagonal .mb-slide-out{animation-name:mbFadeOut}
+      @keyframes mbFadeIn{from{opacity:0}to{opacity:1}} @keyframes mbFadeOut{from{opacity:1}to{opacity:0}}
+      @keyframes mbSlideIn{from{transform:translateX(100%)}to{transform:translateX(0)}} @keyframes mbSlideOut{from{transform:translateX(0)}to{transform:translateX(-35%);opacity:.35}}
+      @keyframes mbZoomIn{from{transform:scale(.72);opacity:0;filter:blur(7px)}to{transform:scale(1);opacity:1;filter:blur(0)}} @keyframes mbZoomOut{from{transform:scale(1);opacity:1}to{transform:scale(1.14);opacity:0}}
+      @keyframes mbSplitIn{from{opacity:0;transform:translateY(30%) skewY(-4deg);clip-path:inset(0 50% 0 50%)}to{opacity:1;transform:none;clip-path:inset(0)}}
+      @keyframes mbKenBurns{from{opacity:0;transform:scale(1.18) translate(2%,-2%)}15%{opacity:1}to{opacity:1;transform:scale(1) translate(0,0)}}
+      @keyframes mbFlipIn{from{opacity:0;transform:rotateY(90deg)}to{opacity:1;transform:rotateY(0)}} @keyframes mbFlipOut{from{opacity:1;transform:rotateY(0)}to{opacity:0;transform:rotateY(-55deg)}}
+      @keyframes mbCurtainIn{from{opacity:.3;clip-path:inset(0 50%)}to{opacity:1;clip-path:inset(0)}}
+      @keyframes mbBlurIn{from{opacity:0;filter:blur(24px) saturate(.35);transform:scale(1.12)}to{opacity:1;filter:blur(0) saturate(1);transform:scale(1)}}
+      @keyframes mbRotateIn{from{opacity:0;transform:scale(.7) rotate(-9deg)}to{opacity:1;transform:scale(1) rotate(0)}}
+      @keyframes mbDiagonalIn{from{opacity:.2;transform:translate(22%,22%);clip-path:polygon(100% 0,100% 0,100% 0)}to{opacity:1;transform:none;clip-path:polygon(0 0,100% 0,100% 100%,0 100%)}}
+    `;
+    document.head.appendChild(style);
+  }
+
   function heroes() {
     try {
       const images = (typeof owner !== "undefined" && Array.isArray(owner?.hero_images)) ? owner.hero_images : [];
       return images.filter(Boolean);
-    } catch (_) {
-      return [];
-    }
+    } catch (_) { return []; }
+  }
+
+  function currentStyle() {
+    try { return selectedSlideshowStyle || "fade"; } catch (_) { return "fade"; }
+  }
+
+  function activeDesignCanvas() {
+    try { return typeof designCanvas !== "undefined" ? designCanvas : window.designCanvas; } catch (_) { return window.designCanvas; }
   }
 
   function slideshowObject() {
-    try {
-      const canvas = typeof designCanvas !== "undefined" ? designCanvas : window.designCanvas;
-      return canvas?.getObjects?.().find(object => object.assetType === "slideshow") || null;
-    } catch (_) {
-      return window.designCanvas?.getObjects?.().find(object => object.assetType === "slideshow") || null;
-    }
+    const canvas = activeDesignCanvas();
+    return canvas?.getObjects?.().find(object => object.assetType === "slideshow") || null;
   }
 
   function overlay() {
@@ -118,10 +157,7 @@ window.buildRestaurantTemplate = function(id, restaurant, tagline) {
   function syncOverlay() {
     const el = overlay();
     const object = slideshowObject();
-    if (!el || !object) {
-      if (el) el.hidden = true;
-      return;
-    }
+    if (!el || !object) { if (el) el.hidden = true; return; }
     el.hidden = false;
     const width = (Number(object.width) || 560) * (Number(object.scaleX) || 1);
     const height = (Number(object.height) || 250) * (Number(object.scaleY) || 1);
@@ -133,55 +169,49 @@ window.buildRestaurantTemplate = function(id, restaurant, tagline) {
     el.style.transformOrigin = "center";
   }
 
-  function show(target) {
+  function show(target, animate=true) {
     const list = heroes();
     const el = overlay();
     if (!el) return;
     syncOverlay();
     if (!list.length) {
+      el.className = "";
       el.innerHTML = '<div style="height:100%;display:grid;place-items:center;padding:18px;text-align:center;color:#fdba74;font:700 16px Arial">Upload slideshow photos first</div>';
       updateStatus();
       return;
     }
+    const previous = index;
     index = (target + list.length) % list.length;
-    el.innerHTML = `<img src="${list[index]}" alt="" style="width:100%;height:100%;object-fit:cover;display:block">`;
+    const style = currentStyle();
+    el.className = `style-${style}`;
+    const prevUrl = list[previous] || list[index];
+    const nextUrl = list[index];
+    if (!animate) {
+      el.innerHTML = `<img src="${nextUrl}" alt="" style="z-index:2">`;
+    } else {
+      el.innerHTML = `<img class="mb-slide-out" src="${prevUrl}" alt=""><img class="mb-slide-in" src="${nextUrl}" alt="">`;
+      void el.offsetWidth;
+    }
     updateStatus();
   }
 
-  function stop() {
-    clearInterval(timer);
-    timer = null;
-    updateStatus();
-  }
-
+  function stop() { clearInterval(timer); timer = null; updateStatus(); }
   function play() {
     const list = heroes();
-    if (!list.length) {
-      if (typeof window.toast === "function") window.toast("Upload slideshow photos first.");
-      show(0);
-      return;
-    }
-    stop();
-    show(index);
-    if (list.length > 1) timer = setInterval(() => show(index + 1), 3200);
+    if (!list.length) { if (typeof window.toast === "function") window.toast("Upload slideshow photos first."); show(0,false); return; }
+    stop(); show(index,true);
+    if (list.length > 1) timer = setInterval(() => show(index + 1,true), 3200);
     updateStatus();
   }
-
-  function previous() {
-    stop();
-    show(index - 1);
-  }
-
-  function next() {
-    stop();
-    show(index + 1);
-  }
+  function previous() { stop(); show(index - 1,true); }
+  function next() { stop(); show(index + 1,true); }
 
   function updateStatus() {
     const status = document.getElementById("mbSlideshowPreviewStatus");
     if (!status) return;
     const list = heroes();
-    status.textContent = list.length ? `${index + 1} / ${list.length} · ${timer ? "Playing" : "Paused"}` : "No photos yet";
+    const style = currentStyle().replace(/(^|[-_])(\w)/g, (_,a,b) => `${a ? " " : ""}${b.toUpperCase()}`);
+    status.textContent = list.length ? `${index + 1} / ${list.length} · ${style} · ${timer ? "Playing" : "Paused"}` : "No photos yet";
   }
 
   function installControls() {
@@ -190,85 +220,62 @@ window.buildRestaurantTemplate = function(id, restaurant, tagline) {
     const controls = document.createElement("div");
     controls.id = "mbSlideshowPreviewControls";
     controls.style.cssText = "display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:12px 0 8px";
-    controls.innerHTML = `
-      <button class="btn" type="button" id="mbSlidePrev">◀ Prev</button>
-      <button class="btn solid" type="button" id="mbSlidePlay">▶ Play</button>
-      <button class="btn" type="button" id="mbSlidePause">⏸ Pause</button>
-      <button class="btn" type="button" id="mbSlideNext">Next ▶</button>`;
+    controls.innerHTML = `<button class="btn" type="button" id="mbSlidePrev">◀ Prev</button><button class="btn solid" type="button" id="mbSlidePlay">▶ Play</button><button class="btn" type="button" id="mbSlidePause">⏸ Pause</button><button class="btn" type="button" id="mbSlideNext">Next ▶</button>`;
     const status = document.createElement("p");
-    status.id = "mbSlideshowPreviewStatus";
-    status.className = "hint";
-    status.style.marginTop = "0";
+    status.id = "mbSlideshowPreviewStatus"; status.className = "hint"; status.style.marginTop = "0";
     const saveButton = panel.querySelector('button[onclick="saveSlideshowStyle()"]');
-    panel.insertBefore(controls, saveButton || null);
-    panel.insertBefore(status, saveButton || null);
-    document.getElementById("mbSlidePrev").onclick = previous;
-    document.getElementById("mbSlidePlay").onclick = play;
-    document.getElementById("mbSlidePause").onclick = stop;
-    document.getElementById("mbSlideNext").onclick = next;
+    panel.insertBefore(controls, saveButton || null); panel.insertBefore(status, saveButton || null);
+    document.getElementById("mbSlidePrev").onclick = previous; document.getElementById("mbSlidePlay").onclick = play;
+    document.getElementById("mbSlidePause").onclick = stop; document.getElementById("mbSlideNext").onclick = next;
     updateStatus();
   }
 
-  function activeDesignCanvas() {
-    try { return typeof designCanvas !== "undefined" ? designCanvas : window.designCanvas; } catch (_) { return window.designCanvas; }
+  function patchFunctions() {
+    try {
+      if (typeof openEditorTool === "function" && !openEditorTool.__mbEffectsWrapped) {
+        const original = openEditorTool;
+        const wrapped = function(id, force) {
+          const result = original(id, force);
+          if (id === "slideshow") setTimeout(() => { installControls(); window.ensureSlideshowDesignBox?.(); syncOverlay(); show(index,false); }, 0);
+          return result;
+        };
+        wrapped.__mbEffectsWrapped = true; openEditorTool = wrapped; window.openEditorTool = wrapped;
+      }
+    } catch (_) {}
+    try {
+      if (typeof renderHeroThumbs === "function" && !renderHeroThumbs.__mbEffectsWrapped) {
+        const original = renderHeroThumbs;
+        const wrapped = function() {
+          const result = original();
+          setTimeout(() => { index = Math.min(index, Math.max(0, heroes().length - 1)); show(index,false); }, 0);
+          return result;
+        };
+        wrapped.__mbEffectsWrapped = true; renderHeroThumbs = wrapped; window.renderHeroThumbs = wrapped;
+      }
+    } catch (_) {}
+    try {
+      if (typeof selectSlideshowStyle === "function" && !selectSlideshowStyle.__mbEffectsWrapped) {
+        const original = selectSlideshowStyle;
+        const wrapped = function(style) {
+          const result = original(style);
+          setTimeout(() => { show(index,true); updateStatus(); }, 0);
+          return result;
+        };
+        wrapped.__mbEffectsWrapped = true; selectSlideshowStyle = wrapped; window.selectSlideshowStyle = wrapped;
+      }
+    } catch (_) {}
   }
 
   function install() {
     if (installed) return;
     const canvas = activeDesignCanvas();
-    if (!canvas || typeof window.ensureSlideshowDesignBox !== "function") {
-      setTimeout(install, 250);
-      return;
-    }
-    installed = true;
-    installControls();
-    canvas.on("object:moving", syncOverlay);
-    canvas.on("object:scaling", syncOverlay);
-    canvas.on("object:rotating", syncOverlay);
-    canvas.on("object:modified", syncOverlay);
-    canvas.on("object:added", syncOverlay);
-    canvas.on("object:removed", syncOverlay);
-
-    const currentOpen = window.openEditorTool;
-    window.openEditorTool = function (id, force) {
-      const result = currentOpen(id, force);
-      if (id === "slideshow") {
-        setTimeout(() => {
-          installControls();
-          window.ensureSlideshowDesignBox();
-          syncOverlay();
-          show(index);
-        }, 0);
-      }
-      return result;
-    };
-
-    const currentRenderHeroThumbs = window.renderHeroThumbs;
-    if (typeof currentRenderHeroThumbs === "function") {
-      window.renderHeroThumbs = function () {
-        const result = currentRenderHeroThumbs();
-        setTimeout(() => {
-          installControls();
-          index = Math.min(index, Math.max(0, heroes().length - 1));
-          show(index);
-        }, 0);
-        return result;
-      };
-    }
-
-    const currentSelectStyle = window.selectSlideshowStyle;
-    if (typeof currentSelectStyle === "function") {
-      window.selectSlideshowStyle = function (style) {
-        const result = currentSelectStyle(style);
-        show(index);
-        return result;
-      };
-    }
-
-    syncOverlay();
+    if (!canvas || typeof window.ensureSlideshowDesignBox !== "function") { setTimeout(install,250); return; }
+    installed = true; injectEffectStyles(); installControls(); patchFunctions();
+    ["object:moving","object:scaling","object:rotating","object:modified","object:added","object:removed"].forEach(event => canvas.on(event,syncOverlay));
+    syncOverlay(); show(index,false);
   }
 
-  window.addEventListener("load", () => setTimeout(install, 700));
+  window.addEventListener("load", () => setTimeout(install,700));
 })();
 
 /* Load the CapCut-style shell as a separate, easy-to-edit module. */
