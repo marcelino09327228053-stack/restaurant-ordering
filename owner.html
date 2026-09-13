@@ -573,7 +573,6 @@
       <button class="btn" type="button" data-studio-panel="menuPanel" aria-controls="menuPanel" aria-expanded="false" onclick="toggleStudioPanel('menuPanel')">Menu</button>
       <button class="btn" type="button" data-studio-panel="tablesPanel" aria-controls="tablesPanel" aria-expanded="false" onclick="toggleStudioPanel('tablesPanel')">Tables & QR</button>
       <button class="btn" type="button" data-studio-panel="paymentsPanel" aria-controls="paymentsPanel" aria-expanded="false" onclick="toggleStudioPanel('paymentsPanel')">Payments</button>
-      <button class="btn" id="slideshowToggle" data-studio-panel="slideshowPanel" aria-controls="slideshowPanel" aria-expanded="false" type="button" onclick="toggleSlideshowPanel()">Slideshow ▾</button>
       <div class="grow"></div>
       <a class="btn" href="/">Home</a>
       </div>
@@ -919,7 +918,7 @@
     }
     function toggleSlideshowPanel(force) {
       const open = typeof force === "boolean" ? force : activeEditorTool !== "slideshow";
-      if(open) {openEditorTool("slideshow",true);setCanvasToolsVisible(false);}
+      if(open) {showDesignPage();openEditorTool("slideshow",true);}
       else if(activeEditorTool === "slideshow") closeEditorTool();
     }
     function toggleStudioPanel(id, force) {
@@ -952,7 +951,6 @@
       document.querySelectorAll(".tool-section").forEach(panel=>panel.hidden=true);
       document.querySelectorAll(".tool-rail [aria-expanded]").forEach(button=>button.setAttribute("aria-expanded","false"));
       document.getElementById("slideshowPanel").hidden=true;
-      document.getElementById("slideshowToggle").classList.remove("solid");
       setCanvasToolsVisible(![...document.querySelectorAll(".studio-panel")].some(panel => !panel.hidden));
       syncTopToolbar();
       requestAnimationFrame(()=>{if(designCanvas)fitDesignBoard();});
@@ -968,7 +966,6 @@
       document.querySelector(".design-work").classList.add("tool-panel-open");
       document.getElementById(`tool-button-${id}`).setAttribute("aria-expanded","true");
       document.getElementById("slideshowPanel").hidden=id!=="slideshow";
-      document.getElementById("slideshowToggle").classList.toggle("solid",id==="slideshow");
       syncTopToolbar();
       requestAnimationFrame(()=>{if(designCanvas)fitDesignBoard();});
     }
@@ -1423,7 +1420,6 @@
                 <div class="table-qr-actions">
                   <a class="btn solid" href="${escapeHtml(qrUrl)}" download="${escapeHtml(t.name)}-QR.png">Download QR</a>
                   <button class="btn" type="button" onclick='navigator.clipboard.writeText(${JSON.stringify(url)}).then(()=>toast("Link copied.",true))'>Copy link</button>
-                  <a class="btn" href="${escapeHtml(url)}" target="_blank" rel="noopener">Open page</a>
                 </div>
               </div>
             </div>`;
