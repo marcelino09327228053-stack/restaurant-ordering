@@ -279,6 +279,90 @@ def create_app() -> FastAPI:
           window.sendMenuPreviewTheme = window.sendMenuPreviewTheme || function () {};
         </script>
         """
+        slideshow_canvas_patch = """
+        <script id="mb-slideshow-canvas-box">
+          window.addEventListener("load", function () {
+            const install = function () {
+              if (typeof openEditorTool !== "function" || typeof fabric === "undefined") {
+                setTimeout(install, 120);
+                return;
+              }
+              if (window.__mbSlideshowCanvasInstalled) return;
+              window.__mbSlideshowCanvasInstalled = true;
+
+              window.ensureSlideshowDesignBox = function () {
+                if (typeof designCanvas === "undefined" || !designCanvas) return null;
+                let box = designCanvas.getObjects().find(function (object) {
+                  return object.assetType === "slideshow";
+                });
+                if (!box) {
+                  const frame = new fabric.Rect({
+                    width: 560,
+                    height: 250,
+                    fill: "rgba(12,12,14,0.72)",
+                    stroke: "#f97316",
+                    strokeWidth: 4,
+                    strokeDashArray: [14, 8],
+                    rx: 14,
+                    ry: 14,
+                    originX: "center",
+                    originY: "center"
+                  });
+                  const label = new fabric.Text("SLIDESHOW", {
+                    fill: "#ffffff",
+                    fontSize: 34,
+                    fontWeight: "bold",
+                    originX: "center",
+                    originY: "center",
+                    top: -18
+                  });
+                  const hint = new fabric.Text("Drag / resize this box • add photos in the Slideshow panel", {
+                    fill: "#fdba74",
+                    fontSize: 16,
+                    originX: "center",
+                    originY: "center",
+                    top: 28
+                  });
+                  box = new fabric.Group([frame, label, hint], {
+                    left: 170,
+                    top: 110,
+                    assetType: "slideshow",
+                    borderColor: "#f97316",
+                    borderScaleFactor: 3,
+                    cornerColor: "#ffffff",
+                    cornerStrokeColor: "#f97316",
+                    transparentCorners: false,
+                    cornerSize: 14,
+                    padding: 8
+                  });
+                  designCanvas.add(box);
+                  if (typeof designSnapshot === "function") designSnapshot();
+                  if (typeof toast === "function") toast("Slideshow box added. Drag or resize it on the banner.", true);
+                }
+                designCanvas.setActiveObject(box);
+                box.setCoords();
+                designCanvas.requestRenderAll();
+                return box;
+              };
+
+              const originalOpenEditorTool = openEditorTool;
+              openEditorTool = function (id, force) {
+                const result = originalOpenEditorTool(id, force);
+                if (id === "slideshow") {
+                  setTimeout(function () {
+                    ensureSlideshowDesignBox();
+                    const panel = document.getElementById("slideshowPanel");
+                    const hint = panel && panel.querySelector("p.hint");
+                    if (hint) hint.textContent = "Upload the slideshow photos here. Move and resize the slideshow box directly on the banner.";
+                  }, 0);
+                }
+                return result;
+              };
+            };
+            install();
+          });
+        </script>
+        """
         html = html.replace("<title>Site Builder</title>", "<title>Design Your Page · MB Business Hub</title>", 1)
         html = html.replace(
             '<button class="btn" id="menuPhonePreview" type="button" aria-pressed="false" onclick="toggleMenuPhonePreview()">Phone preview</button>',
@@ -315,7 +399,7 @@ def create_app() -> FastAPI:
             '        const savedIndex = menu.findIndex(item => item.id === savedItem.id);\n        if (savedIndex >= 0) menu[savedIndex] = savedItem;\n        else menu.push(savedItem);\n        renderMenuList();\n        setTimeout(async () => {\n          try {\n            menu = await api("/api/owner/menu");\n            renderMenuList();\n          } catch (_) {}\n        }, 800);',
             1,
         )
-        html = html.replace("</head>", f"{boot_guard}</head>", 1)
+        html = html.replace("</head>", f"{boot_guard}{slideshow_canvas_patch}</head>", 1)
         return HTMLResponse(
             html,
             headers={
