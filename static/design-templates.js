@@ -85,11 +85,21 @@ window.buildRestaurantTemplate = function(id, restaurant, tagline) {
   let installed = false;
 
   function heroes() {
-    return Array.isArray(window.owner?.hero_images) ? window.owner.hero_images : [];
+    try {
+      const images = (typeof owner !== "undefined" && Array.isArray(owner?.hero_images)) ? owner.hero_images : [];
+      return images.filter(Boolean);
+    } catch (_) {
+      return [];
+    }
   }
 
   function slideshowObject() {
-    return window.designCanvas?.getObjects?.().find(object => object.assetType === "slideshow") || null;
+    try {
+      const canvas = typeof designCanvas !== "undefined" ? designCanvas : window.designCanvas;
+      return canvas?.getObjects?.().find(object => object.assetType === "slideshow") || null;
+    } catch (_) {
+      return window.designCanvas?.getObjects?.().find(object => object.assetType === "slideshow") || null;
+    }
   }
 
   function overlay() {
@@ -199,20 +209,25 @@ window.buildRestaurantTemplate = function(id, restaurant, tagline) {
     updateStatus();
   }
 
+  function activeDesignCanvas() {
+    try { return typeof designCanvas !== "undefined" ? designCanvas : window.designCanvas; } catch (_) { return window.designCanvas; }
+  }
+
   function install() {
     if (installed) return;
-    if (!window.designCanvas || typeof window.ensureSlideshowDesignBox !== "function") {
+    const canvas = activeDesignCanvas();
+    if (!canvas || typeof window.ensureSlideshowDesignBox !== "function") {
       setTimeout(install, 250);
       return;
     }
     installed = true;
     installControls();
-    window.designCanvas.on("object:moving", syncOverlay);
-    window.designCanvas.on("object:scaling", syncOverlay);
-    window.designCanvas.on("object:rotating", syncOverlay);
-    window.designCanvas.on("object:modified", syncOverlay);
-    window.designCanvas.on("object:added", syncOverlay);
-    window.designCanvas.on("object:removed", syncOverlay);
+    canvas.on("object:moving", syncOverlay);
+    canvas.on("object:scaling", syncOverlay);
+    canvas.on("object:rotating", syncOverlay);
+    canvas.on("object:modified", syncOverlay);
+    canvas.on("object:added", syncOverlay);
+    canvas.on("object:removed", syncOverlay);
 
     const currentOpen = window.openEditorTool;
     window.openEditorTool = function (id, force) {
@@ -254,4 +269,12 @@ window.buildRestaurantTemplate = function(id, restaurant, tagline) {
   }
 
   window.addEventListener("load", () => setTimeout(install, 700));
+})();
+
+/* Load the CapCut-style shell as a separate, easy-to-edit module. */
+(function () {
+  const script = document.createElement("script");
+  script.src = "/static/capcut-shell.js?v=20260913a";
+  script.defer = true;
+  document.head.appendChild(script);
 })();
