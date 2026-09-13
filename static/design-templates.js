@@ -77,3 +77,181 @@ window.buildRestaurantTemplate = function(id, restaurant, tagline) {
   }
   return objects;
 };
+
+/* Slideshow editor preview controls. Keeps the saved Fabric box as the source of position/size. */
+(function () {
+  let timer = null;
+  let index = 0;
+  let installed = false;
+
+  function heroes() {
+    return Array.isArray(window.owner?.hero_images) ? window.owner.hero_images : [];
+  }
+
+  function slideshowObject() {
+    return window.designCanvas?.getObjects?.().find(object => object.assetType === "slideshow") || null;
+  }
+
+  function overlay() {
+    const board = document.querySelector(".design-board");
+    if (!board) return null;
+    let el = document.getElementById("mbSlideshowEditorPreview");
+    if (!el) {
+      el = document.createElement("div");
+      el.id = "mbSlideshowEditorPreview";
+      el.style.cssText = "position:absolute;overflow:hidden;border-radius:12px;background:#111;pointer-events:none;z-index:20;box-shadow:inset 0 0 0 2px #f97316;";
+      board.appendChild(el);
+    }
+    return el;
+  }
+
+  function syncOverlay() {
+    const el = overlay();
+    const object = slideshowObject();
+    if (!el || !object) {
+      if (el) el.hidden = true;
+      return;
+    }
+    el.hidden = false;
+    const width = (Number(object.width) || 560) * (Number(object.scaleX) || 1);
+    const height = (Number(object.height) || 250) * (Number(object.scaleY) || 1);
+    el.style.left = `${((Number(object.left) || 0) / 900) * 100}%`;
+    el.style.top = `${((Number(object.top) || 0) / 500) * 100}%`;
+    el.style.width = `${(width / 900) * 100}%`;
+    el.style.height = `${(height / 500) * 100}%`;
+    el.style.transform = `rotate(${Number(object.angle) || 0}deg)`;
+    el.style.transformOrigin = "center";
+  }
+
+  function show(target) {
+    const list = heroes();
+    const el = overlay();
+    if (!el) return;
+    syncOverlay();
+    if (!list.length) {
+      el.innerHTML = '<div style="height:100%;display:grid;place-items:center;padding:18px;text-align:center;color:#fdba74;font:700 16px Arial">Upload slideshow photos first</div>';
+      updateStatus();
+      return;
+    }
+    index = (target + list.length) % list.length;
+    el.innerHTML = `<img src="${list[index]}" alt="" style="width:100%;height:100%;object-fit:cover;display:block">`;
+    updateStatus();
+  }
+
+  function stop() {
+    clearInterval(timer);
+    timer = null;
+    updateStatus();
+  }
+
+  function play() {
+    const list = heroes();
+    if (!list.length) {
+      if (typeof window.toast === "function") window.toast("Upload slideshow photos first.");
+      show(0);
+      return;
+    }
+    stop();
+    show(index);
+    if (list.length > 1) timer = setInterval(() => show(index + 1), 3200);
+    updateStatus();
+  }
+
+  function previous() {
+    stop();
+    show(index - 1);
+  }
+
+  function next() {
+    stop();
+    show(index + 1);
+  }
+
+  function updateStatus() {
+    const status = document.getElementById("mbSlideshowPreviewStatus");
+    if (!status) return;
+    const list = heroes();
+    status.textContent = list.length ? `${index + 1} / ${list.length} · ${timer ? "Playing" : "Paused"}` : "No photos yet";
+  }
+
+  function installControls() {
+    const panel = document.getElementById("slideshowPanel");
+    if (!panel || document.getElementById("mbSlideshowPreviewControls")) return;
+    const controls = document.createElement("div");
+    controls.id = "mbSlideshowPreviewControls";
+    controls.style.cssText = "display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:12px 0 8px";
+    controls.innerHTML = `
+      <button class="btn" type="button" id="mbSlidePrev">◀ Prev</button>
+      <button class="btn solid" type="button" id="mbSlidePlay">▶ Play</button>
+      <button class="btn" type="button" id="mbSlidePause">⏸ Pause</button>
+      <button class="btn" type="button" id="mbSlideNext">Next ▶</button>`;
+    const status = document.createElement("p");
+    status.id = "mbSlideshowPreviewStatus";
+    status.className = "hint";
+    status.style.marginTop = "0";
+    const saveButton = panel.querySelector('button[onclick="saveSlideshowStyle()"]');
+    panel.insertBefore(controls, saveButton || null);
+    panel.insertBefore(status, saveButton || null);
+    document.getElementById("mbSlidePrev").onclick = previous;
+    document.getElementById("mbSlidePlay").onclick = play;
+    document.getElementById("mbSlidePause").onclick = stop;
+    document.getElementById("mbSlideNext").onclick = next;
+    updateStatus();
+  }
+
+  function install() {
+    if (installed) return;
+    if (!window.designCanvas || typeof window.ensureSlideshowDesignBox !== "function") {
+      setTimeout(install, 250);
+      return;
+    }
+    installed = true;
+    installControls();
+    window.designCanvas.on("object:moving", syncOverlay);
+    window.designCanvas.on("object:scaling", syncOverlay);
+    window.designCanvas.on("object:rotating", syncOverlay);
+    window.designCanvas.on("object:modified", syncOverlay);
+    window.designCanvas.on("object:added", syncOverlay);
+    window.designCanvas.on("object:removed", syncOverlay);
+
+    const currentOpen = window.openEditorTool;
+    window.openEditorTool = function (id, force) {
+      const result = currentOpen(id, force);
+      if (id === "slideshow") {
+        setTimeout(() => {
+          installControls();
+          window.ensureSlideshowDesignBox();
+          syncOverlay();
+          show(index);
+        }, 0);
+      }
+      return result;
+    };
+
+    const currentRenderHeroThumbs = window.renderHeroThumbs;
+    if (typeof currentRenderHeroThumbs === "function") {
+      window.renderHeroThumbs = function () {
+        const result = currentRenderHeroThumbs();
+        setTimeout(() => {
+          installControls();
+          index = Math.min(index, Math.max(0, heroes().length - 1));
+          show(index);
+        }, 0);
+        return result;
+      };
+    }
+
+    const currentSelectStyle = window.selectSlideshowStyle;
+    if (typeof currentSelectStyle === "function") {
+      window.selectSlideshowStyle = function (style) {
+        const result = currentSelectStyle(style);
+        show(index);
+        return result;
+      };
+    }
+
+    syncOverlay();
+  }
+
+  window.addEventListener("load", () => setTimeout(install, 700));
+})();
