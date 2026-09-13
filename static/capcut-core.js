@@ -1,0 +1,1 @@
+/* MB Business Hub CapCut editor core loader placeholder. */
