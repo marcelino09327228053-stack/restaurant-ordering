@@ -279,6 +279,77 @@ def create_app() -> FastAPI:
           window.sendMenuPreviewTheme = window.sendMenuPreviewTheme || function () {};
         </script>
         """
+        tables_tabs_patch = """
+        <style id="mb-native-table-tabs-style">
+          #tablesPanel { width:min(760px,calc(100% - 32px)) !important; max-width:760px !important; left:50% !important; right:auto !important; transform:translateX(-50%) !important; }
+          #mbNativeTableTabs { display:grid; grid-template-columns:1fr 1fr; gap:8px; padding:4px; margin:0 0 16px; border:1px solid #ffffff1f; border-radius:12px; background:#0d1015; position:sticky; top:0; z-index:50; }
+          #mbNativeTableTabs button { min-height:44px; border:1px solid transparent; border-radius:9px; background:transparent; color:#aeb4bd; font-weight:800; cursor:pointer; }
+          #mbNativeTableTabs button.active { color:#fff; background:#f97316; border-color:#fb923c; box-shadow:0 6px 20px #f9731626; }
+          #mbNativeTableTabs button:not(.active):hover { color:#fff; background:#ffffff08; }
+          .mb-native-table-pane[hidden] { display:none !important; }
+          .mb-native-table-pane { width:100%; }
+          #mbNativePaymentPane .block { border:0 !important; box-shadow:none !important; padding:0 !important; margin:0 !important; }
+          #tablePaymentSection { display:none !important; }
+        </style>
+        <script id="mb-native-table-tabs-script">
+          (function () {
+            function installTablesTabs() {
+              const body = document.getElementById("tablesPanelBody");
+              const paymentBody = document.getElementById("paymentsPanelBody");
+              const paymentSection = document.getElementById("tablePaymentSection");
+              if (!body || !paymentBody || !paymentSection) {
+                setTimeout(installTablesTabs, 150);
+                return;
+              }
+              if (document.getElementById("mbNativeTableTabs")) return;
+
+              document.querySelectorAll("#mbDirectTableTabs,#mbTableTabs").forEach(function (node) { node.remove(); });
+              const tabs = document.createElement("div");
+              tabs.id = "mbNativeTableTabs";
+              tabs.setAttribute("role", "tablist");
+              tabs.innerHTML = '<button type="button" class="active" data-tab="tables" role="tab" aria-selected="true">Table & QR</button><button type="button" data-tab="payment" role="tab" aria-selected="false">Payment</button>';
+
+              const tablePane = document.createElement("section");
+              tablePane.id = "mbNativeTablePane";
+              tablePane.className = "mb-native-table-pane";
+              const paymentPane = document.createElement("section");
+              paymentPane.id = "mbNativePaymentPane";
+              paymentPane.className = "mb-native-table-pane";
+              paymentPane.hidden = true;
+
+              Array.from(body.children).forEach(function (child) {
+                if (child !== paymentSection && child !== tabs) tablePane.appendChild(child);
+              });
+              paymentPane.appendChild(paymentBody);
+              paymentSection.remove();
+              body.replaceChildren(tabs, tablePane, paymentPane);
+
+              function selectTab(name) {
+                const payment = name === "payment";
+                tablePane.hidden = payment;
+                paymentPane.hidden = !payment;
+                tabs.querySelectorAll("button").forEach(function (button) {
+                  const active = button.dataset.tab === name;
+                  button.classList.toggle("active", active);
+                  button.setAttribute("aria-selected", String(active));
+                });
+                body.scrollTop = 0;
+              }
+              tabs.querySelector('[data-tab="tables"]').addEventListener("click", function () { selectTab("tables"); });
+              tabs.querySelector('[data-tab="payment"]').addEventListener("click", function () { selectTab("payment"); });
+              window.mbSelectTablesTab = selectTab;
+              selectTab("tables");
+            }
+
+            window.addEventListener("load", function () {
+              setTimeout(installTablesTabs, 0);
+              setTimeout(installTablesTabs, 500);
+              setTimeout(installTablesTabs, 1200);
+            });
+            document.addEventListener("DOMContentLoaded", function () { setTimeout(installTablesTabs, 0); });
+          })();
+        </script>
+        """
         slideshow_canvas_patch = """
         <script id="mb-slideshow-canvas-box">
           window.addEventListener("load", function () {
@@ -424,18 +495,29 @@ def create_app() -> FastAPI:
             1,
         )
         html = html.replace(
-            'button.disabled = true;\n        document.getElementById("menuPhotoHint").textContent = "Uploading photo…";',
-            'button.disabled = true;\n        button.textContent = "Uploading photo…";\n        document.getElementById("menuPhotoHint").textContent = "Uploading photo… please wait";\n        document.getElementById("menuFeedback").textContent = "Please wait for the photo upload to finish before adding the menu item.";',
+            'button.disabled = true;\
+        document.getElementById("menuPhotoHint").textContent = "Uploading photo…";',
+            'button.disabled = true;\
+        button.textContent = "Uploading photo…";\
+        document.getElementById("menuPhotoHint").textContent = "Uploading photo… please wait";\
+        document.getElementById("menuFeedback").textContent = "Please wait for the photo upload to finish before adding the menu item.";',
             1,
         )
         html = html.replace(
-            'document.getElementById("menuPhotoHint").textContent = "photo ready ✓";\n          toast("Dish photo ready — fill details & add.", true);',
-            'document.getElementById("menuPhotoHint").textContent = "photo ready ✓";\n          document.getElementById("menuFeedback").textContent = "Photo ready. You can add the menu item now.";\n          toast("Dish photo ready — fill details & add.", true);',
+            'document.getElementById("menuPhotoHint").textContent = "photo ready ✓";\
+          toast("Dish photo ready — fill details & add.", true);',
+            'document.getElementById("menuPhotoHint").textContent = "photo ready ✓";\
+          document.getElementById("menuFeedback").textContent = "Photo ready. You can add the menu item now.";\
+          toast("Dish photo ready — fill details & add.", true);',
             1,
         )
         html = html.replace(
             'if (kind === "menu") document.getElementById("addMenuButton").disabled = false;',
-            'if (kind === "menu") {\n          const menuButton = document.getElementById("addMenuButton");\n          menuButton.disabled = false;\n          menuButton.textContent = editingMenuId ? "Save changes" : "Add to menu";\n        }',
+            'if (kind === "menu") {\
+          const menuButton = document.getElementById("addMenuButton");\
+          menuButton.disabled = false;\
+          menuButton.textContent = editingMenuId ? "Save changes" : "Add to menu";\
+        }',
             1,
         )
         html = html.replace(
@@ -444,11 +526,21 @@ def create_app() -> FastAPI:
             1,
         )
         html = html.replace(
-            '        menu = await api("/api/owner/menu");\n        renderMenuList();',
-            '        const savedIndex = menu.findIndex(item => item.id === savedItem.id);\n        if (savedIndex >= 0) menu[savedIndex] = savedItem;\n        else menu.push(savedItem);\n        renderMenuList();\n        setTimeout(async () => {\n          try {\n            menu = await api("/api/owner/menu");\n            renderMenuList();\n          } catch (_) {}\n        }, 800);',
+            '        menu = await api("/api/owner/menu");\
+        renderMenuList();',
+            '        const savedIndex = menu.findIndex(item => item.id === savedItem.id);\
+        if (savedIndex >= 0) menu[savedIndex] = savedItem;\
+        else menu.push(savedItem);\
+        renderMenuList();\
+        setTimeout(async () => {\
+          try {\
+            menu = await api("/api/owner/menu");\
+            renderMenuList();\
+          } catch (_) {}\
+        }, 800);',
             1,
         )
-        html = html.replace("</head>", f"{boot_guard}{slideshow_canvas_patch}</head>", 1)
+        html = html.replace("</head>", f"{boot_guard}{tables_tabs_patch}{slideshow_canvas_patch}</head>", 1)
         return HTMLResponse(
             html,
             headers={
@@ -514,7 +606,8 @@ def create_app() -> FastAPI:
                 send_security_email(
                     email,
                     "Owner account logged out",
-                    f"Business: {data.get('restaurant_name') or 'MB Business Hub'}\nA full logout was requested from a signed-in device.",
+                    f"Business: {data.get('restaurant_name') or 'MB Business Hub'}\
+A full logout was requested from a signed-in device.",
                 )
             except Exception as exc:
                 print(f"[SECURITY EMAIL ERROR] {exc}")
@@ -575,17 +668,20 @@ def create_app() -> FastAPI:
         html = html.replace("</head>", f"{slideshow_public_patch}</head>", 1)
         html = html.replace(
             'canvas.getObjects().filter(obj => obj.assetType === "video").forEach(obj => {',
-            'canvas.getObjects().filter(obj => obj.assetType === "slideshow").forEach(obj => canvas.remove(obj));\n        canvas.getObjects().filter(obj => obj.assetType === "video").forEach(obj => {',
+            'canvas.getObjects().filter(obj => obj.assetType === "slideshow").forEach(obj => canvas.remove(obj));\
+        canvas.getObjects().filter(obj => obj.assetType === "video").forEach(obj => {',
             1,
         )
         html = html.replace(
             'renderCompanyDesign(data.custom_design);',
-            'renderCompanyDesign(data.custom_design);\n        renderPlacedSlideshow(data.custom_design, data.hero_images || [], data.slideshow_style || "fade");',
+            'renderCompanyDesign(data.custom_design);\
+        renderPlacedSlideshow(data.custom_design, data.hero_images || [], data.slideshow_style || "fade");',
             1,
         )
         html = html.replace(
             '        if (heroes.length) {',
-            '        const hasPlacedSlideshow = !!data.custom_design?.canvas?.objects?.some(item => item.assetType === "slideshow");\n        if (heroes.length && !hasPlacedSlideshow) {',
+            '        const hasPlacedSlideshow = !!data.custom_design?.canvas?.objects?.some(item => item.assetType === "slideshow");\
+        if (heroes.length && !hasPlacedSlideshow) {',
             1,
         )
         return HTMLResponse(
