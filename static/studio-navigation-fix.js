@@ -35,28 +35,102 @@
           max-height:calc(100% - var(--studio-header-height, 68px) - 40px) !important;
         }
         #designRoom #tablesPanel .studio-panel-body { width:100%; overflow:auto; }
-        #tablePaymentSection {
-          margin-top:18px !important;
-          padding-top:14px !important;
-          border-top:1px solid #ffffff24 !important;
-        }
-        #tablePaymentSection > summary {
-          display:flex;
-          align-items:center;
-          justify-content:space-between;
-          gap:10px;
-          cursor:pointer;
-          padding:10px 12px !important;
-          border:1px solid #ffffff20;
-          border-radius:10px;
-          background:#ffffff08;
-        }
-        #tablePaymentSection > summary::after { content:'▾'; opacity:.7; }
-        #tablePaymentSection[open] > summary::after { content:'▴'; }
         #paymentsPanel { display:none !important; }
+
+        .mb-table-tabs {
+          display:grid;
+          grid-template-columns:1fr 1fr;
+          gap:8px;
+          padding:4px;
+          margin:0 0 16px;
+          border:1px solid #ffffff1f;
+          border-radius:12px;
+          background:#0d1015;
+          position:sticky;
+          top:0;
+          z-index:5;
+        }
+        .mb-table-tab {
+          min-height:42px;
+          border:1px solid transparent;
+          border-radius:9px;
+          background:transparent;
+          color:#aeb4bd;
+          font:700 12px Arial,sans-serif;
+          cursor:pointer;
+        }
+        .mb-table-tab:hover { color:#fff; background:#ffffff08; }
+        .mb-table-tab.active {
+          color:#fff;
+          background:#f97316;
+          border-color:#fb923c;
+          box-shadow:0 6px 20px #f9731626;
+        }
+        .mb-table-pane[hidden] { display:none !important; }
+        .mb-table-pane { width:100%; }
+        #mbPaymentPane .block { border:0; box-shadow:none; padding:0; margin:0; }
       `;
       document.head.appendChild(style);
     }
+
+    function activateTablesTab(name){
+      const tablePane = document.getElementById('mbTableOrdersPane');
+      const paymentPane = document.getElementById('mbPaymentPane');
+      if (!tablePane || !paymentPane) return;
+      const payment = name === 'payment';
+      tablePane.hidden = payment;
+      paymentPane.hidden = !payment;
+      room.querySelectorAll('.mb-table-tab').forEach(button => {
+        const active = button.dataset.tab === (payment ? 'payment' : 'tables');
+        button.classList.toggle('active', active);
+        button.setAttribute('aria-selected', String(active));
+      });
+    }
+
+    function installTableTabs(){
+      const body = document.getElementById('tablesPanelBody');
+      if (!body || document.getElementById('mbTableTabs')) return;
+
+      const paymentSection = document.getElementById('tablePaymentSection');
+      const paymentBody = document.getElementById('paymentsPanelBody');
+      if (!paymentBody) {
+        setTimeout(installTableTabs, 200);
+        return;
+      }
+
+      const tabs = document.createElement('div');
+      tabs.id = 'mbTableTabs';
+      tabs.className = 'mb-table-tabs';
+      tabs.setAttribute('role','tablist');
+      tabs.setAttribute('aria-label','Tables and payment');
+      tabs.innerHTML = `
+        <button type="button" class="mb-table-tab active" data-tab="tables" role="tab" aria-selected="true">Table Orders & QR</button>
+        <button type="button" class="mb-table-tab" data-tab="payment" role="tab" aria-selected="false">Payment</button>`;
+
+      const tablePane = document.createElement('section');
+      tablePane.id = 'mbTableOrdersPane';
+      tablePane.className = 'mb-table-pane';
+      tablePane.setAttribute('role','tabpanel');
+
+      const paymentPane = document.createElement('section');
+      paymentPane.id = 'mbPaymentPane';
+      paymentPane.className = 'mb-table-pane';
+      paymentPane.setAttribute('role','tabpanel');
+      paymentPane.hidden = true;
+
+      [...body.children].forEach(child => {
+        if (child !== paymentSection) tablePane.appendChild(child);
+      });
+      paymentPane.appendChild(paymentBody);
+      if (paymentSection) paymentSection.remove();
+      body.append(tabs, tablePane, paymentPane);
+
+      tabs.querySelector('[data-tab="tables"]').onclick = () => activateTablesTab('tables');
+      tabs.querySelector('[data-tab="payment"]').onclick = () => activateTablesTab('payment');
+      activateTablesTab('tables');
+    }
+
+    installTableTabs();
 
     const originalShowDesignPage = window.showDesignPage;
     const originalToggleStudioPanel = window.toggleStudioPanel;
@@ -92,13 +166,11 @@
     };
 
     window.toggleStudioPanel = function(id, force){
+      let requestedPayment = false;
       if (id === 'paymentsPanel') {
         id = 'tablesPanel';
         force = true;
-        setTimeout(() => {
-          const payment = document.getElementById('tablePaymentSection');
-          if (payment) payment.open = true;
-        }, 0);
+        requestedPayment = true;
       }
 
       const target = document.getElementById(id);
@@ -116,6 +188,11 @@
       target.hidden = false;
       syncButtons(id);
 
+      if (id === 'tablesPanel') {
+        installTableTabs();
+        activateTablesTab(requestedPayment ? 'payment' : 'tables');
+      }
+
       if (id === 'menuPanel') {
         try {
           const customerPreview = document.getElementById('menuCustomerPreview');
@@ -130,6 +207,7 @@
 
     // Re-apply isolation after injected CapCut modules finish mounting.
     const observer = new MutationObserver(() => {
+      installTableTabs();
       const active = [...room.querySelectorAll('.studio-panel')].find(panel => !panel.hidden);
       if (active) hideEditorOnly();
     });
