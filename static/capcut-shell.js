@@ -17,7 +17,7 @@
   load('/static/capcut-core.js?v=20260913c')
     .then(()=>load('/static/capcut-advanced.js?v=20260913c'))
     .then(()=>load('/static/editor-timeline.js?v=2'))
-    .then(()=>load('/static/studio-navigation-fix.js?v=20260914e'))
+    .then(()=>load('/static/studio-navigation-fix.js?v=20260914f'))
     .then(()=>{cleanupLegacyTableTabs();setTimeout(cleanupLegacyTableTabs,300);})
     .catch(err=>console.error('MB editor module load failed',err));
 })();
