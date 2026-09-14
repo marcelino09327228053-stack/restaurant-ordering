@@ -885,7 +885,7 @@
       initDesignCanvas();
       setCanvasToolsVisible(true);
       requestAnimationFrame(fitDesignBoard);
-      const saved = owner?.custom_design?.canvas;
+      const saved = owner?.custom_design?.editorDraft || owner?.custom_design?.canvas;
       designRestoring = true;
       if (Array.isArray(saved?.objects)) {
         designCanvas.loadFromJSON(saved, () => {
@@ -1312,8 +1312,8 @@
 
     async function saveCompanyDesign() {
       try {
-        owner = await api("/api/owner/site", { method:"PATCH", body:JSON.stringify({ custom_design:{ ...owner.custom_design, enabled:true, canvas:designCanvas.toJSON(designExtraProperties) } }) });
-        toast("Company design saved and published.", true);
+        owner = await api("/api/owner/site", { method:"PATCH", body:JSON.stringify({ custom_design:{ ...owner.custom_design, editorDraft:designCanvas.toJSON(designExtraProperties) } }) });
+        toast("Draft saved. Live design unchanged.", true);
       } catch(error) { toast(error.message); }
     }
 

@@ -481,7 +481,7 @@ def create_app() -> FastAPI:
             "logo_url": owner.get("logo_url") or "",
             "about_text": owner.get("about_text") or "",
             "hero_images": owner.get("hero_images") or [],
-            "custom_design": owner.get("custom_design") or {},
+            "custom_design": {k: v for k, v in (owner.get("custom_design") or {}).items() if k != "editorDraft"},
             "slideshow_style": owner.get("slideshow_style") or "fade",
             "menu": menu,
             "tables": tables,
