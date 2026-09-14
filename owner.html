@@ -443,6 +443,16 @@
     }
     #menuCustomerPreview { max-width:100%; margin-inline:auto; }
     #menuPhonePreview[aria-pressed="true"] { border-color:#f97316;background:#f9731625; }
+    /* Section navigation must hide the complete editor, including injected modules. */
+    #designRoom:not(.canvas-tools-visible) > .design-work,
+    #designRoom:not(.canvas-tools-visible) #mbCapcutToolbar { display:none!important; }
+    #designRoom:not(.canvas-tools-visible) #tablesPanel {
+      left:50%;right:auto;transform:translateX(-50%);
+      width:min(860px,calc(100% - 32px));bottom:auto;
+      top:calc(var(--studio-header-height,68px) + 20px);
+      max-height:calc(100% - var(--studio-header-height,68px) - 40px);
+    }
+    #tablePaymentSection .block {border:0;box-shadow:none;padding:0;margin:0;}
   </style>
   <script src="/static/vendor/fabric.min.js"></script>
   <script src="/static/design-templates.js"></script>
@@ -572,7 +582,6 @@
       <button class="btn" id="designPageButton" type="button" aria-pressed="true" onclick="showDesignPage()">Design Your Page</button>
       <button class="btn" type="button" data-studio-panel="menuPanel" aria-controls="menuPanel" aria-expanded="false" onclick="toggleStudioPanel('menuPanel')">Menu</button>
       <button class="btn" type="button" data-studio-panel="tablesPanel" aria-controls="tablesPanel" aria-expanded="false" onclick="toggleStudioPanel('tablesPanel')">Tables & QR</button>
-      <button class="btn" type="button" data-studio-panel="paymentsPanel" aria-controls="paymentsPanel" aria-expanded="false" onclick="toggleStudioPanel('paymentsPanel')">Payments</button>
       <div class="grow"></div>
       <a class="btn" href="/">Home</a>
       </div>
@@ -1095,6 +1104,14 @@
         ["tablesBuilder","tablesPanelBody"], ["paymentsBuilder","paymentsPanelBody"]
       ];
       moves.forEach(([source,target]) => document.getElementById(target).appendChild(document.getElementById(source)));
+      const paymentSection = document.createElement("details");
+      paymentSection.id = "tablePaymentSection";
+      paymentSection.style.cssText = "margin-top:20px;padding-top:16px;border-top:1px solid #ffffff24";
+      const paymentHeading = document.createElement("summary");
+      paymentHeading.textContent = "Payments — upload payment QR";
+      paymentHeading.style.cssText = "cursor:pointer;font-weight:700;padding:10px 0";
+      paymentSection.append(paymentHeading, document.getElementById("paymentsPanelBody"));
+      document.getElementById("tablesPanelBody").append(paymentSection);
       document.getElementById("previewPanelBody").appendChild(document.querySelector(".preview-pane .device"));
       document.body.classList.add("studio-only");
       document.title = "Design Your Page";
