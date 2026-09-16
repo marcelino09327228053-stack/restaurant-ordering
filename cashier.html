@@ -219,6 +219,8 @@
     .bubble.customer { align-self: flex-start; background: var(--panel-2); border: 1px solid var(--line); }
     .bubble.cashier { align-self: flex-end; background: #2a1408; border: 1px solid #7c2d12; color: #fed7aa; }
     .bubble time { display: block; margin-top: 4px; font-size: .7rem; color: var(--muted); }
+    .reply-quote { margin-bottom:7px; padding:6px 8px; border-left:3px solid var(--orange); border-radius:6px; background:#0003; color:var(--muted); font-size:.75rem; }
+    .message-reaction { display:inline-block; margin:5px 0 -5px; padding:2px 6px; border-radius:999px; background:#27272a; font-size:.78rem; }
     .chat-compose {
       display: flex; gap: 8px; padding: 12px; border-top: 1px solid var(--line);
     }
@@ -771,7 +773,9 @@
             </button>`).join("")
           : `<div class="chat-empty">No table messages yet. When a customer scans a QR and chats, it appears here.</div>`;
 
-        if (activeTableId) await loadChat(activeTableId, autoSelected);
+        // Reload the active conversation so customer edits and deletions are
+        // reflected on the cashier screen, not only newly added messages.
+        if (activeTableId) await loadChat(activeTableId, true);
       } catch (error) { showError(error.message); }
     }
 
@@ -809,7 +813,9 @@
           const time = new Date(`${m.created_at.replace(" ", "T")}Z`).toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"});
           const el = document.createElement("div");
           el.className = `bubble ${m.sender}`;
-          el.innerHTML = `${escapeHtml(m.body)}<time>${m.sender === "cashier" ? "Cashier" : "Customer"} · ${time}</time>`;
+          const quote = m.reply_body ? `<div class="reply-quote">${m.reply_sender === "cashier" ? "Cashier" : "Customer"}: ${escapeHtml(m.reply_body)}</div>` : "";
+          const reaction = m.reaction ? `<span class="message-reaction">${escapeHtml(m.reaction)}</span>` : "";
+          el.innerHTML = `${quote}${escapeHtml(m.body)}<time>${m.sender === "cashier" ? "Cashier" : "Customer"} · ${time}</time>${reaction}`;
           log.appendChild(el);
         }
         if (msgs.length) log.scrollTop = log.scrollHeight;

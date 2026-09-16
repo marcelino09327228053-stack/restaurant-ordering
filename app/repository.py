@@ -1009,17 +1009,45 @@ def list_table_messages(table_id: int, after_id: int = 0) -> list[dict]:
     cursor = get_connection().cursor()
     cursor.execute(
         """
-        SELECT id, table_id, sender, body, created_at
-        FROM table_messages
-        WHERE table_id = ? AND id > ?
-        ORDER BY id ASC
+        SELECT m.id, m.table_id, m.sender, m.body, m.created_at,
+               m.reply_to_id, m.reaction, r.body AS reply_body, r.sender AS reply_sender
+        FROM table_messages m
+        LEFT JOIN table_messages r ON r.id = m.reply_to_id AND r.table_id = m.table_id
+        WHERE m.table_id = ? AND m.id > ?
+        ORDER BY m.id ASC
         """,
         (table_id, after_id),
     )
     return [dict(row) for row in cursor.fetchall()]
 
 
-def add_table_message(table_id: int, sender: str, body: str) -> dict:
+def add_table_message(table_id: int, sender: str, body: str, reply_to_id: int | None = None) -> dict:
+    text = (body or "").strip()
+    if not text:
+        raise ValueError("Message cannot be empty.")
+    if len(text) > 500:
+        raise ValueError("Message is too long (max 500 characters).")
+    if sender not in {"customer", "cashier"}:
+        raise ValueError("Invalid sender.")
+    conn = get_connection()
+    cursor = conn.cursor()
+    if reply_to_id is not None:
+        cursor.execute("SELECT id FROM table_messages WHERE id = ? AND table_id = ?", (reply_to_id, table_id))
+        if cursor.fetchone() is None:
+            raise ValueError("Reply message not found.")
+    cursor.execute(
+        """
+        INSERT INTO table_messages (table_id, sender, body, reply_to_id)
+        VALUES (?, ?, ?, ?)
+        """,
+        (table_id, sender, text, reply_to_id),
+    )
+    conn.commit()
+    cursor.execute("SELECT * FROM table_messages WHERE id = ?", (cursor.lastrowid,))
+    return dict(cursor.fetchone())
+
+
+def update_table_message(table_id: int, message_id: int, sender: str, body: str) -> dict | None:
     text = (body or "").strip()
     if not text:
         raise ValueError("Message cannot be empty.")
@@ -1031,13 +1059,46 @@ def add_table_message(table_id: int, sender: str, body: str) -> dict:
     cursor = conn.cursor()
     cursor.execute(
         """
-        INSERT INTO table_messages (table_id, sender, body)
-        VALUES (?, ?, ?)
+        UPDATE table_messages SET body = ?
+        WHERE id = ? AND table_id = ? AND sender = ?
         """,
-        (table_id, sender, text),
+        (text, message_id, table_id, sender),
     )
+    if cursor.rowcount == 0:
+        return None
     conn.commit()
-    cursor.execute("SELECT * FROM table_messages WHERE id = ?", (cursor.lastrowid,))
+    cursor.execute("SELECT * FROM table_messages WHERE id = ?", (message_id,))
+    return dict(cursor.fetchone())
+
+
+def delete_table_message(table_id: int, message_id: int, sender: str) -> bool:
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute(
+        "DELETE FROM table_messages WHERE id = ? AND table_id = ? AND sender = ?",
+        (message_id, table_id, sender),
+    )
+    deleted = cursor.rowcount > 0
+    if deleted:
+        conn.commit()
+    return deleted
+
+
+def set_table_message_reaction(table_id: int, message_id: int, reaction: str) -> dict | None:
+    value = (reaction or "").strip()[:8]
+    allowed = {"", "👍", "❤️", "😂", "😮", "😢", "🙏"}
+    if value not in allowed:
+        raise ValueError("Invalid reaction.")
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute(
+        "UPDATE table_messages SET reaction = ? WHERE id = ? AND table_id = ?",
+        (value, message_id, table_id),
+    )
+    if cursor.rowcount == 0:
+        return None
+    conn.commit()
+    cursor.execute("SELECT * FROM table_messages WHERE id = ?", (message_id,))
     return dict(cursor.fetchone())
 
 

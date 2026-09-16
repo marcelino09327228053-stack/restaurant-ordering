@@ -318,6 +318,14 @@
       display: flex !important; align-items: flex-end !important; justify-content: center;
     }
     .chat-sheet { max-height: min(78vh, 640px); display: flex; flex-direction: column; }
+    .chat-head { display: flex; align-items: center; gap: 12px; }
+    .chat-head h2 { flex: 1; margin: 0; }
+    .chat-close-x {
+      width: 38px; height: 38px; flex: 0 0 auto; border: 1px solid var(--line);
+      border-radius: 50%; background: var(--panel-2); color: var(--text);
+      font-size: 1.25rem; line-height: 1; cursor: pointer;
+    }
+    .chat-close-x:hover { border-color: var(--orange); color: #fed7aa; }
     .chat-sheet .chat-log {
       flex: 1; overflow: auto; min-height: 220px; max-height: 42vh;
       display: flex; flex-direction: column; gap: 8px; margin: 8px 0 12px;
@@ -326,9 +334,57 @@
       max-width: 85%; padding: 10px 12px; border-radius: 14px;
       font-size: .9rem; line-height: 1.4;
     }
-    .c-bubble.me { align-self: flex-end; background: #2a1408; border: 1px solid #7c2d12; color: #fed7aa; }
-    .c-bubble.them { align-self: flex-start; background: var(--panel-2); border: 1px solid var(--line); }
+    .chat-message-row { position: relative; display: flex; align-items: center; max-width: 84%; }
+    .chat-message-row.me { align-self: flex-end; justify-content: flex-end; }
+    .chat-message-row.them { align-self: flex-start; }
+    .chat-message-row .c-bubble { max-width: 100%; }
+    .c-bubble.me { background: #2a1408; border: 1px solid #7c2d12; color: #fed7aa; }
+    .c-bubble.them { background: var(--panel-2); border: 1px solid var(--line); }
     .c-bubble time { display: block; margin-top: 4px; font-size: .7rem; color: var(--muted); }
+    .chat-message-menu { position: relative; width: max-content; flex: 0 0 auto; }
+    .chat-message-menu summary {
+      width: 28px; height: 24px; display: grid; place-items: center;
+      border-radius: 8px; color: #fdba74; cursor: pointer; list-style: none;
+      font-size: 1.15rem; font-weight: 800; line-height: 1;
+    }
+    .chat-message-menu summary::-webkit-details-marker { display: none; }
+    .chat-message-menu summary:hover, .chat-message-menu[open] summary { background: #ffffff12; color: #fff; }
+    .chat-message-options {
+      position: absolute; right: 0; bottom: calc(100% + 5px); z-index: 5;
+      min-width: 112px; padding: 5px; border: 1px solid var(--line);
+      border-radius: 10px; background: #202024; box-shadow: 0 12px 28px #0009;
+    }
+    .chat-message-options button {
+      display: block; width: 100%; border: 0; padding: 8px 10px;
+      border-radius: 7px; background: transparent; color: var(--text);
+      text-align: left; font-size: .78rem; cursor: pointer;
+    }
+    .chat-message-options button:hover { background: #ffffff12; }
+    .chat-message-options .delete-message { color: #fca5a5; }
+    .chat-inline-tools {
+      position: absolute; top: 50%; z-index: 6; display: flex; align-items: center; gap: 2px;
+      opacity: 0; visibility: hidden; pointer-events: none;
+      transform: translateY(-50%) scale(.96); transition: opacity .14s ease, transform .14s ease, visibility .14s;
+    }
+    .chat-message-row.me .chat-inline-tools { right: calc(100% + 5px); }
+    .chat-message-row.them .chat-inline-tools { left: calc(100% + 5px); }
+    .chat-message-row:hover .chat-inline-tools,
+    .chat-message-row:focus-within .chat-inline-tools,
+    .chat-message-row.actions-visible .chat-inline-tools {
+      opacity: 1; visibility: visible; pointer-events: auto; transform: translateY(-50%) scale(1);
+    }
+    .chat-inline-action {
+      width: 28px; height: 28px; display: grid; place-items: center; border: 0;
+      border-radius: 50%; background: transparent; color: var(--muted); cursor: pointer;
+    }
+    .chat-inline-action:hover { background: #ffffff12; color: #fff; }
+    .reaction-picker { display: flex; gap: 3px; min-width: max-content; }
+    .reaction-picker button { width: auto; padding: 7px; font-size: 1rem; }
+    .message-reaction { display: inline-block; margin: 5px 0 -5px; padding: 2px 6px; border-radius: 999px; background: #27272a; font-size: .78rem; }
+    .reply-quote { margin-bottom: 7px; padding: 6px 8px; border-left: 3px solid var(--orange); border-radius: 6px; background: #0003; color: var(--muted); font-size: .75rem; }
+    .reply-preview { display: flex; gap: 8px; align-items: center; padding: 8px 10px; border-left: 3px solid var(--orange); background: var(--panel-2); color: var(--muted); font-size: .78rem; }
+    .reply-preview span { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .reply-preview button { border: 0; background: transparent; color: var(--text); cursor: pointer; }
     .chat-compose { display: flex; gap: 8px; }
     .chat-compose input {
       flex: 1; min-width: 0; padding: 12px 14px; border-radius: 12px;
@@ -563,14 +619,17 @@
 
   <div class="sheet-back" id="chatSheet" onclick="closeChatBackdrop(event)">
     <div class="sheet chat-sheet">
-      <h2>Message the cashier</h2>
+      <div class="chat-head">
+        <h2>Message the cashier</h2>
+        <button class="chat-close-x" type="button" onclick="closeChat()" aria-label="Close chat">×</button>
+      </div>
       <p class="hint">Connected via table QR · works on restaurant Wi‑Fi even without internet.</p>
       <div class="chat-log" id="chatLog"></div>
+      <div class="reply-preview" id="customerReplyPreview" hidden><span id="customerReplyText"></span><button type="button" onclick="cancelCustomerReply()" aria-label="Cancel reply">×</button></div>
       <form class="chat-compose" onsubmit="sendCustomerChat(event)">
         <input id="chatInput" maxlength="500" placeholder="Ask or tell the cashier…" autocomplete="off" />
         <button type="submit">Send</button>
       </form>
-      <button class="ghost auth-full" type="button" style="margin-top:10px;width:100%" onclick="closeChat()">Close</button>
     </div>
   </div>
 
@@ -670,6 +729,7 @@
     let chatTimer = null;
     let lastChatId = 0;
     let chatOpen = false;
+    let customerReplyTo = null;
     let paymentMethods = [];
     let selectedPaymentId = null;
     let isConnected = navigator.onLine;
@@ -1269,6 +1329,15 @@
     function closeChatBackdrop(event) {
       if (event.target.id === "chatSheet") closeChat();
     }
+    document.addEventListener("click", event => {
+      const selectedMenu = event.target.closest?.(".chat-message-menu");
+      document.querySelectorAll(".chat-message-menu[open]").forEach(menu => {
+        if (menu !== selectedMenu) menu.removeAttribute("open");
+      });
+      if (!event.target.closest?.(".chat-message-row")) {
+        document.querySelectorAll(".chat-message-row.actions-visible").forEach(row => row.classList.remove("actions-visible"));
+      }
+    });
 
     function startChatPolling() {
       clearInterval(chatTimer);
@@ -1297,10 +1366,31 @@
           if (m.sender === "cashier") gotCashier = true;
           if (log.querySelector(".hint")) log.innerHTML = "";
           const time = new Date(`${m.created_at.replace(" ", "T")}Z`).toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"});
-          const el = document.createElement("div");
-          el.className = `c-bubble ${m.sender === "customer" ? "me" : "them"}`;
-          el.innerHTML = `${escapeHtml(m.body)}<time>${m.sender === "cashier" ? "Cashier" : "You"} · ${time}</time>`;
-          log.appendChild(el);
+          const row = document.createElement("div");
+          const side = m.sender === "customer" ? "me" : "them";
+          row.className = `chat-message-row ${side}`;
+          row.dataset.messageId = m.id;
+          row.dataset.body = m.body;
+          const moreMenu = m.sender === "customer"
+            ? `<details class="chat-message-menu">
+                 <summary aria-label="Message options" title="Message options">⋯</summary>
+                 <div class="chat-message-options">
+                   <button class="delete-message" type="button" onclick="deleteCustomerMessage(${m.id})">Delete</button>
+                   <button type="button" onclick="editCustomerMessage(${m.id})">Edit</button>
+                 </div>
+               </details>`
+            : "";
+          const emojiButtons = ["👍","❤️","😂","😮","😢","🙏"].map(emoji => `<button type="button" onclick="reactToCustomerMessage(${m.id}, '${emoji}')">${emoji}</button>`).join("");
+          const tools = `<div class="chat-inline-tools">
+            <details class="chat-message-menu"><summary aria-label="React to message" title="React">☺</summary><div class="chat-message-options reaction-picker">${emojiButtons}</div></details>
+            <button class="chat-inline-action" type="button" title="Reply to this message" aria-label="Reply to this message" onclick="replyToCustomerMessage(${m.id})">↩</button>
+            ${moreMenu}
+          </div>`;
+          const quote = m.reply_body ? `<div class="reply-quote">${m.reply_sender === "cashier" ? "Cashier" : "Customer"}: ${escapeHtml(m.reply_body)}</div>` : "";
+          const reaction = m.reaction ? `<span class="message-reaction">${escapeHtml(m.reaction)}</span>` : "";
+          const bubble = `<div class="c-bubble ${side}" onclick="toggleMessageActions(event, ${m.id})">${quote}<span class="chat-message-body">${escapeHtml(m.body)}</span><time>${m.sender === "cashier" ? "Cashier" : "You"} · ${time}</time>${reaction}</div>`;
+          row.innerHTML = side === "me" ? `${tools}${bubble}` : `${bubble}${tools}`;
+          log.appendChild(row);
         }
         if (msgs.length && chatOpen) log.scrollTop = log.scrollHeight;
         if (gotCashier && !chatOpen) document.getElementById("chatPing").hidden = false;
@@ -1316,10 +1406,81 @@
         await api(`/api/public/${encodeURIComponent(accessCode)}/messages`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ body }),
+          body: JSON.stringify({ body, reply_to_id: customerReplyTo?.id || null }),
         });
         input.value = "";
+        cancelCustomerReply();
         await refreshChat(false);
+      } catch (error) {
+        showError(error.message);
+      }
+    }
+
+    async function editCustomerMessage(messageId) {
+      const row = document.querySelector(`.chat-message-row[data-message-id="${messageId}"]`);
+      if (!row) return;
+      const body = prompt("Edit your message:", row.dataset.body || "");
+      if (body === null) return;
+      const text = body.trim();
+      if (!text) {
+        alert("Message cannot be empty.");
+        return;
+      }
+      try {
+        await api(`/api/public/${encodeURIComponent(accessCode)}/messages/${messageId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({body: text}),
+        });
+        await refreshChat(true);
+      } catch (error) {
+        showError(error.message);
+      }
+    }
+
+    async function deleteCustomerMessage(messageId) {
+      if (!confirm("Delete this message?")) return;
+      try {
+        await api(`/api/public/${encodeURIComponent(accessCode)}/messages/${messageId}`, {
+          method: "DELETE",
+        });
+        await refreshChat(true);
+      } catch (error) {
+        showError(error.message);
+      }
+    }
+
+    function replyToCustomerMessage(messageId) {
+      const row = document.querySelector(`.chat-message-row[data-message-id="${messageId}"]`);
+      if (!row) return;
+      customerReplyTo = {id: messageId, body: row.dataset.body || ""};
+      document.getElementById("customerReplyText").textContent = `Replying to: ${customerReplyTo.body}`;
+      document.getElementById("customerReplyPreview").hidden = false;
+      document.getElementById("chatInput").focus();
+    }
+
+    function toggleMessageActions(event, messageId) {
+      event.stopPropagation();
+      const selected = document.querySelector(`.chat-message-row[data-message-id="${messageId}"]`);
+      if (!selected) return;
+      const willShow = !selected.classList.contains("actions-visible");
+      document.querySelectorAll(".chat-message-row.actions-visible").forEach(row => row.classList.remove("actions-visible"));
+      if (willShow) selected.classList.add("actions-visible");
+    }
+
+    function cancelCustomerReply() {
+      customerReplyTo = null;
+      document.getElementById("customerReplyPreview").hidden = true;
+    }
+
+    async function reactToCustomerMessage(messageId, reaction) {
+      try {
+        await api(`/api/public/${encodeURIComponent(accessCode)}/messages/${messageId}/reaction`, {
+          method: "PATCH",
+          headers: {"Content-Type": "application/json"},
+          body: JSON.stringify({reaction}),
+        });
+        await refreshChat(true);
       } catch (error) {
         showError(error.message);
       }

@@ -304,6 +304,9 @@ def _init_postgres_db() -> None:
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_table_messages_table ON table_messages (table_id, id)")
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_room_messages_room ON room_messages (room_id, id)")
 
+    cursor.execute("ALTER TABLE table_messages ADD COLUMN IF NOT EXISTS reply_to_id INTEGER")
+    cursor.execute("ALTER TABLE table_messages ADD COLUMN IF NOT EXISTS reaction TEXT NOT NULL DEFAULT ''")
+
     conn.commit()
 
 
@@ -493,6 +496,11 @@ def _init_sqlite_db() -> None:
     ):
         if col not in order_cols:
             cursor.execute(f"ALTER TABLE restaurant_orders ADD COLUMN {col} {decl}")
+
+    message_cols = {row["name"] for row in cursor.execute("PRAGMA table_info(table_messages)")}
+    for col, decl in (("reply_to_id", "INTEGER"), ("reaction", "TEXT NOT NULL DEFAULT ''")):
+        if col not in message_cols:
+            cursor.execute(f"ALTER TABLE table_messages ADD COLUMN {col} {decl}")
 
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_payment_methods_owner_active ON owner_payment_methods (owner_id, active, sort_order, id)")
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_orders_status ON restaurant_orders (status, created_at)")

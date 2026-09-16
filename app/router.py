@@ -137,6 +137,11 @@ class TableCaptionUpdate(BaseModel):
 
 class TableMessageCreate(BaseModel):
     body: str = Field(min_length=1, max_length=500)
+    reply_to_id: int | None = None
+
+
+class TableMessageReaction(BaseModel):
+    reaction: str = Field(default="", max_length=8)
 
 
 class OpsRoomCreate(BaseModel):
@@ -516,9 +521,47 @@ def public_send_message(access_code: str, body: TableMessageCreate):
     if table is None:
         raise HTTPException(status_code=404, detail="Invalid or inactive table QR code.")
     try:
-        return repo.add_table_message(table["id"], "customer", body.body)
+        return repo.add_table_message(table["id"], "customer", body.body, body.reply_to_id)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+
+@router.patch("/public/{access_code}/messages/{message_id}")
+def public_edit_message(access_code: str, message_id: int, body: TableMessageCreate):
+    table = repo.get_public_table(access_code)
+    if table is None:
+        raise HTTPException(status_code=404, detail="Invalid or inactive table QR code.")
+    try:
+        message = repo.update_table_message(table["id"], message_id, "customer", body.body)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    if message is None:
+        raise HTTPException(status_code=404, detail="Customer message not found.")
+    return message
+
+
+@router.delete("/public/{access_code}/messages/{message_id}")
+def public_delete_message(access_code: str, message_id: int):
+    table = repo.get_public_table(access_code)
+    if table is None:
+        raise HTTPException(status_code=404, detail="Invalid or inactive table QR code.")
+    if not repo.delete_table_message(table["id"], message_id, "customer"):
+        raise HTTPException(status_code=404, detail="Customer message not found.")
+    return {"deleted": True}
+
+
+@router.patch("/public/{access_code}/messages/{message_id}/reaction")
+def public_react_to_message(access_code: str, message_id: int, body: TableMessageReaction):
+    table = repo.get_public_table(access_code)
+    if table is None:
+        raise HTTPException(status_code=404, detail="Invalid or inactive table QR code.")
+    try:
+        message = repo.set_table_message_reaction(table["id"], message_id, body.reaction)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    if message is None:
+        raise HTTPException(status_code=404, detail="Message not found.")
+    return message
 
 
 @router.get("/messages/threads")
@@ -547,9 +590,25 @@ def cashier_send_message(
     if table is None or not table.get("active"):
         raise HTTPException(status_code=404, detail="Table not found.")
     try:
-        return repo.add_table_message(table_id, "cashier", body.body)
+        return repo.add_table_message(table_id, "cashier", body.body, body.reply_to_id)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+
+@router.patch("/tables/{table_id}/messages/{message_id}/reaction")
+def cashier_react_to_message(
+    table_id: int, message_id: int, body: TableMessageReaction, _=Depends(require_cashier)
+):
+    table = repo.get_table_by_id(table_id)
+    if table is None or not table.get("active"):
+        raise HTTPException(status_code=404, detail="Table not found.")
+    try:
+        message = repo.set_table_message_reaction(table_id, message_id, body.reaction)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    if message is None:
+        raise HTTPException(status_code=404, detail="Message not found.")
+    return message
 
 
 @router.get("/orders")
