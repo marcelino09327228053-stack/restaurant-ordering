@@ -167,6 +167,19 @@
     .drop small { color: var(--muted); font-size: .78rem; }
     .drop input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
 
+    .menu-dish-popover {
+      position: fixed; z-index: 500; width: min(430px, calc(100vw - 24px));
+      max-height: calc(100vh - 24px); overflow: auto; padding: 16px;
+      border: 1px solid #ffffff2b; border-radius: 18px;
+      background: #121416; box-shadow: 0 24px 70px #000c, 0 0 0 1px #ff6a1a18;
+    }
+    .menu-dish-popover-head { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
+    .menu-dish-popover-head h2 { flex: 1; margin: 0; }
+    .menu-dish-popover .drop { min-height: 150px !important; }
+    @media (max-width: 640px) {
+      .menu-dish-popover { left: 12px !important; right: 12px; width: auto; }
+    }
+
     .logo-preview {
       width: 72px; height: 72px; border-radius: 50%; object-fit: cover;
       border: 2px solid #ff6a1a55; box-shadow: 0 0 0 5px #ff6a1a14;
@@ -208,6 +221,14 @@
     .table-qr-meta small { display: block; margin-top: 5px; color: #fdba74; overflow-wrap: anywhere; }
     .table-qr-actions { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 10px; }
     .table-qr-actions .btn { min-height: 34px; padding: 6px 10px; font-size: .76rem; }
+    .phone-preview-dialog { border:0; padding:0; background:transparent; max-width:none; max-height:none; }
+    .phone-preview-dialog::backdrop { background:rgba(0,0,0,.76); backdrop-filter:blur(5px); }
+    .phone-preview-card { width:min(430px,calc(100vw - 24px)); padding:16px; border:1px solid var(--line); border-radius:22px; background:var(--panel); box-shadow:0 28px 80px rgba(0,0,0,.48); }
+    .phone-preview-head { display:flex; align-items:center; gap:10px; margin-bottom:12px; }
+    .phone-preview-head strong { flex:1; }
+    .phone-preview-shell { width:min(375px,100%); height:min(760px,calc(100vh - 130px)); margin:auto; padding:10px; border:2px solid #313842; border-radius:30px; background:#07090c; box-shadow:0 16px 45px rgba(0,0,0,.4); }
+    .phone-preview-shell::before { content:""; display:block; width:88px; height:5px; margin:0 auto 8px; border-radius:999px; background:#303640; }
+    .phone-preview-shell iframe { display:block; width:100%; height:calc(100% - 13px); border:0; border-radius:20px; background:#fff; }
     @media (max-width: 480px) { .table-qr-card { grid-template-columns: 1fr; } .table-qr-card img { width: 150px; height: 150px; margin: auto; } }
     .payment-item {
       display: grid; grid-template-columns: 62px 1fr; gap: 10px;
@@ -489,15 +510,17 @@
 
       <section class="block" id="menuBuilder">
         <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
-          <button class="btn solid" type="button" onclick="openMenuForm()">+ Add Menu</button>
+          <button class="btn solid" id="openMenuButton" type="button" aria-haspopup="dialog" aria-controls="menuDishForm" aria-expanded="false" onclick="openMenuForm()">+ Add Menu</button>
           <button class="btn" type="button" onclick="document.getElementById('menuItemsPanel').hidden=!document.getElementById('menuItemsPanel').hidden">Edit / Delete</button>
           <button class="btn" id="menuPhonePreview" type="button" aria-pressed="false" onclick="toggleMenuPhonePreview()">Phone preview</button>
         </div>
 
         <div style="margin-bottom:12px"><iframe id="menuCustomerPreview" title="Customer menu page" style="display:block;border:1px solid var(--line);width:100%;height:520px;background:#fff" scrolling="no" onload="setupMenuFrameSize()"></iframe></div>
-        <div id="menuDishForm" hidden>
-        <button class="btn" type="button" onclick="document.getElementById('menuDishForm').hidden=true">Close form</button>
-        <h2 id="menuFormTitle">Menu dish</h2>
+        <div class="menu-dish-popover" id="menuDishForm" role="dialog" aria-modal="false" aria-labelledby="menuFormTitle" hidden>
+        <div class="menu-dish-popover-head">
+          <h2 id="menuFormTitle">Menu dish</h2>
+          <button class="btn" type="button" onclick="closeMenuForm()">Close</button>
+        </div>
         <p class="hint">Add a dish with an optional photo. Customers see it on your public page.</p>
         <div class="drop" id="menuDrop" data-kind="menu" style="min-height:88px;margin-bottom:10px">
           <img id="menuPhotoPreview" alt="Selected dish photo" hidden style="display:block;width:100%;max-height:220px;object-fit:contain;border-radius:10px;margin-bottom:10px" />
@@ -576,6 +599,12 @@
   </div>
 
   <div class="toast" id="toast"></div>
+  <dialog class="phone-preview-dialog" id="tablePhonePreviewDialog" onclick="if(event.target===this) closeTablePhonePreview()">
+    <div class="phone-preview-card">
+      <div class="phone-preview-head"><strong id="tablePhonePreviewTitle">Phone preview</strong><button class="btn" type="button" onclick="closeTablePhonePreview()">Close</button></div>
+      <div class="phone-preview-shell"><iframe id="tablePhonePreviewFrame" title="Table customer phone preview"></iframe></div>
+    </div>
+  </dialog>
 
   <section class="design-room" id="designRoom" hidden>
     <div class="design-top">
@@ -584,6 +613,7 @@
       <button class="btn" type="button" data-studio-panel="tablesPanel" aria-controls="tablesPanel" aria-expanded="false" onclick="toggleStudioPanel('tablesPanel')">Tables & QR</button>
       <div class="grow"></div>
       <a class="btn" href="/">Home</a>
+      <button class="btn" type="button" onclick="openTablePhonePreview()">Preview on phone</button>
       </div>
     <section class="design-slideshow" id="slideshowPanel" hidden>
       <div class="slideshow-head"><h3>Hero Slideshow</h3><div class="grow"></div><button class="btn" type="button" onclick="toggleSlideshowPanel(false)">Close</button></div>
@@ -1443,6 +1473,23 @@
           }).join("")
         : `<p class="hint" style="margin-top:12px">No tables yet.</p>`;
     }
+    function openTablePhonePreview() {
+      const table = tables[0];
+      if (!table) {
+        toast("Add a table first to preview the customer phone page.");
+        return;
+      }
+      const url = `${location.origin}/order?table=${encodeURIComponent(table.access_code)}`;
+      const dialog = document.getElementById("tablePhonePreviewDialog");
+      document.getElementById("tablePhonePreviewTitle").textContent = `${table.name || "Table"} · customer view`;
+      document.getElementById("tablePhonePreviewFrame").src = url;
+      if (!dialog.open) dialog.showModal();
+    }
+    function closeTablePhonePreview() {
+      const dialog = document.getElementById("tablePhonePreviewDialog");
+      if (dialog.open) dialog.close();
+      document.getElementById("tablePhonePreviewFrame").removeAttribute("src");
+    }
 
     function renderPreview() {
       const root = document.getElementById("livePreview");
@@ -1636,9 +1683,41 @@
     function openMenuForm() {
       if (document.getElementById("addMenuButton").disabled) return;
       cancelMenuEdit();
-      document.getElementById("menuDishForm").hidden = false;
-      document.getElementById("menuDishForm").scrollIntoView({block:"start",behavior:"smooth"});
+      showMenuForm();
     }
+    function showMenuForm() {
+      const form = document.getElementById("menuDishForm");
+      form.hidden = false;
+      document.getElementById("openMenuButton").setAttribute("aria-expanded", "true");
+      requestAnimationFrame(() => {
+        positionMenuForm();
+        document.getElementById("menuDrop").focus({preventScroll:true});
+      });
+    }
+    function closeMenuForm(force = false) {
+      if (!force && document.getElementById("addMenuButton").disabled) return;
+      document.getElementById("menuDishForm").hidden = true;
+      document.getElementById("openMenuButton").setAttribute("aria-expanded", "false");
+    }
+    function positionMenuForm() {
+      const form = document.getElementById("menuDishForm");
+      if (form.hidden) return;
+      const button = document.getElementById("openMenuButton");
+      const rect = button.getBoundingClientRect();
+      const gap = 12;
+      const width = form.offsetWidth;
+      const height = form.offsetHeight;
+      const left = rect.right + gap + width <= innerWidth - gap
+        ? rect.right + gap
+        : Math.max(gap, Math.min(rect.left, innerWidth - width - gap));
+      const top = Math.max(gap, Math.min(rect.top, innerHeight - height - gap));
+      form.style.left = `${left}px`;
+      form.style.top = `${top}px`;
+    }
+    window.addEventListener("resize", positionMenuForm);
+    document.addEventListener("keydown", event => {
+      if (event.key === "Escape" && !document.getElementById("menuDishForm").hidden) closeMenuForm();
+    });
     function refreshMenuCustomerPage() {
       const frame = document.getElementById("menuCustomerPreview");
       frame.style.height = "520px";
@@ -1666,7 +1745,7 @@
       if (document.getElementById("addMenuButton").disabled) return;
       const item = menu.find(item => item.id === id);
       if (!item) return;
-      document.getElementById("menuDishForm").hidden = false;
+      showMenuForm();
       editingMenuId = id;
       document.getElementById("menuCategory").value = item.category;
       toggleCustomCategory();
@@ -1681,7 +1760,7 @@
       document.getElementById("addMenuButton").textContent = "Save changes";
       document.getElementById("cancelMenuEdit").hidden = false;
       document.getElementById("menuFeedback").textContent = "";
-      document.getElementById("menuFormTitle").scrollIntoView({block:"start",behavior:"smooth"});
+      positionMenuForm();
     }
     function cancelMenuEdit() {
       if (document.getElementById("addMenuButton").disabled) return;
@@ -1757,7 +1836,7 @@
         renderPreview();
         toast(savedMessage, true);
         feedback.textContent = savedMessage;
-        document.getElementById("menuDishForm").hidden = true;
+        closeMenuForm(true);
         refreshMenuCustomerPage();
       } catch (e) {
         feedback.textContent = e.message;

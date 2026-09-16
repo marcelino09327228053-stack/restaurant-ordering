@@ -10,7 +10,7 @@ from fastapi.staticfiles import StaticFiles
 
 from app import repository as repo
 from app.auth import require_owner
-from app.cloudinary_routes import router as cloudinary_router
+from app.cloudinary_routes import _cloudinary_configured, router as cloudinary_router
 from app.db import get_connection, init_db, using_postgres
 from app.mail import send_security_email
 from app.repository import ensure_defaults
@@ -708,7 +708,11 @@ A full logout was requested from a signed-in device.",
     async def health():
         return {"status": "ok"}
 
-    application.include_router(cloudinary_router)
+    # The Cloudinary and local routers expose the same upload URLs. Register
+    # Cloudinary only when its credentials are available; otherwise the local
+    # router below stores uploads under static/uploads during development.
+    if _cloudinary_configured():
+        application.include_router(cloudinary_router)
     application.include_router(router)
     init_db()
     prepare_owner_menu_storage()
