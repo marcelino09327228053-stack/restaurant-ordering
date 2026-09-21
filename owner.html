@@ -470,9 +470,33 @@
       border:1px solid #ffffff24; border-radius:16px; box-shadow:none;
     }
     .design-room:not(.canvas-tools-visible) #menuPanel {
-      left:50%; right:auto; transform:translateX(-50%);
-      width:min(1120px,calc(100% - 32px));
-      top:calc(var(--studio-header-height,64px) + 16px); bottom:16px;
+      left:12px; right:auto; transform:none;
+      width:min(520px,calc(100% - 24px));
+      top:calc(var(--studio-header-height,64px) + 8px); bottom:12px;
+      max-height:calc(100% - var(--studio-header-height,64px) - 20px);
+      overflow:auto;
+    }
+    #menuPanel .menu-item {
+      grid-template-columns:54px minmax(0,1fr) auto;
+      align-items:center;
+    }
+    #menuPanel .menu-item > div:last-child {
+      display:flex!important;
+      flex-direction:row;
+      align-items:center;
+      gap:8px!important;
+      justify-items:unset!important;
+      white-space:nowrap;
+    }
+    #menuPanel .menu-item > div:last-child > div:last-child {
+      display:flex!important;
+      flex-wrap:nowrap;
+      gap:6px!important;
+    }
+    #menuPanel .menu-item .btn {
+      min-height:34px;
+      padding:6px 9px;
+      font-size:.75rem;
     }
     #menuCustomerPreview { max-width:100%; margin-inline:auto; }
     #menuPhonePreview[aria-pressed="true"] { border-color:#f97316;background:#f9731625; }
