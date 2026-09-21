@@ -38,7 +38,7 @@ def preferred_lan_ip() -> str:
 
 
 def connection_info(port: int | None = None) -> dict:
-    port = int(port or os.getenv("PORT", "8030"))
+    port = int(port or os.getenv("PORT", "8010"))
     public_base = (os.getenv("PUBLIC_BASE_URL") or os.getenv("RENDER_EXTERNAL_URL") or "").strip().rstrip("/")
     if public_base:
         parsed = urlsplit(public_base)
