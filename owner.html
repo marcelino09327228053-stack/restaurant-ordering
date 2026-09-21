@@ -640,11 +640,10 @@
 
   <div class="toast" id="toast"></div>
   <dialog class="phone-preview-dialog" id="tablePhonePreviewDialog" onclick="if(event.target===this) closeTablePhonePreview()">
-    <div class="phone-preview-card">
+    <div class="phone-preview-card" style="width:min(980px,calc(100vw - 40px));max-width:none">
       <div class="phone-preview-head"><strong id="tablePhonePreviewTitle">Phone preview</strong><button class="btn" type="button" onclick="closeTablePhonePreview()">Close</button></div>
-      <div style="display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap">
-        <div class="phone-preview-shell"><iframe id="tablePhonePreviewFrame" title="Table customer phone preview"></iframe></div>
-        <div style="width:220px;padding:14px;border:1px solid var(--line);border-radius:18px;background:#16181b">
+      <div style="display:flex;gap:24px;align-items:flex-start;justify-content:center;flex-wrap:nowrap">
+        <div style="width:240px;flex:0 0 240px;padding:14px;border:1px solid var(--line);border-radius:18px;background:#16181b">
           <strong style="display:block;margin-bottom:10px">Scan on phone</strong>
           <img id="tablePhonePreviewQr" alt="Phone preview QR code" style="display:block;width:100%;height:auto;background:#fff;border-radius:12px;padding:8px" />
           <small style="display:block;margin-top:10px;color:var(--muted)">Scan this QR code to test the real mobile view.</small>
@@ -654,25 +653,8 @@
             <a class="btn solid" id="tablePhonePreviewOpen" target="_blank" rel="noopener">Open link</a>
           </div>
         </div>
-      </div>
-    </div>
-  </dialog>
-OLD
-<<<NEW
-  <dialog class="phone-preview-dialog" id="tablePhonePreviewDialog" onclick="if(event.target===this) closeTablePhonePreview()">
-    <div class="phone-preview-card">
-      <div class="phone-preview-head"><strong id="tablePhonePreviewTitle">Phone preview</strong><button class="btn" type="button" onclick="closeTablePhonePreview()">Close</button></div>
-      <div style="display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap">
-        <div class="phone-preview-shell"><iframe id="tablePhonePreviewFrame" title="Table customer phone preview"></iframe></div>
-        <div style="width:220px;padding:14px;border:1px solid var(--line);border-radius:18px;background:#16181b">
-          <strong style="display:block;margin-bottom:10px">Scan on phone</strong>
-          <img id="tablePhonePreviewQr" alt="Phone preview QR code" style="display:block;width:100%;height:auto;background:#fff;border-radius:12px;padding:8px" />
-          <small style="display:block;margin-top:10px;color:var(--muted)">Scan this QR code to test the real mobile view.</small>
-          <div id="tablePhonePreviewLink" style="margin-top:10px;font-size:.75rem;overflow-wrap:anywhere;color:#fdba74"></div>
-          <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
-            <button class="btn" id="tablePhonePreviewCopy" type="button">Copy link</button>
-            <a class="btn solid" id="tablePhonePreviewOpen" target="_blank" rel="noopener">Open link</a>
-          </div>
+        <div class="phone-preview-shell" style="flex:0 0 auto">
+          <iframe id="tablePhonePreviewFrame" title="Table customer phone preview"></iframe>
         </div>
       </div>
     </div>
@@ -1562,10 +1544,26 @@ OLD
         toast("Add a table first to preview the customer phone page.");
         return;
       }
+
       const url = `${location.origin}/order?table=${encodeURIComponent(table.access_code)}`;
       const dialog = document.getElementById("tablePhonePreviewDialog");
+
       document.getElementById("tablePhonePreviewTitle").textContent = `${table.name || "Table"} · customer view`;
       document.getElementById("tablePhonePreviewFrame").src = url;
+
+      const qr = document.getElementById("tablePhonePreviewQr");
+      const link = document.getElementById("tablePhonePreviewLink");
+      const copyButton = document.getElementById("tablePhonePreviewCopy");
+      const openButton = document.getElementById("tablePhonePreviewOpen");
+
+      qr.src = `/api/qr?data=${encodeURIComponent(url)}`;
+      link.textContent = url;
+      openButton.href = url;
+
+      copyButton.onclick = () => {
+        navigator.clipboard.writeText(url).then(() => toast("Link copied.", true));
+      };
+
       if (!dialog.open) dialog.showModal();
     }
     function closeTablePhonePreview() {
