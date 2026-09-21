@@ -588,44 +588,6 @@
       place-items:center;
     }
   </style>
-OLD
-<<<NEW
-    #menu.custom-menu-theme .desc { color:inherit; }
-
-    .phone-view-mode .search,
-    .phone-view-mode #loginBtn,
-    .phone-view-mode #createAccountBtn,
-    .phone-view-mode #cashierLoginBtn,
-    .phone-view-mode .table-chip,
-    .phone-view-mode .header-order-tools .category-select {
-      display:none !important;
-    }
-
-    .phone-view-mode .bar {
-      flex-wrap:nowrap !important;
-      justify-content:space-between;
-    }
-
-    .phone-view-mode .brand {
-      flex:1 1 auto;
-      min-width:0;
-    }
-
-    .phone-view-mode .brand-name {
-      max-width:none;
-    }
-
-    .phone-view-mode .header-order-tools {
-      flex:0 0 auto !important;
-      width:auto !important;
-      order:initial !important;
-    }
-
-    .phone-view-mode .cart-btn {
-      display:grid !important;
-      place-items:center;
-    }
-  </style>
 </head>
 <body>
   <script>
@@ -635,13 +597,6 @@ OLD
       document.documentElement.classList.add("phone-view-mode");
 
       document.addEventListener("DOMContentLoaded", () => {
-        document.querySelector(".search")?.remove();
-        document.getElementById("loginBtn")?.remove();
-        document.getElementById("createAccountBtn")?.remove();
-        document.getElementById("cashierLoginBtn")?.remove();
-        document.querySelector(".table-chip")?.remove();
-        document.getElementById("categorySelect")?.remove();
-
         const brandName = document.getElementById("brandName");
         if (brandName) brandName.textContent = "MB Business Hub";
       });
