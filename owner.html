@@ -1384,7 +1384,12 @@
 
     function restoreDesign(json) {
       designRestoring = true;
-      designCanvas.loadFromJSON(json, () => { designCanvas.renderAll(); designRestoring=false; syncDesignTools(); syncBackgroundColors(); });
+      // Remove the retired slideshow placeholder from saved designs and undo history.
+      const design = typeof json === "string" ? JSON.parse(json) : { ...json };
+      if (Array.isArray(design.objects)) {
+        design.objects = design.objects.filter(object => object.assetType !== "slideshow");
+      }
+      designCanvas.loadFromJSON(design, () => { designCanvas.renderAll(); designRestoring=false; syncDesignTools(); syncBackgroundColors(); });
     }
     function undoDesign() { if(designRestoring || designHistory.length<2)return; const current=designHistory.pop(); designFuture.push(current); restoreDesign(designHistory[designHistory.length-1]); }
     function redoDesign() { if(designRestoring)return; const next=designFuture.pop(); if(!next)return; designHistory.push(next); restoreDesign(next); }
