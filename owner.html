@@ -1126,6 +1126,7 @@
     }
 
     function setupStudioWorkspace() {
+      setupEditorSidebar();
       const header = document.querySelector(".design-top");
       const updatePanelOffset = () => {
         if (header.offsetHeight) document.getElementById("designRoom").style.setProperty("--studio-header-height", `${header.offsetHeight}px`);
