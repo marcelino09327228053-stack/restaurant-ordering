@@ -1829,18 +1829,78 @@
       } catch (_) { /* keep last messages */ }
     }
 
+    let selectedChatImage = null;
+
+    function selectChatImage(input) {
+      const file = input.files?.[0];
+      if (!file) return;
+
+      selectedChatImage = file;
+
+      const preview = document.getElementById("chatImagePreview");
+      const image = document.getElementById("chatImagePreviewImg");
+
+      image.src = URL.createObjectURL(file);
+      preview.hidden = false;
+    }
+
+    function clearChatImage() {
+      selectedChatImage = null;
+
+      const preview = document.getElementById("chatImagePreview");
+      const image = document.getElementById("chatImagePreviewImg");
+      const photoInput = document.getElementById("chatPhotoInput");
+      const cameraInput = document.getElementById("chatCameraInput");
+
+      if (image.src) URL.revokeObjectURL(image.src);
+      image.removeAttribute("src");
+      preview.hidden = true;
+      photoInput.value = "";
+      cameraInput.value = "";
+    }
+
     async function sendCustomerChat(event) {
       event.preventDefault();
+
       const input = document.getElementById("chatInput");
       const body = input.value.trim();
-      if (!body) return;
+
+      if (!body && !selectedChatImage) return;
+
       try {
-        await api(`/api/public/${encodeURIComponent(accessCode)}/messages`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ body, reply_to_id: customerReplyTo?.id || null }),
-        });
+        if (selectedChatImage) {
+          const form = new FormData();
+          form.append("file", selectedChatImage);
+          form.append("body", body);
+          if (customerReplyTo?.id) {
+            form.append("reply_to_id", String(customerReplyTo.id));
+          }
+
+          const response = await fetch(
+            `/api/public/${encodeURIComponent(accessCode)}/messages/image`,
+            {
+              method: "POST",
+              body: form,
+            }
+          );
+
+          const data = await response.json().catch(() => ({}));
+          if (!response.ok) {
+            throw new Error(data.detail || "Could not send photo.");
+          }
+        } else {
+          await api(`/api/public/${encodeURIComponent(accessCode)}/messages`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              body,
+              reply_to_id: customerReplyTo?.id || null,
+            }),
+          });
+        }
+
         input.value = "";
+        clearChatImage();
         cancelCustomerReply();
         await refreshChat(false);
       } catch (error) {
