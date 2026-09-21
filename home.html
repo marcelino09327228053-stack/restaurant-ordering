@@ -618,6 +618,78 @@
       setSignedOut();
     }
 
+    const HOME_SLIDES = [
+      "/static/foods/chicken-inasal.jpg",
+      "/static/foods/pork-sisig.jpg",
+      "/static/foods/beef-tapa.jpg",
+      "/static/foods/pancit-canton.jpg",
+      "/static/foods/iced-tea.jpg",
+      "/static/foods/leche-flan.jpg",
+      "/static/foods/fried-chicken.jpg",
+      "/static/foods/classic-burger.jpg",
+      "/static/foods/pepperoni-pizza.jpg",
+      "/static/foods/salmon-sushi.jpg",
+      "/static/foods/shrimp-pasta.jpg",
+      "/static/foods/mango-smoothie.jpg",
+      "/static/foods/chocolate-brownie.jpg",
+      "/static/foods/grilled-liempo.jpg",
+      "/static/foods/garden-salad.jpg",
+      "/static/foods/sinigang.jpg",
+      "/static/foods/fish-and-chips.jpg",
+      "/static/foods/choco-milkshake.jpg",
+      "/static/foods/halo-halo.jpg",
+      "/static/foods/bbq-wings.jpg"
+    ];
+
+    let homeSlideIndex = 0;
+    let homeSlideTimer = null;
+
+    function initHomeSlider() {
+      const slidesEl = document.getElementById("homeSlides");
+      const dotsEl = document.getElementById("homeSlideDots");
+      const countEl = document.getElementById("homeSlideCount");
+      if (!slidesEl || !dotsEl || !HOME_SLIDES.length) return;
+
+      slidesEl.innerHTML = HOME_SLIDES.map((src, index) =>
+        `<div class="home-slide${index === 0 ? " is-active" : ""}" style="background-image:url('${src}')"></div>`
+      ).join("");
+
+      dotsEl.innerHTML = HOME_SLIDES.map((_, index) =>
+        `<button type="button" class="home-slider-dot${index === 0 ? " active" : ""}" aria-label="Show image ${index + 1}" onclick="goHomeSlide(${index})"></button>`
+      ).join("");
+
+      if (countEl) countEl.textContent = `1 / ${HOME_SLIDES.length}`;
+
+      restartHomeSlideTimer();
+    }
+
+    function goHomeSlide(nextIndex) {
+      const slides = [...document.querySelectorAll(".home-slide")];
+      const dots = [...document.querySelectorAll(".home-slider-dot")];
+      const countEl = document.getElementById("homeSlideCount");
+      if (!slides.length) return;
+
+      homeSlideIndex = ((nextIndex % slides.length) + slides.length) % slides.length;
+
+      slides.forEach((slide, index) => {
+        slide.classList.toggle("is-active", index === homeSlideIndex);
+      });
+
+      dots.forEach((dot, index) => {
+        dot.classList.toggle("active", index === homeSlideIndex);
+      });
+
+      if (countEl) countEl.textContent = `${homeSlideIndex + 1} / ${slides.length}`;
+
+      restartHomeSlideTimer();
+    }
+
+    function restartHomeSlideTimer() {
+      clearInterval(homeSlideTimer);
+      homeSlideTimer = setInterval(() => goHomeSlide(homeSlideIndex + 1), 3200);
+    }
+
+    initHomeSlider();
     loadSession();
   </script>
 </body>
