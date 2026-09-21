@@ -982,11 +982,13 @@
     ];
     function closeEditorTool() {
       activeEditorTool = null;
-      document.getElementById("editorToolPanel").hidden = true;
-      document.querySelector(".design-work").classList.remove("tool-panel-open");
+      const toolPanel = document.getElementById("editorToolPanel");
+      if (toolPanel) toolPanel.hidden = true;
+      document.querySelector(".design-work")?.classList.remove("tool-panel-open");
       document.querySelectorAll(".tool-section").forEach(panel=>panel.hidden=true);
       document.querySelectorAll(".tool-rail [aria-expanded]").forEach(button=>button.setAttribute("aria-expanded","false"));
-      document.getElementById("slideshowPanel").hidden=true;
+      const slideshowPanel = document.getElementById("slideshowPanel");
+      if (slideshowPanel) slideshowPanel.hidden = true;
       setCanvasToolsVisible(![...document.querySelectorAll(".studio-panel")].some(panel => !panel.hidden));
       syncTopToolbar();
       requestAnimationFrame(()=>{if(designCanvas)fitDesignBoard();});
