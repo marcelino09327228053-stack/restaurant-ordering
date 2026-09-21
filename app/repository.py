@@ -1021,26 +1021,42 @@ def list_table_messages(table_id: int, after_id: int = 0) -> list[dict]:
     return [dict(row) for row in cursor.fetchall()]
 
 
-def add_table_message(table_id: int, sender: str, body: str, reply_to_id: int | None = None) -> dict:
+def add_table_message(
+    table_id: int,
+    sender: str,
+    body: str = "",
+    reply_to_id: int | None = None,
+    image_url: str = "",
+) -> dict:
     text = (body or "").strip()
-    if not text:
+    image = (image_url or "").strip()
+
+    if not text and not image:
         raise ValueError("Message cannot be empty.")
     if len(text) > 500:
         raise ValueError("Message is too long (max 500 characters).")
+    if len(image) > 500:
+        raise ValueError("Image URL is too long.")
     if sender not in {"customer", "cashier"}:
         raise ValueError("Invalid sender.")
+
     conn = get_connection()
     cursor = conn.cursor()
+
     if reply_to_id is not None:
-        cursor.execute("SELECT id FROM table_messages WHERE id = ? AND table_id = ?", (reply_to_id, table_id))
+        cursor.execute(
+            "SELECT id FROM table_messages WHERE id = ? AND table_id = ?",
+            (reply_to_id, table_id),
+        )
         if cursor.fetchone() is None:
             raise ValueError("Reply message not found.")
+
     cursor.execute(
         """
-        INSERT INTO table_messages (table_id, sender, body, reply_to_id)
-        VALUES (?, ?, ?, ?)
+        INSERT INTO table_messages (table_id, sender, body, reply_to_id, image_url)
+        VALUES (?, ?, ?, ?, ?)
         """,
-        (table_id, sender, text, reply_to_id),
+        (table_id, sender, text, reply_to_id, image),
     )
     conn.commit()
     cursor.execute("SELECT * FROM table_messages WHERE id = ?", (cursor.lastrowid,))
