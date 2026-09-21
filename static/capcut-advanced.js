@@ -1,4 +1,4 @@
-/* MB Business Hub - advanced CapCut-style editor tools. Loaded after capcut-core.js. */
+/* MB SiteHub - advanced CapCut-style editor tools. Loaded after capcut-core.js. */
 (function(){
   if(window.__mbCapcutAdvancedLoaded)return;
   window.__mbCapcutAdvancedLoaded=true;

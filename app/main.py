@@ -165,7 +165,7 @@ def remove_legacy_sample_menu() -> None:
 
 
 def create_app() -> FastAPI:
-    application = FastAPI(title="MB Business Hub")
+    application = FastAPI(title="MB SiteHub")
 
     os.makedirs("static", exist_ok=True)
     application.mount("/static", StaticFiles(directory="static"), name="static")
@@ -202,17 +202,17 @@ def create_app() -> FastAPI:
         html = html.replace("</head>", f"{order_cleanup}</head>", 1)
         html = html.replace(
             'document.title = `${data.restaurant_name} — Order`;',
-            'document.title = "MB Business Hub — Order";',
+            'document.title = "MB SiteHub — Order";',
             1,
         )
         html = html.replace(
             'document.getElementById("brandName").textContent = data.restaurant_name;',
-            'document.getElementById("brandName").textContent = "MB Business Hub";',
+            'document.getElementById("brandName").textContent = "MB SiteHub";',
             1,
         )
         html = html.replace(
             'document.getElementById("sheetTable").textContent = `${data.table_name} · ${data.restaurant_name}`;',
-            'document.getElementById("sheetTable").textContent = `${data.table_name} · MB Business Hub`;',
+            'document.getElementById("sheetTable").textContent = `${data.table_name} · MB SiteHub`;',
             1,
         )
         return HTMLResponse(
@@ -483,7 +483,7 @@ def create_app() -> FastAPI:
           });
         </script>
         """
-        html = html.replace("<title>Site Builder</title>", "<title>Design Your Page · MB Business Hub</title>", 1)
+        html = html.replace("<title>Site Builder</title>", "<title>Design Your Page · MB SiteHub</title>", 1)
         html = html.replace(
             '<button class="btn" id="menuPhonePreview" type="button" aria-pressed="false" onclick="toggleMenuPhonePreview()">Phone preview</button>',
             "",
@@ -606,7 +606,7 @@ def create_app() -> FastAPI:
                 send_security_email(
                     email,
                     "Owner account logged out",
-                    f"Business: {data.get('restaurant_name') or 'MB Business Hub'}\
+                    f"Business: {data.get('restaurant_name') or 'MB SiteHub'}\
 A full logout was requested from a signed-in device.",
                 )
             except Exception as exc:
