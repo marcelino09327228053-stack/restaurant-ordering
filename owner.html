@@ -470,11 +470,9 @@
       border:1px solid #ffffff24; border-radius:16px; box-shadow:none;
     }
     .design-room:not(.canvas-tools-visible) #menuPanel {
-      left:12px; right:auto; transform:none;
-      width:min(520px,calc(100% - 24px));
-      top:calc(var(--studio-header-height,64px) + 8px); bottom:12px;
-      max-height:calc(100% - var(--studio-header-height,64px) - 20px);
-      overflow:auto;
+      left:50%; right:auto; transform:translateX(-50%);
+      width:min(1120px,calc(100% - 32px));
+      top:calc(var(--studio-header-height,64px) + 16px); bottom:16px;
     }
     #menuPanel .menu-item {
       grid-template-columns:54px minmax(0,1fr) auto;
