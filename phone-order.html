@@ -796,48 +796,30 @@
 </head>
 <body>
   <script>
-    const isPhoneView = new URLSearchParams(location.search).get("phoneView") === "1";
-
-    if (isPhoneView) {
-      document.documentElement.classList.add("phone-view-mode");
-
-      document.addEventListener("DOMContentLoaded", () => {
-        const brandName = document.getElementById("brandName");
-        if (brandName) brandName.textContent = "MB Business Hub";
-      });
-    }
+    document.documentElement.classList.add("phone-view-mode");
   </script>
+
   <header>
     <div class="wrap bar">
       <div class="brand">
-        <img class="logo" src="/static/mb-bite-brew-logo.png" alt="MB Bite &amp; Brew logo" width="64" height="64" decoding="async" />
-        <div class="brand-name" id="brandName">Menu</div>
+        <img class="logo" src="/static/mb-bite-brew-logo.png" alt="MB Business Hub logo" width="42" height="42" decoding="async" />
+        <div class="brand-name" id="brandName">MB Business Hub</div>
       </div>
-      <label class="search">
-        <span aria-hidden="true">🔍</span>
-        <input id="searchInput" type="search" placeholder="Search food, drinks, desserts..." oninput="renderMenu()" />
-      </label>
-      <button type="button" class="dashboard-btn" id="loginBtn" onclick="handleLoginButton()" aria-label="Login">
-        <span class="dashboard-icon" aria-hidden="true">✉</span>
-        <span class="dashboard-label" id="loginLabel">Login</span>
-      </button>
-      <button type="button" class="dashboard-btn account-primary" id="createAccountBtn" onclick="openLogin()" aria-label="Create your account">
-        <span class="dashboard-icon" aria-hidden="true">＋</span>
-        <span class="dashboard-label" id="createAccountLabel">Create your account</span>
-      </button>
-      <a class="dashboard-btn" id="cashierLoginBtn" href="/login" aria-label="Cashier Login" style="text-decoration:none;width:auto;padding:10px 14px;gap:8px">
-        <span aria-hidden="true">▣</span><span>Cashier Login</span>
-      </a>
-      <div class="table-chip">
-        <span style="color:var(--orange)" aria-hidden="true">●</span>
-        <div><small>Ordering for</small><strong id="tableName">…</strong></div>
-        <span class="connected-chip" id="connectedChip">Cashier linked</span>
-      </div>
+
       <div class="header-order-tools">
-        <select class="category-select" id="categorySelect" aria-label="Choose menu category" onchange="selectCategory(this.value)"></select>
         <button class="cart-btn" onclick="openCart()" aria-label="View order">
           🛒<span class="badge" id="cartBadge" hidden>0</span>
         </button>
+      </div>
+
+      <div hidden aria-hidden="true">
+        <input id="searchInput" type="search" value="" />
+        <button id="loginBtn" type="button"></button>
+        <button id="createAccountBtn" type="button"></button>
+        <a id="cashierLoginBtn"></a>
+        <strong id="tableName"></strong>
+        <span id="connectedChip"></span>
+        <select id="categorySelect"></select>
       </div>
     </div>
   </header>
