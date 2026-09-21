@@ -957,7 +957,6 @@
         <h2>Message the cashier</h2>
         <button class="chat-close-x" type="button" onclick="closeChat()" aria-label="Close chat">×</button>
       </div>
-      <p class="hint">Connected via table QR · works on restaurant Wi‑Fi even without internet.</p>
       <div class="chat-log" id="chatLog"></div>
       <div class="reply-preview" id="customerReplyPreview" hidden style="display:none!important"><span id="customerReplyText"></span><button type="button" onclick="cancelCustomerReply()" aria-label="Cancel reply">×</button></div>
       <form class="chat-compose" onsubmit="sendCustomerChat(event)">
@@ -1651,6 +1650,74 @@
         window.tableSessionToastTimer = setTimeout(() => toast.classList.remove("show"), 3200);
       });
     }
+
+    function enableDraggableChatButton() {
+      const button = document.getElementById("chatFab");
+      if (!button || button.dataset.dragReady === "1") return;
+
+      button.dataset.dragReady = "1";
+
+      let dragging = false;
+      let moved = false;
+      let startX = 0;
+      let startY = 0;
+      let startLeft = 0;
+      let startTop = 0;
+
+      button.addEventListener("pointerdown", event => {
+        if (event.button !== undefined && event.button !== 0) return;
+
+        const rect = button.getBoundingClientRect();
+
+        dragging = true;
+        moved = false;
+        startX = event.clientX;
+        startY = event.clientY;
+        startLeft = rect.left;
+        startTop = rect.top;
+
+        button.style.left = `${rect.left}px`;
+        button.style.top = `${rect.top}px`;
+        button.style.right = "auto";
+        button.style.bottom = "auto";
+
+        button.classList.add("dragging");
+        button.setPointerCapture?.(event.pointerId);
+      });
+
+      button.addEventListener("pointermove", event => {
+        if (!dragging) return;
+
+        const dx = event.clientX - startX;
+        const dy = event.clientY - startY;
+
+        if (Math.abs(dx) > 5 || Math.abs(dy) > 5) moved = true;
+
+        const maxLeft = Math.max(8, window.innerWidth - button.offsetWidth - 8);
+        const maxTop = Math.max(8, window.innerHeight - button.offsetHeight - 8);
+
+        const left = Math.min(maxLeft, Math.max(8, startLeft + dx));
+        const top = Math.min(maxTop, Math.max(8, startTop + dy));
+
+        button.style.left = `${left}px`;
+        button.style.top = `${top}px`;
+      });
+
+      const finishDrag = event => {
+        if (!dragging) return;
+
+        dragging = false;
+        button.classList.remove("dragging");
+        button.releasePointerCapture?.(event.pointerId);
+
+        if (!moved) openChat();
+      };
+
+      button.addEventListener("pointerup", finishDrag);
+      button.addEventListener("pointercancel", finishDrag);
+    }
+
+    enableDraggableChatButton();
 
     function openChat() {
         if (!accessCode || demoMode) return;
