@@ -1,6 +1,6 @@
 @echo off
 title Restaurant Ordering Server
-cd /d "D:\restaurant-ordering"
+cd /d "%~dp0"
 echo.
 echo ========================================
 echo   RESTAURANT ORDERING SERVER
