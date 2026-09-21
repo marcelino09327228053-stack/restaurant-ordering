@@ -281,7 +281,7 @@ window.buildRestaurantTemplate = function(id, restaurant, tagline) {
 /* Load the CapCut-style shell as a separate, easy-to-edit module. */
 (function () {
   const script = document.createElement("script");
-  script.src = "/static/capcut-shell.js?v=20260914e";
+  script.src = "/static/capcut-shell.js?v=20260921b";
   script.defer = true;
   document.head.appendChild(script);
 })();
