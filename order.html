@@ -956,7 +956,10 @@ OLD
       try {
         const data = await api(`/api/public/${encodeURIComponent(accessCode)}/menu`);
         document.title = `${data.restaurant_name} — Order`;
-        document.getElementById("brandName").textContent = data.restaurant_name;
+        document.getElementById("brandName").textContent =
+          new URLSearchParams(location.search).get("phoneView") === "1"
+            ? "MB Business Hub"
+            : data.restaurant_name;
         document.getElementById("tableName").textContent = data.table_name;
         document.getElementById("sheetTable").textContent = `${data.table_name} · ${data.restaurant_name}`;
         menuItems = data.items;
