@@ -306,6 +306,7 @@ def _init_postgres_db() -> None:
 
     cursor.execute("ALTER TABLE table_messages ADD COLUMN IF NOT EXISTS reply_to_id INTEGER")
     cursor.execute("ALTER TABLE table_messages ADD COLUMN IF NOT EXISTS reaction TEXT NOT NULL DEFAULT ''")
+    cursor.execute("ALTER TABLE table_messages ADD COLUMN IF NOT EXISTS image_url TEXT NOT NULL DEFAULT ''")
 
     conn.commit()
 
