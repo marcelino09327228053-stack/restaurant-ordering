@@ -1753,23 +1753,29 @@
     }
     function positionMenuPopover(panel, button) {
       if (!panel || panel.hidden || !button) return;
+
       const rect = button.getBoundingClientRect();
+      const container = panel.closest("#menuPanel");
+      const containerRect = container
+        ? container.getBoundingClientRect()
+        : { left: 0, top: 0 };
+
       const gap = 6;
       const width = panel.offsetWidth;
       const height = panel.offsetHeight;
 
-      let left = rect.right + gap;
-      if (left + width > innerWidth - gap) {
-        left = Math.max(gap, rect.left - width - gap);
+      let viewportLeft = rect.right + gap;
+      if (viewportLeft + width > innerWidth - gap) {
+        viewportLeft = Math.max(gap, rect.left - width - gap);
       }
 
-      let top = rect.top;
-      if (top + height > innerHeight - gap) {
-        top = Math.max(gap, innerHeight - height - gap);
+      let viewportTop = rect.top;
+      if (viewportTop + height > innerHeight - gap) {
+        viewportTop = Math.max(gap, innerHeight - height - gap);
       }
 
-      panel.style.left = `${left}px`;
-      panel.style.top = `${top}px`;
+      panel.style.left = `${viewportLeft - containerRect.left}px`;
+      panel.style.top = `${viewportTop - containerRect.top}px`;
     }
     function positionMenuForm() {
       positionMenuPopover(
