@@ -1545,23 +1545,24 @@
         return;
       }
 
-      const url = `${location.origin}/order?table=${encodeURIComponent(table.access_code)}`;
+      const previewUrl = `${location.origin}/order?table=${encodeURIComponent(table.access_code)}`;
+      const phoneUrl = `http://192.168.1.2:8010/order?table=${encodeURIComponent(table.access_code)}`;
       const dialog = document.getElementById("tablePhonePreviewDialog");
 
       document.getElementById("tablePhonePreviewTitle").textContent = `${table.name || "Table"} · customer view`;
-      document.getElementById("tablePhonePreviewFrame").src = url;
+      document.getElementById("tablePhonePreviewFrame").src = previewUrl;
 
       const qr = document.getElementById("tablePhonePreviewQr");
       const link = document.getElementById("tablePhonePreviewLink");
       const copyButton = document.getElementById("tablePhonePreviewCopy");
       const openButton = document.getElementById("tablePhonePreviewOpen");
 
-      qr.src = `/api/qr?data=${encodeURIComponent(url)}`;
-      link.textContent = url;
-      openButton.href = url;
+      qr.src = `/api/qr?data=${encodeURIComponent(phoneUrl)}`;
+      link.textContent = phoneUrl;
+      openButton.href = phoneUrl;
 
       copyButton.onclick = () => {
-        navigator.clipboard.writeText(url).then(() => toast("Link copied.", true));
+        navigator.clipboard.writeText(phoneUrl).then(() => toast("Link copied.", true));
       };
 
       if (!dialog.open) dialog.showModal();
