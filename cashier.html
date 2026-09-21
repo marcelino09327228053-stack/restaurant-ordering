@@ -815,7 +815,13 @@
           el.className = `bubble ${m.sender}`;
           const quote = m.reply_body ? `<div class="reply-quote">${m.reply_sender === "cashier" ? "Cashier" : "Customer"}: ${escapeHtml(m.reply_body)}</div>` : "";
           const reaction = m.reaction ? `<span class="message-reaction">${escapeHtml(m.reaction)}</span>` : "";
-          el.innerHTML = `${quote}${escapeHtml(m.body)}<time>${m.sender === "cashier" ? "Cashier" : "Customer"} · ${time}</time>${reaction}`;
+          const image = m.image_url
+            ? `<img class="chat-message-image" src="${escapeHtml(m.image_url)}" alt="Customer photo" loading="lazy" />`
+            : "";
+          const messageText = m.body
+            ? `<span class="chat-message-body">${escapeHtml(m.body)}</span>`
+            : "";
+          el.innerHTML = `${quote}${image}${messageText}<time>${m.sender === "cashier" ? "Cashier" : "Customer"} · ${time}</time>${reaction}`;
           log.appendChild(el);
         }
         if (msgs.length) log.scrollTop = log.scrollHeight;
