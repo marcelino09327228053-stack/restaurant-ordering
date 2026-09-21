@@ -644,6 +644,11 @@
     <section class="studio-panel" id="paymentsPanel" hidden><div class="studio-panel-head"><h3>Payment Methods</h3><div class="grow"></div><button class="btn" onclick="toggleStudioPanel('paymentsPanel',false)">Close</button></div><div class="studio-panel-body" id="paymentsPanelBody"></div></section>
     <section class="studio-panel wide" id="previewPanel" hidden><div class="studio-panel-head"><h3>Live Restaurant Preview</h3><div class="grow"></div><button class="btn" onclick="toggleStudioPanel('previewPanel',false)">Close</button></div><div class="studio-panel-body" id="previewPanelBody"></div></section>
     <div class="design-work">
+      <nav class="tool-rail" aria-label="Editor tools" id="editorToolRail"></nav>
+      <aside class="tool-panel" id="editorToolPanel" hidden aria-labelledby="editorToolTitle">
+        <div class="tool-panel-header"><h3 id="editorToolTitle">Tools</h3><button type="button" class="tool-icon" title="Close panel" aria-label="Close tool panel" onclick="closeEditorTool()"><img src="/static/vendor/lucide/x.svg" alt="" /></button></div>
+        <div class="design-tools" id="editorToolContents"></div>
+      </aside>
       <aside id="legacyDesignTools" hidden>
         <label>Ready-made template</label>
         <button class="template-card" type="button" onclick="applyElegantTemplate()">
