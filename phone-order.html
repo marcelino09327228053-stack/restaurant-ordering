@@ -304,20 +304,56 @@
     /* Table chat (QR connect → cashier) */
     .chat-fab {
       position: fixed; right: 16px; bottom: 88px; z-index: 28;
-      width: 56px; height: 56px; border-radius: 50%; border: 0; cursor: pointer;
+      width: 56px; height: 56px; border-radius: 50%; border: 0; cursor: grab;
       background: linear-gradient(135deg, #ff7a18, #e9430a); color: #fff;
       font-size: 22px; box-shadow: 0 12px 28px #f4511e55;
       display: none; place-items: center;
+      touch-action: none;
+      user-select: none;
+      -webkit-user-select: none;
     }
     .chat-fab.show { display: grid; }
+    .chat-fab.dragging {
+      cursor: grabbing;
+      transition: none !important;
+    }
     .chat-fab .ping {
       position: absolute; top: 6px; right: 6px; width: 12px; height: 12px;
       border-radius: 50%; background: #22c55e; border: 2px solid #0b0b0d;
+      pointer-events: none;
     }
+
     #chatSheet.sheet-back.open {
-      display: flex !important; align-items: flex-end !important; justify-content: center;
+      display: flex !important;
+      position: fixed !important;
+      inset: 0 !important;
+      width: 100vw !important;
+      height: 100dvh !important;
+      align-items: stretch !important;
+      justify-content: stretch !important;
+      padding: 0 !important;
+      z-index: 100 !important;
     }
-    .chat-sheet { max-height: min(78vh, 640px); display: flex; flex-direction: column; }
+
+    #chatSheet .chat-sheet {
+      width: 100% !important;
+      max-width: none !important;
+      height: 100dvh !important;
+      max-height: none !important;
+      margin: 0 !important;
+      border-radius: 0 !important;
+      display: flex;
+      flex-direction: column;
+      padding-top: max(18px, env(safe-area-inset-top));
+      padding-bottom: max(14px, env(safe-area-inset-bottom));
+    }
+
+    #chatSheet .chat-log {
+      flex: 1 !important;
+      min-height: 0 !important;
+      max-height: none !important;
+      overflow-y: auto !important;
+    }
     .chat-head { display: flex; align-items: center; gap: 12px; }
     .chat-head h2 { flex: 1; margin: 0; }
     .chat-close-x {
