@@ -17,7 +17,7 @@ SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
 SMTP_USER = os.getenv("SMTP_USER", "").strip()
 SMTP_PASSWORD = os.getenv("SMTP_PASSWORD", "").strip()
 SMTP_FROM = os.getenv("SMTP_FROM", SMTP_USER or "noreply@restaurant.local")
-APP_NAME = os.getenv("RESTAURANT_NAME", "MB SiteHub")
+APP_NAME = os.getenv("RESTAURANT_NAME", "MB Business Hub")
 
 
 def generate_code() -> str:

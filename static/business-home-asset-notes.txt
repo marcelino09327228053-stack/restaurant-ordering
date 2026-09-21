@@ -1,4 +1,0 @@
-Background generated with the built-in image_gen tool.
-Prompt: Cinematic wide photographic montage of slanted restaurant, retail store, auto garage, salon and modern office panels. Dark black and amber lighting, dark left space and bottom fade. No text, logos, icons or UI.
-Asset: business-hub-hero.png
-The homepage sample statistics reproduce the supplied design and are not live metrics. Watch Demo opens a text walkthrough because no demo video was supplied.

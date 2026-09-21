@@ -1,4 +1,4 @@
-/* MB SiteHub - CapCut-inspired visual editor built on the existing Fabric.js canvas. */
+/* MB Business Hub - CapCut-inspired visual editor built on the existing Fabric.js canvas. */
 (function(){
   const ROOT="mb-capcut-shell", PROPS=["assetType","mbAnimation","mbDuration","mbName","link","locked","hiddenByEditor"];
   let history=[], historyIndex=-1, restoring=false, clipboard=null, timelineTimer=null;
