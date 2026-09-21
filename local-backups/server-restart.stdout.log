@@ -548,3 +548,15 @@ INFO:     127.0.0.1:54818 - "GET /api/public/ixumxReJAr4/menu HTTP/1.1" 200 OK
 INFO:     127.0.0.1:54818 - "GET /api/public/ixumxReJAr4/messages?after_id=8 HTTP/1.1" 200 OK
 INFO:     127.0.0.1:54818 - "GET /api/public/ixumxReJAr4/messages?after_id=8 HTTP/1.1" 200 OK
 INFO:     127.0.0.1:54818 - "GET /api/public/ixumxReJAr4/messages?after_id=8 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54818 - "GET /api/public/ixumxReJAr4/menu HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54818 - "GET /api/public/ixumxReJAr4/messages?after_id=8 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54818 - "GET /api/public/ixumxReJAr4/messages?after_id=8 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54818 - "GET /api/public/ixumxReJAr4/messages?after_id=8 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54818 - "GET /api/public/ixumxReJAr4/menu HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54825 - "GET /api/public/ixumxReJAr4/messages?after_id=8 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54825 - "GET /api/public/ixumxReJAr4/messages?after_id=8 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54825 - "GET /api/public/ixumxReJAr4/messages?after_id=8 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54825 - "GET /api/public/ixumxReJAr4/messages?after_id=8 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54825 - "GET /api/public/ixumxReJAr4/menu HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54825 - "GET /api/public/ixumxReJAr4/messages?after_id=8 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54825 - "GET /api/public/ixumxReJAr4/messages?after_id=8 HTTP/1.1" 200 OK

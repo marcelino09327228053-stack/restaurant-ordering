@@ -587,7 +587,13 @@
         <button class="btn" id="cancelMenuEdit" hidden type="button" onclick="cancelMenuEdit()">Cancel edit</button>
         <p id="menuFeedback" class="hint" role="status" aria-live="polite"></p>
         </div>
-        <div id="menuItemsPanel" hidden><div id="menuList"></div></div>
+        <div class="menu-dish-popover" id="menuItemsPanel" role="dialog" aria-modal="false" aria-labelledby="menuItemsTitle" hidden>
+          <div class="menu-dish-popover-head">
+            <h2 id="menuItemsTitle">Edit / Delete menu</h2>
+            <button class="btn" type="button" onclick="toggleMenuItemsPanel(false)">Close</button>
+          </div>
+          <div id="menuList"></div>
+        </div>
       </section>
 
       <section class="block" id="tablesBuilder">
