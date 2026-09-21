@@ -899,7 +899,10 @@
       const height = wrap.clientHeight - parseFloat(style.paddingTop) - parseFloat(style.paddingBottom);
       if (width <= 0 || height <= 0) return;
       const zoom = document.getElementById("designZoom").value;
-      const scale = Math.min(zoom === "fit" ? Infinity : Number(zoom), width / 900, height / 500);
+      const fitScale = Math.min(width / 900, height / 500);
+      const scale = zoom === "fit"
+        ? fitScale * 1.30
+        : Math.min(Number(zoom) * 1.30, fitScale * 1.30);
       const board = document.querySelector(".design-board");
       board.style.width = `${900 * scale}px`;
       board.style.height = `${500 * scale}px`;
