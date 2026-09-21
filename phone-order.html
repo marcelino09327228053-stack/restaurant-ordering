@@ -1820,7 +1820,13 @@
           </div>`;
           const quote = m.reply_body ? `<div class="reply-quote">${m.reply_sender === "cashier" ? "Cashier" : "Customer"}: ${escapeHtml(m.reply_body)}</div>` : "";
           const reaction = m.reaction ? `<span class="message-reaction">${escapeHtml(m.reaction)}</span>` : "";
-          const bubble = `<div class="c-bubble ${side}" onclick="toggleMessageActions(event, ${m.id})">${quote}<span class="chat-message-body">${escapeHtml(m.body)}</span><time>${m.sender === "cashier" ? "Cashier" : "You"} · ${time}</time>${reaction}</div>`;
+          const image = m.image_url
+            ? `<img class="chat-message-image" src="${escapeHtml(m.image_url)}" alt="Chat photo" loading="lazy" />`
+            : "";
+          const messageText = m.body
+            ? `<span class="chat-message-body">${escapeHtml(m.body)}</span>`
+            : "";
+          const bubble = `<div class="c-bubble ${side}" onclick="toggleMessageActions(event, ${m.id})">${quote}${image}${messageText}<time>${m.sender === "cashier" ? "Cashier" : "You"} · ${time}</time>${reaction}</div>`;
           row.innerHTML = side === "me" ? `${tools}${bubble}` : `${bubble}${tools}`;
           log.appendChild(row);
         }
