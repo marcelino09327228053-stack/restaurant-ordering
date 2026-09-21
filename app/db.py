@@ -499,7 +499,11 @@ def _init_sqlite_db() -> None:
             cursor.execute(f"ALTER TABLE restaurant_orders ADD COLUMN {col} {decl}")
 
     message_cols = {row["name"] for row in cursor.execute("PRAGMA table_info(table_messages)")}
-    for col, decl in (("reply_to_id", "INTEGER"), ("reaction", "TEXT NOT NULL DEFAULT ''")):
+    for col, decl in (
+        ("reply_to_id", "INTEGER"),
+        ("reaction", "TEXT NOT NULL DEFAULT ''"),
+        ("image_url", "TEXT NOT NULL DEFAULT ''"),
+    ):
         if col not in message_cols:
             cursor.execute(f"ALTER TABLE table_messages ADD COLUMN {col} {decl}")
 
