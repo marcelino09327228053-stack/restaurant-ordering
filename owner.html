@@ -642,7 +642,39 @@
   <dialog class="phone-preview-dialog" id="tablePhonePreviewDialog" onclick="if(event.target===this) closeTablePhonePreview()">
     <div class="phone-preview-card">
       <div class="phone-preview-head"><strong id="tablePhonePreviewTitle">Phone preview</strong><button class="btn" type="button" onclick="closeTablePhonePreview()">Close</button></div>
-      <div class="phone-preview-shell"><iframe id="tablePhonePreviewFrame" title="Table customer phone preview"></iframe></div>
+      <div style="display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap">
+        <div class="phone-preview-shell"><iframe id="tablePhonePreviewFrame" title="Table customer phone preview"></iframe></div>
+        <div style="width:220px;padding:14px;border:1px solid var(--line);border-radius:18px;background:#16181b">
+          <strong style="display:block;margin-bottom:10px">Scan on phone</strong>
+          <img id="tablePhonePreviewQr" alt="Phone preview QR code" style="display:block;width:100%;height:auto;background:#fff;border-radius:12px;padding:8px" />
+          <small style="display:block;margin-top:10px;color:var(--muted)">Scan this QR code to test the real mobile view.</small>
+          <div id="tablePhonePreviewLink" style="margin-top:10px;font-size:.75rem;overflow-wrap:anywhere;color:#fdba74"></div>
+          <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+            <button class="btn" id="tablePhonePreviewCopy" type="button">Copy link</button>
+            <a class="btn solid" id="tablePhonePreviewOpen" target="_blank" rel="noopener">Open link</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </dialog>
+OLD
+<<<NEW
+  <dialog class="phone-preview-dialog" id="tablePhonePreviewDialog" onclick="if(event.target===this) closeTablePhonePreview()">
+    <div class="phone-preview-card">
+      <div class="phone-preview-head"><strong id="tablePhonePreviewTitle">Phone preview</strong><button class="btn" type="button" onclick="closeTablePhonePreview()">Close</button></div>
+      <div style="display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap">
+        <div class="phone-preview-shell"><iframe id="tablePhonePreviewFrame" title="Table customer phone preview"></iframe></div>
+        <div style="width:220px;padding:14px;border:1px solid var(--line);border-radius:18px;background:#16181b">
+          <strong style="display:block;margin-bottom:10px">Scan on phone</strong>
+          <img id="tablePhonePreviewQr" alt="Phone preview QR code" style="display:block;width:100%;height:auto;background:#fff;border-radius:12px;padding:8px" />
+          <small style="display:block;margin-top:10px;color:var(--muted)">Scan this QR code to test the real mobile view.</small>
+          <div id="tablePhonePreviewLink" style="margin-top:10px;font-size:.75rem;overflow-wrap:anywhere;color:#fdba74"></div>
+          <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+            <button class="btn" id="tablePhonePreviewCopy" type="button">Copy link</button>
+            <a class="btn solid" id="tablePhonePreviewOpen" target="_blank" rel="noopener">Open link</a>
+          </div>
+        </div>
+      </div>
     </div>
   </dialog>
 
