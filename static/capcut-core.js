@@ -9,7 +9,7 @@
   const esc=s=>String(s??"").replace(/[&<>\"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 
   function styles(){if(document.getElementById("mb-capcut-shell-style"))return;const s=document.createElement("style");s.id="mb-capcut-shell-style";s.textContent=`
-  body.${ROOT}{--rail:76px;--panel:286px;--inspect:310px;--timeline:220px;background:#0b0d10}
+  body.${ROOT}{--rail:76px;--panel:286px;--inspect:0px;--timeline:0px;background:#0b0d10}
   body.${ROOT} .design-room{background:#0b0d10;grid-template-rows:68px minmax(0,1fr)}
   body.${ROOT} .design-top{min-height:68px;padding:0 12px;gap:7px;flex-wrap:nowrap;background:#101216;border-bottom:1px solid #262a31;overflow-x:auto}
   body.${ROOT} .design-top::before{content:"MB BUSINESS HUB";flex:0 0 auto;margin-right:8px;color:#f4f4f5;font-weight:900;font-size:15px}
