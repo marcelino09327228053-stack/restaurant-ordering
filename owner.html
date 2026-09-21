@@ -1754,13 +1754,20 @@
     function positionMenuPopover(panel, button) {
       if (!panel || panel.hidden || !button) return;
       const rect = button.getBoundingClientRect();
-      const gap = 12;
+      const gap = 6;
       const width = panel.offsetWidth;
       const height = panel.offsetHeight;
-      const left = rect.right + gap + width <= innerWidth - gap
-        ? rect.right + gap
-        : Math.max(gap, Math.min(rect.left, innerWidth - width - gap));
-      const top = Math.max(gap, Math.min(rect.top, innerHeight - height - gap));
+
+      let left = rect.right + gap;
+      if (left + width > innerWidth - gap) {
+        left = Math.max(gap, rect.left - width - gap);
+      }
+
+      let top = rect.top;
+      if (top + height > innerHeight - gap) {
+        top = Math.max(gap, innerHeight - height - gap);
+      }
+
       panel.style.left = `${left}px`;
       panel.style.top = `${top}px`;
     }
