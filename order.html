@@ -629,8 +629,22 @@ OLD
 </head>
 <body>
   <script>
-    if (new URLSearchParams(location.search).get("phoneView") === "1") {
+    const isPhoneView = new URLSearchParams(location.search).get("phoneView") === "1";
+
+    if (isPhoneView) {
       document.documentElement.classList.add("phone-view-mode");
+
+      document.addEventListener("DOMContentLoaded", () => {
+        document.querySelector(".search")?.remove();
+        document.getElementById("loginBtn")?.remove();
+        document.getElementById("createAccountBtn")?.remove();
+        document.getElementById("cashierLoginBtn")?.remove();
+        document.querySelector(".table-chip")?.remove();
+        document.getElementById("categorySelect")?.remove();
+
+        const brandName = document.getElementById("brandName");
+        if (brandName) brandName.textContent = "MB Business Hub";
+      });
     }
   </script>
   <header>
