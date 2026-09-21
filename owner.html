@@ -402,7 +402,18 @@
     .design-work.tool-panel-open { grid-template-columns:64px 244px minmax(0,1fr); }
     .tool-rail { grid-column:1;grid-row:1;display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 6px;overflow-y:auto;min-height:0;background:#111216;border-right:1px solid #2a2e33;z-index:8; }
     .tool-icon { display:flex;align-items:center;justify-content:center;flex:0 0 auto;width:50px;height:50px;padding:10px;border:1px solid transparent;border-radius:10px;background:transparent;color:#b8bdc7;cursor:pointer; }
-    .tool-icon img { width:27px;height:27px;filter:invert(78%);pointer-events:none; }
+    .tool-icon img { width:30px;height:30px;filter:invert(78%);pointer-events:none; }
+
+    /* Larger editor controls */
+    .design-work { grid-template-columns:70px 0 minmax(0,1fr); }
+    .design-work.tool-panel-open { grid-template-columns:70px 244px minmax(0,1fr); }
+    .tool-rail { gap:7px;padding:11px 7px; }
+    .tool-icon { width:55px;height:55px;padding:10px; }
+
+    /* Top navigation: approximately 20% larger */
+    .design-top { min-height:91px;padding:14px 22px;gap:12px; }
+    .design-top h2 { font-size:1.62rem; }
+    .design-top .btn { min-height:50px;padding:11px 17px;font-size:1.14rem;font-weight:700; }
     .tool-icon:hover { background:#24262d; }
     .tool-icon:focus-visible { outline:2px solid #ff8c42;outline-offset:-2px; }
     .tool-icon[aria-expanded="true"] { background:#ff6a1a20;border-color:#ff6a1a75; }
