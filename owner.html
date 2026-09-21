@@ -922,19 +922,21 @@
       if (!window.fabric) { toast("Design editor is still loading."); return; }
       document.getElementById("designRoom").hidden = false;
       initDesignCanvas();
-      setCanvasToolsVisible(true);
-      requestAnimationFrame(fitDesignBoard);
-      const saved = owner?.custom_design?.editorDraft || owner?.custom_design?.canvas;
+
       designRestoring = true;
-      if (Array.isArray(saved?.objects)) {
-        designCanvas.loadFromJSON(saved, () => {
-          designCanvas.renderAll(); designRestoring = false; designSnapshot();
-          document.getElementById("designBg").value = /^#[0-9a-f]{6}$/i.test(designCanvas.backgroundColor || "") ? designCanvas.backgroundColor : "#111111";
-        });
-      } else {
+      designCanvas.clear();
+      designCanvas.setBackgroundColor("#f4efe5", () => {
+        designCanvas.discardActiveObject();
+        designCanvas.renderAll();
         designRestoring = false;
-        applyElegantTemplate(true);
-      }
+        designSnapshot();
+      });
+
+      document.getElementById("designBg").value = "#f4efe5";
+      closeEditorTool();
+      setCanvasToolsVisible(false);
+      document.getElementById("designPageButton").setAttribute("aria-pressed", "false");
+      requestAnimationFrame(fitDesignBoard);
     }
 
     function syncTopToolbar() {
