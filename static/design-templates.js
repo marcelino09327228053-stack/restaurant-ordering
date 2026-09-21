@@ -173,6 +173,15 @@ window.buildRestaurantTemplate = function(id, restaurant, tagline) {
     const list = heroes();
     const el = overlay();
     if (!el) return;
+    const object = slideshowObject();
+    if (typeof activeEditorTool !== "undefined" && activeEditorTool !== "slideshow") {
+      el.hidden = true;
+      return;
+    }
+    if (!object) {
+      el.hidden = true;
+      return;
+    }
     syncOverlay();
     if (!list.length) {
       el.className = "";
@@ -269,7 +278,8 @@ window.buildRestaurantTemplate = function(id, restaurant, tagline) {
   function install() {
     if (installed) return;
     const canvas = activeDesignCanvas();
-    if (!canvas || typeof window.ensureSlideshowDesignBox !== "function") { setTimeout(install,250); return; }
+    if (typeof window.ensureSlideshowDesignBox !== "function") return;
+    if (!canvas) { setTimeout(install,250); return; }
     installed = true; injectEffectStyles(); installControls(); patchFunctions();
     ["object:moving","object:scaling","object:rotating","object:modified","object:added","object:removed"].forEach(event => canvas.on(event,syncOverlay));
     syncOverlay(); show(index,false);
@@ -281,7 +291,7 @@ window.buildRestaurantTemplate = function(id, restaurant, tagline) {
 /* Load the CapCut-style shell as a separate, easy-to-edit module. */
 (function () {
   const script = document.createElement("script");
-  script.src = "/static/capcut-shell.js?v=20260914e";
+  script.src = "/static/capcut-shell.js?v=20260921b";
   script.defer = true;
   document.head.appendChild(script);
 })();

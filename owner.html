@@ -223,10 +223,10 @@
     .table-qr-actions .btn { min-height: 34px; padding: 6px 10px; font-size: .76rem; }
     .phone-preview-dialog { border:0; padding:0; background:transparent; max-width:none; max-height:none; }
     .phone-preview-dialog::backdrop { background:rgba(0,0,0,.76); backdrop-filter:blur(5px); }
-    .phone-preview-card { width:min(430px,calc(100vw - 24px)); padding:16px; border:1px solid var(--line); border-radius:22px; background:var(--panel); box-shadow:0 28px 80px rgba(0,0,0,.48); }
+    .phone-preview-card { width:min(600px,calc(150vw - 24px)); padding:16px; border:1px solid var(--line); border-radius:22px; background:var(--panel); box-shadow:0 28px 80px rgba(0,0,0,.48); }
     .phone-preview-head { display:flex; align-items:center; gap:10px; margin-bottom:12px; }
     .phone-preview-head strong { flex:1; }
-    .phone-preview-shell { width:min(375px,100%); height:min(760px,calc(100vh - 130px)); margin:auto; padding:10px; border:2px solid #313842; border-radius:30px; background:#07090c; box-shadow:0 16px 45px rgba(0,0,0,.4); }
+    .phone-preview-shell { width:min(500px,150%); height:min(760px,calc(100vh - 130px)); margin:auto; padding:10px; border:2px solid #313842; border-radius:30px; background:#07090c; box-shadow:0 16px 45px rgba(0,0,0,.4); }
     .phone-preview-shell::before { content:""; display:block; width:88px; height:5px; margin:0 auto 8px; border-radius:999px; background:#303640; }
     .phone-preview-shell iframe { display:block; width:100%; height:calc(100% - 13px); border:0; border-radius:20px; background:#fff; }
     @media (max-width: 480px) { .table-qr-card { grid-template-columns: 1fr; } .table-qr-card img { width: 150px; height: 150px; margin: auto; } }
@@ -357,8 +357,9 @@
     }
     .design-room { position:fixed; inset:0; z-index:100; background:#0b0b0d; display:grid; grid-template-rows:auto 1fr; }
     .design-room[hidden] { display:none; }
-    .design-top { min-height:64px; display:flex; align-items:center; gap:8px; flex-wrap:wrap; padding:10px 16px; border-bottom:1px solid var(--line); background:#111114; }
-    .design-top h2 { margin:0 12px 0 0; font-size:1rem; letter-spacing:.08em; }
+    .design-top { min-height:76px; display:flex; align-items:center; gap:10px; flex-wrap:wrap; padding:12px 18px; border-bottom:1px solid var(--line); background:#111114; }
+    .design-top h2 { margin:0 14px 0 0; font-size:1.35rem; letter-spacing:.08em; }
+    .design-top .btn { min-height:42px; padding:9px 14px; font-size:.95rem; font-weight:700; }
     .design-work { display:grid; grid-template-columns:320px minmax(0,1fr); min-height:0; }
     .design-tools { padding:14px; border-right:1px solid var(--line); overflow:auto; background:#121216; }
     .design-tools .btn { width:100%; margin-bottom:8px; text-align:left; }
@@ -397,11 +398,22 @@
     #designLayers button { overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
 
     /* Compact tool rail; the original canvas and Fabric coordinates stay unchanged. */
-    .design-work { position:relative;grid-template-columns:52px 0 minmax(0,1fr);grid-template-rows:minmax(0,1fr); }
-    .design-work.tool-panel-open { grid-template-columns:52px 244px minmax(0,1fr); }
-    .tool-rail { grid-column:1;grid-row:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 4px;overflow-y:auto;min-height:0;background:#111216;border-right:1px solid #2a2e33;z-index:8; }
-    .tool-icon { display:flex;align-items:center;justify-content:center;flex:0 0 auto;width:40px;height:40px;padding:9px;border:1px solid transparent;border-radius:9px;background:transparent;color:#b8bdc7;cursor:pointer; }
-    .tool-icon img { width:20px;height:20px;filter:invert(78%);pointer-events:none; }
+    .design-work { position:relative;grid-template-columns:64px 0 minmax(0,1fr);grid-template-rows:minmax(0,1fr); }
+    .design-work.tool-panel-open { grid-template-columns:64px 244px minmax(0,1fr); }
+    .tool-rail { grid-column:1;grid-row:1;display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 6px;overflow-y:auto;min-height:0;background:#111216;border-right:1px solid #2a2e33;z-index:8; }
+    .tool-icon { display:flex;align-items:center;justify-content:center;flex:0 0 auto;width:50px;height:50px;padding:10px;border:1px solid transparent;border-radius:10px;background:transparent;color:#b8bdc7;cursor:pointer; }
+    .tool-icon img { width:30px;height:30px;filter:invert(78%);pointer-events:none; }
+
+    /* Larger editor controls */
+    .design-work { grid-template-columns:70px 0 minmax(0,1fr); }
+    .design-work.tool-panel-open { grid-template-columns:70px 244px minmax(0,1fr); }
+    .tool-rail { gap:7px;padding:11px 7px; }
+    .tool-icon { width:55px;height:55px;padding:10px; }
+
+    /* Top navigation: approximately 20% larger */
+    .design-top { min-height:91px;padding:14px 22px;gap:12px; }
+    .design-top h2 { font-size:1.62rem; }
+    .design-top .btn { min-height:56px;padding:12px 19px;font-size:1.37rem;font-weight:700; }
     .tool-icon:hover { background:#24262d; }
     .tool-icon:focus-visible { outline:2px solid #ff8c42;outline-offset:-2px; }
     .tool-icon[aria-expanded="true"] { background:#ff6a1a20;border-color:#ff6a1a75; }
@@ -476,7 +488,7 @@
     #tablePaymentSection .block {border:0;box-shadow:none;padding:0;margin:0;}
   </style>
   <script src="/static/vendor/fabric.min.js"></script>
-  <script src="/static/design-templates.js"></script>
+  <script src="/static/design-templates.js?v=20260921c"></script>
 </head>
 <body>
   <header class="top">
@@ -887,7 +899,10 @@
       const height = wrap.clientHeight - parseFloat(style.paddingTop) - parseFloat(style.paddingBottom);
       if (width <= 0 || height <= 0) return;
       const zoom = document.getElementById("designZoom").value;
-      const scale = Math.min(zoom === "fit" ? Infinity : Number(zoom), width / 900, height / 500);
+      const fitScale = Math.min(width / 900, height / 500);
+      const scale = zoom === "fit"
+        ? fitScale * 1.30
+        : Math.min(Number(zoom) * 1.30, fitScale * 1.30);
       const board = document.querySelector(".design-board");
       board.style.width = `${900 * scale}px`;
       board.style.height = `${500 * scale}px`;
@@ -922,19 +937,21 @@
       if (!window.fabric) { toast("Design editor is still loading."); return; }
       document.getElementById("designRoom").hidden = false;
       initDesignCanvas();
-      setCanvasToolsVisible(true);
-      requestAnimationFrame(fitDesignBoard);
-      const saved = owner?.custom_design?.editorDraft || owner?.custom_design?.canvas;
+
       designRestoring = true;
-      if (Array.isArray(saved?.objects)) {
-        designCanvas.loadFromJSON(saved, () => {
-          designCanvas.renderAll(); designRestoring = false; designSnapshot();
-          document.getElementById("designBg").value = /^#[0-9a-f]{6}$/i.test(designCanvas.backgroundColor || "") ? designCanvas.backgroundColor : "#111111";
-        });
-      } else {
+      designCanvas.clear();
+      designCanvas.setBackgroundColor("#f4efe5", () => {
+        designCanvas.discardActiveObject();
+        designCanvas.renderAll();
         designRestoring = false;
-        applyElegantTemplate(true);
-      }
+        designSnapshot();
+      });
+
+      document.getElementById("designBg").value = "#f4efe5";
+      closeEditorTool();
+      setCanvasToolsVisible(true);
+      document.getElementById("designPageButton").setAttribute("aria-pressed", "true");
+      requestAnimationFrame(fitDesignBoard);
     }
 
     function syncTopToolbar() {
@@ -985,11 +1002,13 @@
     ];
     function closeEditorTool() {
       activeEditorTool = null;
-      document.getElementById("editorToolPanel").hidden = true;
-      document.querySelector(".design-work").classList.remove("tool-panel-open");
+      const toolPanel = document.getElementById("editorToolPanel");
+      if (toolPanel) toolPanel.hidden = true;
+      document.querySelector(".design-work")?.classList.remove("tool-panel-open");
       document.querySelectorAll(".tool-section").forEach(panel=>panel.hidden=true);
       document.querySelectorAll(".tool-rail [aria-expanded]").forEach(button=>button.setAttribute("aria-expanded","false"));
-      document.getElementById("slideshowPanel").hidden=true;
+      const slideshowPanel = document.getElementById("slideshowPanel");
+      if (slideshowPanel) slideshowPanel.hidden = true;
       setCanvasToolsVisible(![...document.querySelectorAll(".studio-panel")].some(panel => !panel.hidden));
       syncTopToolbar();
       requestAnimationFrame(()=>{if(designCanvas)fitDesignBoard();});
@@ -1064,7 +1083,6 @@
       deletion.innerHTML='<img src="/static/vendor/lucide/eraser.svg" alt="" />';rail.appendChild(deletion);
       const saveButton=document.createElement("button");saveButton.type="button";saveButton.className="tool-icon";
       saveButton.title="Save Design";saveButton.setAttribute("aria-label","Save Design");
-      saveButton.style.background="#ff6a1a30";
       saveButton.innerHTML='<img src="/static/vendor/lucide/save.svg" alt="" />';
       saveButton.onclick=()=>saveCompanyDesign();rail.appendChild(saveButton);
       const objectDetails=source.querySelector("details");
@@ -1366,7 +1384,12 @@
 
     function restoreDesign(json) {
       designRestoring = true;
-      designCanvas.loadFromJSON(json, () => { designCanvas.renderAll(); designRestoring=false; syncDesignTools(); syncBackgroundColors(); });
+      // Remove the retired slideshow placeholder from saved designs and undo history.
+      const design = typeof json === "string" ? JSON.parse(json) : { ...json };
+      if (Array.isArray(design.objects)) {
+        design.objects = design.objects.filter(object => object.assetType !== "slideshow");
+      }
+      designCanvas.loadFromJSON(design, () => { designCanvas.renderAll(); designRestoring=false; syncDesignTools(); syncBackgroundColors(); });
     }
     function undoDesign() { if(designRestoring || designHistory.length<2)return; const current=designHistory.pop(); designFuture.push(current); restoreDesign(designHistory[designHistory.length-1]); }
     function redoDesign() { if(designRestoring)return; const next=designFuture.pop(); if(!next)return; designHistory.push(next); restoreDesign(next); }

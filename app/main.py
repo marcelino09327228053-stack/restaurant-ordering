@@ -350,139 +350,6 @@ def create_app() -> FastAPI:
           })();
         </script>
         """
-        slideshow_canvas_patch = """
-        <script id="mb-slideshow-canvas-box">
-          window.addEventListener("load", function () {
-            const install = function () {
-              if (typeof openEditorTool !== "function" || typeof fabric === "undefined") {
-                setTimeout(install, 120);
-                return;
-              }
-              if (window.__mbSlideshowCanvasInstalled) return;
-              window.__mbSlideshowCanvasInstalled = true;
-
-              window.ensureSlideshowDesignBox = function () {
-                if (typeof designCanvas === "undefined" || !designCanvas) return null;
-                let box = designCanvas.getObjects().find(function (object) {
-                  return object.assetType === "slideshow";
-                });
-                if (!box) {
-                  const frame = new fabric.Rect({
-                    width: 560,
-                    height: 250,
-                    fill: "rgba(12,12,14,0.72)",
-                    stroke: "#f97316",
-                    strokeWidth: 4,
-                    strokeDashArray: [14, 8],
-                    rx: 14,
-                    ry: 14,
-                    originX: "center",
-                    originY: "center"
-                  });
-                  const label = new fabric.Text("SLIDESHOW", {
-                    fill: "#ffffff",
-                    fontSize: 34,
-                    fontWeight: "bold",
-                    originX: "center",
-                    originY: "center",
-                    top: -18
-                  });
-                  const hint = new fabric.Text("Drop photos in the Slideshow panel", {
-                    fill: "#fdba74",
-                    fontSize: 16,
-                    originX: "center",
-                    originY: "center",
-                    top: 28
-                  });
-                  box = new fabric.Group([frame, label, hint], {
-                    left: 170,
-                    top: 110,
-                    assetType: "slideshow",
-                    borderColor: "#f97316",
-                    borderScaleFactor: 3,
-                    cornerColor: "#ffffff",
-                    cornerStrokeColor: "#f97316",
-                    transparentCorners: false,
-                    cornerSize: 14,
-                    padding: 8
-                  });
-                  designCanvas.add(box);
-                  if (typeof designSnapshot === "function") designSnapshot();
-                  if (typeof toast === "function") toast("Slideshow box added. Drag or resize it on the banner.", true);
-                }
-                const count = Array.isArray(owner?.hero_images) ? owner.hero_images.length : 0;
-                if (box._objects && box._objects[2]) {
-                  box._objects[2].set("text", count ? `${count} photo${count === 1 ? "" : "s"} ready • drag / resize` : "Drop photos in the Slideshow panel");
-                }
-                designCanvas.setActiveObject(box);
-                box.setCoords();
-                designCanvas.requestRenderAll();
-                return box;
-              };
-
-              const originalOpenEditorTool = openEditorTool;
-              openEditorTool = function (id, force) {
-                const result = originalOpenEditorTool(id, force);
-                if (id === "slideshow") {
-                  setTimeout(function () {
-                    ensureSlideshowDesignBox();
-                    const panel = document.getElementById("slideshowPanel");
-                    const hint = panel && panel.querySelector("p.hint");
-                    if (hint) hint.textContent = "Upload photos here. Drag and resize the slideshow box on the banner. Save Slideshow saves the photos, style, position, and size.";
-                    const button = panel && panel.querySelector('button[onclick="saveSlideshowStyle()"]');
-                    if (button) button.textContent = "Save Slideshow";
-                  }, 0);
-                }
-                return result;
-              };
-
-              const originalRenderHeroThumbs = renderHeroThumbs;
-              renderHeroThumbs = function () {
-                const result = originalRenderHeroThumbs();
-                setTimeout(function () {
-                  if (typeof designCanvas !== "undefined" && designCanvas) ensureSlideshowDesignBox();
-                }, 0);
-                return result;
-              };
-
-              saveSlideshowStyle = async function () {
-                try {
-                  const box = ensureSlideshowDesignBox();
-                  if (!box) throw new Error("Slideshow box is not ready yet.");
-                  const heroes = Array.isArray(owner?.hero_images) ? owner.hero_images : [];
-                  if (!heroes.length) throw new Error("Add at least one slideshow photo first.");
-                  box.slideshowStyle = selectedSlideshowStyle || "fade";
-                  box.slideshowCount = heroes.length;
-                  box.setCoords();
-                  designCanvas.requestRenderAll();
-                  if (typeof designSnapshot === "function") designSnapshot();
-                  owner = await api("/api/owner/site", {
-                    method:"PATCH",
-                    body:JSON.stringify({
-                      slideshow_style:selectedSlideshowStyle || "fade",
-                      custom_design:{
-                        ...owner.custom_design,
-                        enabled:true,
-                        canvas:designCanvas.toJSON([
-                          "assetType","videoUrl","slideshowStyle","slideshowCount",
-                          "lockMovementX","lockMovementY","lockScalingX","lockScalingY","lockRotation",
-                          "borderColor","borderScaleFactor","cornerColor","cornerStrokeColor",
-                          "transparentCorners","cornerSize","padding"
-                        ])
-                      }
-                    })
-                  });
-                  if (typeof renderPreview === "function") renderPreview();
-                  toast("Slideshow saved: photos, style, position, and size.", true);
-                } catch (e) {
-                  toast(e.message);
-                }
-              };
-            };
-            install();
-          });
-        </script>
-        """
         html = html.replace("<title>Site Builder</title>", "<title>Design Your Page · MB Business Hub</title>", 1)
         html = html.replace(
             '<button class="btn" id="menuPhonePreview" type="button" aria-pressed="false" onclick="toggleMenuPhonePreview()">Phone preview</button>',
@@ -540,7 +407,7 @@ def create_app() -> FastAPI:
         }, 800);',
             1,
         )
-        html = html.replace("</head>", f"{boot_guard}{tables_tabs_patch}{slideshow_canvas_patch}</head>", 1)
+        html = html.replace("</head>", f"{boot_guard}{tables_tabs_patch}</head>", 1)
         return HTMLResponse(
             html,
             headers={
