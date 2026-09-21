@@ -334,26 +334,128 @@
   <main class="wrap">
     <section class="hero">
       <div>
+        <div class="eyebrow">All-in-one business solution</div>
+
         <h1>MB <span>Business Hub</span></h1>
-        <p class="lead">One home for restaurant ordering, business pages, tables and QR, payments, cashier operations, and the tools you add next.</p>
+
+        <p class="hero-sub">Simplify. Manage. Grow.</p>
+
+        <p class="lead">
+          One home for restaurant ordering, business pages, tables and QR,
+          payments, cashier operations, and the tools you add next.
+          Built for restaurants, cafés, retail, service businesses, and more.
+        </p>
+
         <div class="actions" id="guestActions">
           <a class="btn primary" href="/account">Log In / Create Account</a>
+          <a class="btn" href="#features">Explore Features</a>
         </div>
+
         <div class="actions" id="ownerActions" hidden>
           <a class="btn primary" href="/owner">Design Your Page</a>
+          <a class="btn" href="#features">Explore Features</a>
+        </div>
+
+        <div class="trust-row">
+          <span>Easy to use</span>
+          <span>Secure &amp; reliable</span>
+          <span>Built for growth</span>
         </div>
       </div>
 
-      <aside class="card">
-        <img class="restaurant-logo" src="/static/mb-bite-brew-logo.png?v=4" alt="MB Bite & Brew logo" />
-        <h2>MB Bite &amp; Brew</h2>
-        <p>Restaurant demo brand inside MB Business Hub</p>
-        <div class="status" id="sessionStatus">Checking account…</div>
-      </aside>
+      <div class="showcase">
+        <div class="floating float-one">
+          <strong>More Than Restaurants</strong>
+          <span>Cafés, retail, salons, service shops and more.</span>
+        </div>
+
+        <div class="dashboard-card">
+          <div class="dash-top">
+            <div class="dash-title">
+              <strong>Business Dashboard</strong>
+              <small>Live overview of your operations</small>
+            </div>
+            <div class="live-badge">● LIVE</div>
+          </div>
+
+          <div class="stats">
+            <div class="stat">
+              <small>Orders</small>
+              <strong>124</strong>
+              <b>↑ 12% today</b>
+            </div>
+
+            <div class="stat">
+              <small>Revenue</small>
+              <strong>₱24,580</strong>
+              <b>↑ 18% today</b>
+            </div>
+
+            <div class="stat">
+              <small>Customers</small>
+              <strong>89</strong>
+              <b>↑ 9% today</b>
+            </div>
+          </div>
+
+          <div class="chart">
+            <div class="chart-label">Sales Overview</div>
+          </div>
+
+          <div class="status" id="sessionStatus">Checking account…</div>
+        </div>
+
+        <div class="floating float-two">
+          <strong>QR &amp; Digital Ordering</strong>
+          <span>Let customers order faster from any device.</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="features" id="features">
+      <div class="section-head">
+        <small>Powerful Features</small>
+        <h2>Everything You Need in One Place</h2>
+        <p>Tools built to help you manage daily operations and grow your business.</p>
+      </div>
+
+      <div class="feature-grid">
+        <div class="feature-card">
+          <div class="feature-icon">🛒</div>
+          <strong>Online Ordering</strong>
+          <p>Accept customer orders through a clean and modern digital experience.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">▦</div>
+          <strong>QR Tables</strong>
+          <p>Let customers open menus and place orders directly from their table.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">▣</div>
+          <strong>Cashier</strong>
+          <p>Fast and reliable cashier tools for day-to-day store operations.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">₱</div>
+          <strong>Payments</strong>
+          <p>Manage payment flows and keep transactions organized in one place.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">📊</div>
+          <strong>Business Dashboard</strong>
+          <p>See important activity and business performance at a glance.</p>
+        </div>
+      </div>
     </section>
   </main>
 
-  <footer class="wrap">MB Business Hub · Built for restaurants and growing businesses.</footer>
+  <footer class="wrap">
+    MB Business Hub · Built for modern businesses.
+  </footer>
 
   <script>
     const OWNER_TOKEN = "owner_token";
