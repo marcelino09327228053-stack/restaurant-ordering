@@ -474,6 +474,28 @@
       width:min(1120px,calc(100% - 32px));
       top:calc(var(--studio-header-height,64px) + 16px); bottom:16px;
     }
+    #menuPanel .menu-item {
+      grid-template-columns:54px minmax(0,1fr) auto;
+      align-items:center;
+    }
+    #menuPanel .menu-item > div:last-child {
+      display:flex!important;
+      flex-direction:row;
+      align-items:center;
+      gap:8px!important;
+      justify-items:unset!important;
+      white-space:nowrap;
+    }
+    #menuPanel .menu-item > div:last-child > div:last-child {
+      display:flex!important;
+      flex-wrap:nowrap;
+      gap:6px!important;
+    }
+    #menuPanel .menu-item .btn {
+      min-height:34px;
+      padding:6px 9px;
+      font-size:.75rem;
+    }
     #menuCustomerPreview { max-width:100%; margin-inline:auto; }
     #menuPhonePreview[aria-pressed="true"] { border-color:#f97316;background:#f9731625; }
     /* Section navigation must hide the complete editor, including injected modules. */
@@ -523,7 +545,7 @@
       <section class="block" id="menuBuilder">
         <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
           <button class="btn solid" id="openMenuButton" type="button" aria-haspopup="dialog" aria-controls="menuDishForm" aria-expanded="false" onclick="openMenuForm()">+ Add Menu</button>
-          <button class="btn" type="button" onclick="document.getElementById('menuItemsPanel').hidden=!document.getElementById('menuItemsPanel').hidden">Edit / Delete</button>
+          <button class="btn" id="editMenuButton" type="button" aria-haspopup="dialog" aria-controls="menuItemsPanel" aria-expanded="false" onclick="toggleMenuItemsPanel()">Edit / Delete</button>
           <button class="btn" id="menuPhonePreview" type="button" aria-pressed="false" onclick="toggleMenuPhonePreview()">Phone preview</button>
         </div>
 
@@ -563,7 +585,13 @@
         <button class="btn" id="cancelMenuEdit" hidden type="button" onclick="cancelMenuEdit()">Cancel edit</button>
         <p id="menuFeedback" class="hint" role="status" aria-live="polite"></p>
         </div>
-        <div id="menuItemsPanel" hidden><div id="menuList"></div></div>
+        <div class="menu-dish-popover" id="menuItemsPanel" role="dialog" aria-modal="false" aria-labelledby="menuItemsTitle" hidden>
+          <div class="menu-dish-popover-head">
+            <h2 id="menuItemsTitle">Edit / Delete menu</h2>
+            <button class="btn" type="button" onclick="toggleMenuItemsPanel(false)">Close</button>
+          </div>
+          <div id="menuList"></div>
+        </div>
       </section>
 
       <section class="block" id="tablesBuilder">
@@ -612,9 +640,23 @@
 
   <div class="toast" id="toast"></div>
   <dialog class="phone-preview-dialog" id="tablePhonePreviewDialog" onclick="if(event.target===this) closeTablePhonePreview()">
-    <div class="phone-preview-card">
+    <div class="phone-preview-card" style="width:min(980px,calc(100vw - 40px));max-width:none">
       <div class="phone-preview-head"><strong id="tablePhonePreviewTitle">Phone preview</strong><button class="btn" type="button" onclick="closeTablePhonePreview()">Close</button></div>
-      <div class="phone-preview-shell"><iframe id="tablePhonePreviewFrame" title="Table customer phone preview"></iframe></div>
+      <div style="display:flex;gap:24px;align-items:flex-start;justify-content:center;flex-wrap:nowrap">
+        <div style="width:240px;flex:0 0 240px;padding:14px;border:1px solid var(--line);border-radius:18px;background:#16181b">
+          <strong style="display:block;margin-bottom:10px">Scan on phone</strong>
+          <img id="tablePhonePreviewQr" alt="Phone preview QR code" style="display:block;width:100%;height:auto;background:#fff;border-radius:12px;padding:8px" />
+          <small style="display:block;margin-top:10px;color:var(--muted)">Scan this QR code to test the real mobile view.</small>
+          <div id="tablePhonePreviewLink" style="margin-top:10px;font-size:.75rem;overflow-wrap:anywhere;color:#fdba74"></div>
+          <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+            <button class="btn" id="tablePhonePreviewCopy" type="button">Copy link</button>
+            <a class="btn solid" id="tablePhonePreviewOpen" target="_blank" rel="noopener">Open link</a>
+          </div>
+        </div>
+        <div class="phone-preview-shell" style="flex:0 0 auto">
+          <iframe id="tablePhonePreviewFrame" title="Table customer phone preview"></iframe>
+        </div>
+      </div>
     </div>
   </dialog>
 
@@ -1467,7 +1509,7 @@
               : "🍽"}</div>
             <div>
               <strong>${escapeHtml(item.name)}</strong>
-              <small>${escapeHtml(item.category)} · ${escapeHtml(item.description || "")}</small>
+              <small>${escapeHtml(item.description || "")}</small>
             </div>
             <div style="display:grid;gap:7px;justify-items:end">
               <div class="price-tag">${money(item.price)}</div>
@@ -1502,10 +1544,27 @@
         toast("Add a table first to preview the customer phone page.");
         return;
       }
-      const url = `${location.origin}/order?table=${encodeURIComponent(table.access_code)}`;
+
+      const previewUrl = `${location.origin}/phone-order?table=${encodeURIComponent(table.access_code)}`;
+      const phoneUrl = `http://192.168.1.2:8010/phone-order?table=${encodeURIComponent(table.access_code)}`;
       const dialog = document.getElementById("tablePhonePreviewDialog");
+
       document.getElementById("tablePhonePreviewTitle").textContent = `${table.name || "Table"} · customer view`;
-      document.getElementById("tablePhonePreviewFrame").src = url;
+      document.getElementById("tablePhonePreviewFrame").src = previewUrl;
+
+      const qr = document.getElementById("tablePhonePreviewQr");
+      const link = document.getElementById("tablePhonePreviewLink");
+      const copyButton = document.getElementById("tablePhonePreviewCopy");
+      const openButton = document.getElementById("tablePhonePreviewOpen");
+
+      qr.src = `/api/qr?data=${encodeURIComponent(phoneUrl)}`;
+      link.textContent = phoneUrl;
+      openButton.href = phoneUrl;
+
+      copyButton.onclick = () => {
+        navigator.clipboard.writeText(phoneUrl).then(() => toast("Link copied.", true));
+      };
+
       if (!dialog.open) dialog.showModal();
     }
     function closeTablePhonePreview() {
@@ -1705,6 +1764,7 @@
 
     function openMenuForm() {
       if (document.getElementById("addMenuButton").disabled) return;
+      toggleMenuItemsPanel(false);
       cancelMenuEdit();
       showMenuForm();
     }
@@ -1722,22 +1782,54 @@
       document.getElementById("menuDishForm").hidden = true;
       document.getElementById("openMenuButton").setAttribute("aria-expanded", "false");
     }
-    function positionMenuForm() {
-      const form = document.getElementById("menuDishForm");
-      if (form.hidden) return;
-      const button = document.getElementById("openMenuButton");
+    function positionMenuPopover(panel, button) {
+      if (!panel || panel.hidden || !button) return;
+
       const rect = button.getBoundingClientRect();
-      const gap = 12;
-      const width = form.offsetWidth;
-      const height = form.offsetHeight;
-      const left = rect.right + gap + width <= innerWidth - gap
-        ? rect.right + gap
-        : Math.max(gap, Math.min(rect.left, innerWidth - width - gap));
-      const top = Math.max(gap, Math.min(rect.top, innerHeight - height - gap));
-      form.style.left = `${left}px`;
-      form.style.top = `${top}px`;
+      const container = panel.closest("#menuPanel");
+      const containerRect = container
+        ? container.getBoundingClientRect()
+        : { left: 0, top: 0 };
+
+      const gap = 6;
+      const width = panel.offsetWidth;
+      const height = panel.offsetHeight;
+
+      let viewportLeft = rect.right + gap;
+      if (viewportLeft + width > innerWidth - gap) {
+        viewportLeft = Math.max(gap, rect.left - width - gap);
+      }
+
+      let viewportTop = rect.top;
+      if (viewportTop + height > innerHeight - gap) {
+        viewportTop = Math.max(gap, innerHeight - height - gap);
+      }
+
+      panel.style.left = `${viewportLeft - containerRect.left}px`;
+      panel.style.top = `${viewportTop - containerRect.top}px`;
     }
-    window.addEventListener("resize", positionMenuForm);
+    function positionMenuForm() {
+      positionMenuPopover(
+        document.getElementById("menuDishForm"),
+        document.getElementById("openMenuButton")
+      );
+    }
+    function toggleMenuItemsPanel(force) {
+      const panel = document.getElementById("menuItemsPanel");
+      const button = document.getElementById("editMenuButton");
+      const shouldOpen = typeof force === "boolean" ? force : panel.hidden;
+      if (shouldOpen) closeMenuForm(true);
+      panel.hidden = !shouldOpen;
+      button.setAttribute("aria-expanded", String(shouldOpen));
+      if (shouldOpen) requestAnimationFrame(() => positionMenuPopover(panel, button));
+    }
+    window.addEventListener("resize", () => {
+      positionMenuForm();
+      positionMenuPopover(
+        document.getElementById("menuItemsPanel"),
+        document.getElementById("editMenuButton")
+      );
+    });
     document.addEventListener("keydown", event => {
       if (event.key === "Escape" && !document.getElementById("menuDishForm").hidden) closeMenuForm();
     });

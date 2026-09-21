@@ -7,7 +7,7 @@ echo   RESTAURANT ORDERING SERVER
 echo ========================================
 echo.
 echo Computer: http://127.0.0.1:8010/
-echo Phone:    http://192.168.1.122:8010/
+echo Phone:    http://192.168.1.2:8010/
 echo Cashier:  http://127.0.0.1:8010/login
 echo.
 echo Keep this window open while using the ordering system.

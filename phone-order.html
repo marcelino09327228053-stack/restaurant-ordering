@@ -1,0 +1,1802 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Table Ordering</title>
+  <style>
+    :root {
+      --bg: #0b0b0d;
+      --panel: #17171b;
+      --panel-2: #1f1f24;
+      --line: #2b2b32;
+      --text: #f5f5f4;
+      --muted: #9a9aa3;
+      --orange: #f97316;
+      --orange-dark: #ea580c;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; background: var(--bg); color: var(--text);
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    button, input, textarea { font: inherit; }
+    .wrap { max-width: 1120px; margin: 0 auto; padding: 0 16px; }
+
+    header {
+      position: sticky; top: 0; z-index: 20;
+      background: #0b0b0dfa; border-bottom: 1px solid var(--line);
+      backdrop-filter: blur(8px);
+    }
+    .bar { display: flex; align-items: center; gap: 14px; padding: 12px 0; }
+    .brand { display: flex; align-items: center; gap: 10px; flex: 0 0 auto; }
+    .logo {
+      width: 38px; height: 38px; border-radius: 11px; display: grid; place-items: center;
+      background: linear-gradient(145deg, var(--orange), #c2410c); font-size: 20px;
+    }
+    .brand-name {
+      font-weight: 800; letter-spacing: .06em; text-transform: uppercase;
+      font-size: 1.05rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 42vw;
+    }
+    .search {
+      flex: 1 1 auto; display: flex; align-items: center; gap: 9px;
+      background: var(--panel); border: 1px solid var(--line); border-radius: 999px;
+      padding: 9px 16px; min-width: 0;
+    }
+    .search input {
+      flex: 1; min-width: 0; border: 0; outline: 0; background: transparent; color: var(--text);
+    }
+    .search input::placeholder { color: #6f6f78; }
+    .table-chip { display: flex; align-items: center; gap: 8px; flex: 0 0 auto; }
+    .table-chip small { display: block; color: var(--muted); font-size: .7rem; }
+    .table-chip strong { font-size: .86rem; }
+    .dashboard-btn {
+      flex: 0 0 auto; display: inline-flex; align-items: center; gap: 8px;
+      min-height: 42px; padding: 9px 13px; border: 1px solid var(--line);
+      border-radius: 12px; background: var(--panel); color: var(--text);
+      text-decoration: none; font-size: .82rem; font-weight: 800;
+    }
+    .dashboard-btn:hover { border-color: var(--orange); color: #fed7aa; }
+    .dashboard-btn.account-primary { border-color: #f9731670; color: #ffedd5; }
+    .dashboard-btn.logged-in { border-color: #166534; background: #052e16; color: #86efac; cursor: default; }
+    .dashboard-icon { font-size: 17px; }
+    .cart-btn {
+      position: relative; flex: 0 0 auto; width: 42px; height: 42px; border-radius: 12px;
+      border: 1px solid var(--line); background: var(--panel); color: var(--text);
+      font-size: 18px; cursor: pointer;
+    }
+    .cart-btn .badge {
+      position: absolute; top: -6px; right: -6px; min-width: 20px; height: 20px;
+      border-radius: 999px; background: var(--orange); color: #fff;
+      font-size: .7rem; font-weight: 800; display: grid; place-items: center; padding: 0 5px;
+    }
+    .header-order-tools { display: flex; align-items: center; gap: 10px; flex: 0 0 auto; }
+
+    .hero {
+      position: relative; margin: 16px 0 26px; border-radius: 16px; overflow: hidden;
+      min-height: 250px; display: flex; align-items: center;
+      background: #14100e;
+    }
+    .hero-slides {
+      position: absolute; inset: 0; z-index: 0;
+    }
+    .hero-slide {
+      position: absolute; inset: 0;
+      background-color: #0e0c0b;
+      background-position: center right; background-size: contain; background-repeat: no-repeat;
+      opacity: 0; transform: translateX(8%);
+      transition: opacity .9s ease, transform 1.1s ease;
+    }
+    .hero-slide.is-active {
+      opacity: 1; transform: translateX(0);
+      z-index: 1;
+    }
+    .hero-slide.is-leaving {
+      opacity: 0; transform: translateX(-8%);
+      z-index: 0;
+    }
+    .hero-dots {
+      position: absolute; left: 18px; right: 18px; bottom: 14px; z-index: 3;
+      display: flex; flex-wrap: wrap; gap: 6px; justify-content: flex-end; max-width: 55%;
+      margin-left: auto;
+    }
+    .hero-dot {
+      width: 7px; height: 7px; border-radius: 50%; border: 0; padding: 0; cursor: pointer;
+      background: #ffffff44;
+    }
+    .hero-dot.active { background: var(--orange); box-shadow: 0 0 0 3px #f9731633; }
+    .hero-count {
+      position: absolute; right: 18px; top: 16px; z-index: 3;
+      font-size: .78rem; font-weight: 800; color: #fff; letter-spacing: .04em;
+      background: #00000066; border: 1px solid #ffffff22; border-radius: 999px;
+      padding: 5px 10px;
+    }
+    .hero::after {
+      content: ""; position: absolute; inset: 0; z-index: 1;
+      background: linear-gradient(100deg, #0b0b0df2 6%, #0b0b0dcc 38%, #0b0b0d33 66%, #0b0b0d00 100%);
+    }
+    .hero-inner { position: relative; z-index: 2; padding: 30px 26px; max-width: 560px; }
+    .hero h1 {
+      margin: 0 0 18px; font-size: clamp(1.9rem, 6.4vw, 3.2rem); line-height: 1.03;
+      font-weight: 800; letter-spacing: -.02em;
+    }
+    .hero h1 span { color: var(--orange); display: block; }
+    .cta {
+      display: inline-flex; align-items: center; gap: 9px; border: 0; cursor: pointer;
+      background: var(--orange); color: #fff; font-weight: 800;
+      padding: 13px 24px; border-radius: 999px; box-shadow: 0 10px 26px #f9731640;
+    }
+    .cta:hover { background: var(--orange-dark); }
+
+    .section-head {
+      display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+      justify-content: space-between; margin-bottom: 16px;
+    }
+    .section-head h2 { margin: 0; font-size: 1.4rem; }
+    .section-head h2::after {
+      content: ""; display: block; width: 42px; height: 3px; margin-top: 6px;
+      border-radius: 3px; background: var(--orange);
+    }
+    .chips { display: flex; flex-wrap: wrap; gap: 8px; overflow: visible; padding-bottom: 3px; }
+    .chips::-webkit-scrollbar { display: none; }
+    .category-select {
+      display: none; width: 100%; min-width: 0; padding: 12px 42px 12px 15px;
+      border: 1px solid var(--line); border-radius: 12px;
+      background: var(--panel); color: #f4f4f5; font: inherit; font-weight: 700;
+    }
+    .chip {
+      border: 1px solid var(--line); background: var(--panel); color: #d4d4d8;
+      border-radius: 999px; padding: 8px 18px; cursor: pointer; white-space: nowrap;
+    }
+    .chip:hover { border-color: #464650; }
+    .chip.active { background: var(--orange); border-color: var(--orange); color: #fff; font-weight: 700; }
+
+    .grid {
+      display: grid; gap: 14px; padding-bottom: 120px;
+      grid-template-columns: repeat(auto-fill, minmax(168px, 1fr));
+    }
+    .menu-category-heading {
+      grid-column: 1 / -1; margin: 14px 0 0; padding: 0 0 9px;
+      border-bottom: 1px solid var(--line); color: #f4f4f5;
+      font-size: 1.08rem; letter-spacing: .01em;
+    }
+    .menu-category-heading:first-child { margin-top: 0; }
+    .card {
+      background: var(--panel); border: 1px solid var(--line); border-radius: 14px;
+      overflow: hidden; display: flex; flex-direction: column;
+      transition: transform .16s ease, border-color .16s ease;
+    }
+    .card:hover { transform: translateY(-3px); border-color: #45454f; }
+    .thumb {
+      aspect-ratio: 1 / 1; position: relative; overflow: hidden;
+      background: #111111;
+      display: grid; place-items: center; font-size: 3.1rem;
+    }
+    .thumb img {
+      width: 100%; height: 100%; object-fit: contain; object-position: center;
+      display: block; background: #111111;
+    }
+    .food-sprite {
+      position: absolute; inset: 0; display: block;
+      background-image: url("static/menu-foods.png");
+      background-size: 300% 200%; background-repeat: no-repeat;
+      transition: transform .35s ease;
+    }
+    .sprite-1 { background-position: 0% 0%; }
+    .sprite-2 { background-position: 50% 0%; }
+    .sprite-3 { background-position: 100% 0%; }
+    .sprite-4 { background-position: 0% 100%; }
+    .sprite-5 { background-position: 50% 100%; }
+    .sprite-6 { background-position: 100% 100%; }
+    .card-body { padding: 12px 13px 14px; display: flex; flex-direction: column; gap: 6px; flex: 1; }
+    .card-body h3 { margin: 0; font-size: .96rem; }
+    .desc {
+      margin: 0; color: var(--muted); font-size: .8rem; line-height: 1.4;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+    }
+    .card-foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: auto; padding-top: 6px; }
+    .card-foot-end { justify-content: flex-end; }
+    .price { color: var(--orange); font-weight: 800; font-size: 1rem; }
+    .add {
+      width: 38px; height: 38px; border-radius: 50%; border: 0; cursor: pointer;
+      background: var(--orange); color: #fff; font-size: 17px; display: grid; place-items: center;
+      box-shadow: 0 6px 16px #f9731633;
+    }
+    .add:hover { background: var(--orange-dark); }
+    .stepper { display: flex; align-items: center; gap: 4px; background: var(--panel-2); border-radius: 999px; padding: 3px; }
+    .stepper button {
+      width: 30px; height: 30px; border-radius: 50%; border: 0; cursor: pointer;
+      background: var(--orange); color: #fff; font-size: 16px; line-height: 1;
+    }
+    .stepper span { min-width: 20px; text-align: center; font-weight: 800; font-size: .9rem; }
+
+    .notice {
+      padding: 15px; border-radius: 12px; background: var(--panel);
+      border: 1px solid var(--line); color: var(--muted); margin-bottom: 18px;
+    }
+    .notice.bad { color: #fca5a5; background: #2a1214; border-color: #7f1d1d; }
+
+    .cart-bar {
+      position: fixed; left: 0; right: 0; bottom: 0; z-index: 25;
+      background: #101014f2; border-top: 1px solid var(--line); backdrop-filter: blur(10px);
+      padding: 12px 0; box-shadow: 0 -8px 30px #00000066;
+    }
+    .cart-bar .wrap { display: flex; align-items: center; gap: 14px; }
+    .cart-sum { flex: 1; min-width: 0; }
+    .cart-sum small { display: block; color: var(--muted); font-size: .76rem; }
+    .cart-sum strong { font-size: 1.15rem; }
+    .payment-preview { color: #fdba74 !important; margin-top: 2px; }
+    .session-toast {
+      position: fixed; left: 50%; top: 84px; z-index: 80; transform: translate(-50%, -12px);
+      width: min(92vw, 520px); padding: 12px 16px; border: 1px solid #f9731666;
+      border-radius: 12px; background: #17100df2; color: #ffedd5; text-align: center;
+      box-shadow: 0 14px 38px #0009; opacity: 0; pointer-events: none; transition: .2s ease;
+    }
+    .session-toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+    .sheet-back { position: fixed; inset: 0; z-index: 30; background: #000000b3; display: none; align-items: flex-end; }
+    .sheet-back.open { display: flex; }
+    #loginSheet.sheet-back.open {
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      padding: 24px;
+    }
+    #loginSheet .auth-sheet {
+      width: min(420px, 92vw);
+      max-width: 420px;
+      margin: auto !important;
+      align-self: center !important;
+      border-radius: 20px !important;
+      border: 1px solid var(--line) !important;
+      border-bottom: 1px solid var(--line) !important;
+      box-shadow: 0 24px 60px #00000088;
+      max-height: min(86vh, 560px);
+    }
+    .sheet {
+      width: 100%; max-width: 560px; margin: 0 auto; background: var(--panel);
+      border: 1px solid var(--line); border-bottom: 0;
+      border-radius: 20px 20px 0 0; padding: 20px 18px 24px; max-height: 88vh; overflow: auto;
+    }
+    .sheet h2 { margin: 0 0 4px; font-size: 1.2rem; }
+    .sheet .hint { margin: 0 0 14px; color: var(--muted); font-size: .82rem; }
+    .line { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 11px 0; border-bottom: 1px solid var(--line); }
+    .line-name { font-size: .9rem; }
+    .line-name small { display: block; color: var(--muted); font-size: .76rem; }
+    textarea {
+      width: 100%; margin: 14px 0; padding: 12px; min-height: 76px; resize: vertical;
+      background: var(--panel-2); border: 1px solid var(--line); border-radius: 11px; color: var(--text);
+    }
+    .total-row { display: flex; justify-content: space-between; align-items: center; margin: 14px 0 4px; font-size: 1.05rem; font-weight: 800; }
+    .payment-box { margin: 15px 0; padding: 13px; border: 1px solid var(--line); border-radius: 13px; background: #111315; }
+    .payment-box h3 { margin: 0 0 5px; font-size: .98rem; }
+    .offline-payment-warning { margin: 10px 0 0; padding: 10px 12px; border: 1px solid #991b1b; border-radius: 10px; background: #2a1214; color: #fecaca; font-size: .82rem; font-weight: 700; }
+    .payment-option { display: grid; grid-template-columns: auto 1fr 62px; gap: 10px; align-items: center; padding: 10px; margin-top: 8px; border: 1px solid var(--line); border-radius: 11px; cursor: pointer; }
+    .payment-option.active { border-color: var(--orange); background: #2a160d; }
+    .payment-option input { width: auto; margin: 0; }
+    .payment-option strong, .payment-option small { display: block; }
+    .payment-option small { color: var(--muted); margin-top: 2px; }
+    .payment-option img { width: 62px; height: 62px; object-fit: contain; background: white; border-radius: 8px; padding: 2px; }
+    .payment-fields input { width: 100%; margin: 9px 0 0; padding: 11px; border-radius: 10px; border: 1px solid var(--line); background: var(--panel-2); color: var(--text); }
+    .payment-confirmation { margin: 10px auto; max-width: 540px; padding: 10px 13px; border-radius: 10px; background: #191b1d; color: #fdba74; }
+    .sheet-actions { display: flex; gap: 10px; margin-top: 14px; }
+    .sheet-actions button { flex: 1; padding: 13px 16px; border-radius: 12px; font-weight: 800; cursor: pointer; }
+    .ghost { background: transparent; border: 1px solid var(--line); color: var(--text); }
+    .auth-sheet { max-width: 420px; }
+    .auth-label { display:block; margin:0 0 7px; font-size:.84rem; color:#d4d4d8; font-weight:600; }
+    .auth-sheet input {
+      width:100%; margin-bottom:12px; padding:13px 14px; border-radius:12px;
+      border:1px solid var(--line); background:var(--panel-2); color:var(--text); outline:0;
+    }
+    .auth-full { width:100%; margin-top:8px; }
+    .auth-error { color:#fca5a5; min-height:1.2em; margin:10px 0 0; font-size:.9rem; }
+    .auth-divider { display:flex; align-items:center; gap:10px; margin:14px 0; color:var(--muted); font-size:.78rem; }
+    .auth-divider::before, .auth-divider::after { content:""; flex:1; height:1px; background:var(--line); }
+    #googleButton { min-height:44px; display:flex; justify-content:center; }
+    .google-setup { margin:8px 0 0; color:var(--muted); font-size:.76rem; text-align:center; }
+    .solid {
+      border:0; border-radius:12px; background:var(--orange); color:#fff;
+      font-weight:800; padding:12px 16px; cursor:pointer;
+    }
+    .solid:disabled { opacity:.55; cursor:not-allowed; }
+
+    /* Table chat (QR connect → cashier) */
+    .chat-fab {
+      position: fixed; right: 16px; bottom: 88px; z-index: 28;
+      width: 56px; height: 56px; border-radius: 50%; border: 0; cursor: pointer;
+      background: linear-gradient(135deg, #ff7a18, #e9430a); color: #fff;
+      font-size: 22px; box-shadow: 0 12px 28px #f4511e55;
+      display: none; place-items: center;
+    }
+    .chat-fab.show { display: grid; }
+    .chat-fab .ping {
+      position: absolute; top: 6px; right: 6px; width: 12px; height: 12px;
+      border-radius: 50%; background: #22c55e; border: 2px solid #0b0b0d;
+    }
+    #chatSheet.sheet-back.open {
+      display: flex !important; align-items: flex-end !important; justify-content: center;
+    }
+    .chat-sheet { max-height: min(78vh, 640px); display: flex; flex-direction: column; }
+    .chat-head { display: flex; align-items: center; gap: 12px; }
+    .chat-head h2 { flex: 1; margin: 0; }
+    .chat-close-x {
+      width: 38px; height: 38px; flex: 0 0 auto; border: 1px solid var(--line);
+      border-radius: 50%; background: var(--panel-2); color: var(--text);
+      font-size: 1.25rem; line-height: 1; cursor: pointer;
+    }
+    .chat-close-x:hover { border-color: var(--orange); color: #fed7aa; }
+    .chat-sheet .chat-log {
+      flex: 1; overflow: auto; min-height: 220px; max-height: 42vh;
+      display: flex; flex-direction: column; gap: 8px; margin: 8px 0 12px;
+    }
+    .c-bubble {
+      max-width: 85%; padding: 10px 12px; border-radius: 14px;
+      font-size: .9rem; line-height: 1.4;
+    }
+    .chat-message-row { position: relative; display: flex; align-items: center; max-width: 84%; }
+    .chat-message-row.me { align-self: flex-end; justify-content: flex-end; }
+    .chat-message-row.them { align-self: flex-start; }
+    .chat-message-row .c-bubble { max-width: 100%; }
+    .c-bubble.me { background: #2a1408; border: 1px solid #7c2d12; color: #fed7aa; }
+    .c-bubble.them { background: var(--panel-2); border: 1px solid var(--line); }
+    .c-bubble time { display: block; margin-top: 4px; font-size: .7rem; color: var(--muted); }
+    .chat-message-menu { position: relative; width: max-content; flex: 0 0 auto; }
+    .chat-message-menu summary {
+      width: 28px; height: 24px; display: grid; place-items: center;
+      border-radius: 8px; color: #fdba74; cursor: pointer; list-style: none;
+      font-size: 1.15rem; font-weight: 800; line-height: 1;
+    }
+    .chat-message-menu summary::-webkit-details-marker { display: none; }
+    .chat-message-menu summary:hover, .chat-message-menu[open] summary { background: #ffffff12; color: #fff; }
+    .chat-message-options {
+      position: absolute; right: 0; bottom: calc(100% + 5px); z-index: 5;
+      min-width: 112px; padding: 5px; border: 1px solid var(--line);
+      border-radius: 10px; background: #202024; box-shadow: 0 12px 28px #0009;
+    }
+    .chat-message-options button {
+      display: block; width: 100%; border: 0; padding: 8px 10px;
+      border-radius: 7px; background: transparent; color: var(--text);
+      text-align: left; font-size: .78rem; cursor: pointer;
+    }
+    .chat-message-options button:hover { background: #ffffff12; }
+    .chat-message-options .delete-message { color: #fca5a5; }
+    .chat-inline-tools {
+      position: absolute; top: 50%; z-index: 6; display: flex; align-items: center; gap: 2px;
+      opacity: 0; visibility: hidden; pointer-events: none;
+      transform: translateY(-50%) scale(.96); transition: opacity .14s ease, transform .14s ease, visibility .14s;
+    }
+    .chat-message-row.me .chat-inline-tools { right: calc(100% + 5px); }
+    .chat-message-row.them .chat-inline-tools { left: calc(100% + 5px); }
+    .chat-message-row:hover .chat-inline-tools,
+    .chat-message-row:focus-within .chat-inline-tools,
+    .chat-message-row.actions-visible .chat-inline-tools {
+      opacity: 1; visibility: visible; pointer-events: auto; transform: translateY(-50%) scale(1);
+    }
+    .chat-inline-action {
+      width: 28px; height: 28px; display: grid; place-items: center; border: 0;
+      border-radius: 50%; background: transparent; color: var(--muted); cursor: pointer;
+    }
+    .chat-inline-action:hover { background: #ffffff12; color: #fff; }
+    .reaction-picker { display: flex; gap: 3px; min-width: max-content; }
+    .reaction-picker button { width: auto; padding: 7px; font-size: 1rem; }
+    .message-reaction { display: inline-block; margin: 5px 0 -5px; padding: 2px 6px; border-radius: 999px; background: #27272a; font-size: .78rem; }
+    .reply-quote { margin-bottom: 7px; padding: 6px 8px; border-left: 3px solid var(--orange); border-radius: 6px; background: #0003; color: var(--muted); font-size: .75rem; }
+    .reply-preview { display: flex; gap: 8px; align-items: center; padding: 8px 10px; border-left: 3px solid var(--orange); background: var(--panel-2); color: var(--muted); font-size: .78rem; }
+    .reply-preview span { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .reply-preview button { border: 0; background: transparent; color: var(--text); cursor: pointer; }
+    .chat-compose { display: flex; gap: 8px; }
+    .chat-compose input {
+      flex: 1; min-width: 0; padding: 12px 14px; border-radius: 12px;
+      border: 1px solid var(--line); background: var(--panel-2); color: var(--text); outline: 0;
+    }
+    .chat-compose button {
+  border: 0; border-radius: 12px; background: var(--orange); color: #fff;
+  font-weight: 800; padding: 0 16px; cursor: pointer;
+}
+
+/* Full-screen customer chat on phone */
+@media (max-width: 768px) {
+  #chatSheet.sheet-back.open {
+    position: fixed !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100dvh !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    display: flex !important;
+    align-items: stretch !important;
+    justify-content: stretch !important;
+    overflow: hidden !important;
+    z-index: 9999 !important;
+  }
+
+  #chatSheet .chat-sheet {
+    width: 100% !important;
+    max-width: none !important;
+    height: 100dvh !important;
+    max-height: none !important;
+    margin: 0 !important;
+    border-radius: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
+  }
+
+  #chatSheet .chat-head {
+    flex: 0 0 auto;
+  }
+
+  #chatSheet .hint {
+    flex: 0 0 auto;
+  }
+
+  #chatSheet .chat-log {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain;
+  }
+
+  #chatSheet .reply-preview {
+    flex: 0 0 auto;
+  }
+
+  #chatSheet .chat-compose {
+    flex: 0 0 auto;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+.connected-chip {
+    .connected-chip {
+      display: none; align-items: center; gap: 6px; padding: 5px 10px;
+      border-radius: 999px; background: #052e16; border: 1px solid #14532d;
+      color: #86efac; font-size: .72rem; font-weight: 800;
+    }
+    .connected-chip.show { display: inline-flex; }
+    .connected-chip.offline { background: #3f1014; border-color: #991b1b; color: #fecaca; }
+    .payment-box.offline .payment-option { opacity: .48; cursor: not-allowed; }
+
+    .done { text-align: center; padding: 34px 20px 40px; background: var(--panel); border: 1px solid var(--line); border-radius: 16px; margin-bottom: 40px; }
+    .done .tick { width: 66px; height: 66px; margin: 0 auto 14px; border-radius: 50%; background: #14532d; color: #86efac; font-size: 32px; display: grid; place-items: center; }
+    .done h2 { margin: 0 0 6px; }
+    .done p { color: var(--muted); margin: 0 0 6px; }
+    .order-no { display: inline-block; margin: 12px 0; padding: 8px 16px; border-radius: 999px; background: var(--panel-2); border: 1px solid var(--line); font-weight: 800; letter-spacing: .04em; }
+    .steps { display: flex; justify-content: center; gap: 6px; flex-wrap: wrap; margin: 16px 0 6px; }
+    .step { padding: 7px 14px; border-radius: 999px; font-size: .78rem; font-weight: 700; background: var(--panel-2); color: #6f6f78; border: 1px solid var(--line); }
+    .step.on { background: var(--orange); border-color: var(--orange); color: #fff; }
+    .step.cancelled { background: #7f1d1d; border-color: #7f1d1d; color: #fecaca; }
+
+    [hidden] { display: none !important; }
+
+    /* Premium storefront refresh */
+    body {
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at 50% -20%, #2b160d 0, transparent 34rem),
+        linear-gradient(180deg, #090b0b 0%, #0d1010 55%, #090a0a 100%);
+    }
+    body::before {
+      content: ""; position: fixed; inset: 0; pointer-events: none; opacity: .16;
+      background-image: linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px);
+      background-size: 80px 80px; mask-image: linear-gradient(to bottom, #000, transparent 55%);
+    }
+    .wrap { max-width: 1500px; padding-inline: clamp(16px, 3vw, 42px); }
+    header { background: #090b0be8; border-color: #ffffff14; }
+    .bar { min-height: 82px; gap: clamp(12px, 2vw, 30px); }
+    .logo { width: 64px; height: 64px; flex-shrink: 0; object-fit: contain; border-radius: 12px; background: #090b0b; }
+    .brand-name { font-family: Impact, "Arial Narrow", sans-serif; font-size: clamp(1.05rem, 2vw, 1.55rem); letter-spacing: .08em; }
+    .search { max-width: 620px; margin-inline: auto; padding: 13px 20px; background: #17191a; border-color: #ffffff18; }
+    .table-chip { padding: 8px 14px; border-left: 1px solid #ffffff1c; }
+    .dashboard-btn { min-height: 48px; border-radius: 999px; background: transparent; }
+    .cart-btn { width: 48px; height: 48px; border-radius: 50%; background: transparent; font-size: 21px; }
+    .hero { min-height: clamp(330px, 39vw, 520px); margin-top: 22px; border: 1px solid #ffffff20; border-radius: 24px; box-shadow: 0 24px 80px #0009; }
+    .hero::after { z-index: 1; background: linear-gradient(90deg, #080808f7 0%, #090909d9 31%, #09090955 59%, transparent 78%); }
+    .hero-inner { z-index: 2; padding: clamp(28px, 5vw, 76px); max-width: 730px; }
+    .hero-dots { right: 22px; bottom: 20px; }
+    .eyebrow { margin: 0 0 13px; color: #fb923c; font-size: .78rem; font-weight: 900; letter-spacing: .22em; text-transform: uppercase; }
+    .hero h1 { font-family: Impact, "Arial Narrow", sans-serif; font-size: clamp(3.1rem, 7vw, 6.7rem); letter-spacing: .015em; line-height: .86; text-transform: uppercase; text-shadow: 0 6px 25px #000; }
+    .hero h1 span { margin-top: .12em; }
+    .hero-copy { max-width: 440px; margin: 20px 0 25px; color: #d5d5d5; line-height: 1.6; }
+    .cta { border-radius: 14px; padding: 15px 25px; background: linear-gradient(135deg, #ff7a18, #e9430a); box-shadow: 0 12px 32px #f4511e45; transition: transform .18s ease, box-shadow .18s ease; }
+    .cta:hover { transform: translateY(-2px); box-shadow: 0 15px 38px #f4511e66; }
+    .section-head { margin: 34px 0 21px; }
+    .section-head h2 { font-size: clamp(1.55rem, 3vw, 2.25rem); }
+    .chip { min-width: 105px; padding: 10px 22px; background: #101212; border-color: #ffffff2b; }
+    .chip.active { background: linear-gradient(135deg, #ff7013, #e9470c); box-shadow: inset 0 1px #ffffff38, 0 8px 24px #f9731624; }
+    .grid { gap: clamp(14px, 1.5vw, 22px); grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
+    .card { position: relative; border-radius: 20px; background: linear-gradient(180deg, #191b1b, #111313); border-color: #ffffff24; box-shadow: 0 15px 36px #0005; }
+    .card:hover { transform: translateY(-6px); border-color: #f9731677; box-shadow: 0 22px 42px #0008; }
+    .thumb { aspect-ratio: 1 / 1; font-size: 4rem; background: #111111; }
+    .thumb img { width: 100%; height: 100%; object-fit: contain; object-position: center; transition: transform .35s ease; }
+    .card:hover .thumb img { transform: scale(1.03); }
+    .category-tag { position: absolute; z-index: 2; left: 12px; top: 12px; padding: 6px 10px; border-radius: 999px; background: #080909c9; border: 1px solid #ffffff2d; color: #e4e4e7; font-size: .68rem; font-weight: 800; backdrop-filter: blur(8px); }
+    .card-body { padding: 16px 17px 18px; gap: 8px; }
+    .card-body h3 { font-size: 1.06rem; letter-spacing: -.01em; }
+    .desc { min-height: 2.3em; }
+    .price { font-size: 1.12rem; }
+    .add { width: 44px; height: 44px; background: linear-gradient(135deg, #ff7515, #e9430a); }
+    .cart-bar { background: #0c0e0ef2; border-color: #f9731644; }
+    .sheet { background: linear-gradient(180deg, #1b1d1d, #101212); border-color: #ffffff26; }
+
+    @media (max-width: 720px) {
+      .bar { flex-wrap: wrap; gap: 10px; }
+      .search { order: 4; flex-basis: 100%; }
+      .brand { flex: 1; }
+      .table-chip { order: 1; }
+      .dashboard-btn { order: 2; width: 42px; min-height: 42px; padding: 0; justify-content: center; }
+      .dashboard-label { display: none; }
+      .header-order-tools { order: 3; flex: 1 0 100%; }
+      .header-order-tools .category-select { flex: 1; }
+      .bar { min-height: auto; padding-block: 11px; }
+      .table-chip { padding: 5px 0 5px 10px; }
+      .hero { min-height: 390px; background-position: 62% center; border-radius: 18px; }
+      .hero::after { background: linear-gradient(90deg, #090909f4 0%, #090909b5 62%, #09090940 100%); }
+      .hero-inner { align-self: flex-end; padding: 25px 20px 32px; }
+      .hero h1 { font-size: clamp(3rem, 15vw, 4.7rem); }
+      .hero-copy { font-size: .88rem; margin: 15px 0 20px; max-width: 310px; }
+      .chips { display: none; }
+      .category-select { display: block; }
+      .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+      .card { border-radius: 15px; }
+      .card-body { padding: 10px; }
+      .card-body h3 { font-size: .88rem; }
+      .desc { font-size: .72rem; }
+      .price { font-size: .88rem; }
+      .menu-category-heading { margin-top: 12px; font-size: 1rem; }
+      .category-tag { display: none; }
+      .thumb { aspect-ratio: 1 / 1; }
+      .add { width: 38px; height: 38px; }
+    }
+  #menu.custom-menu-theme { background:var(--menu-bg,#0b0b0d); padding:20px; border-radius:16px; }
+    #menu.custom-menu-theme .card { background:var(--menu-card,#17171b); color:var(--menu-text,#f5f5f4); }
+    #menu.custom-menu-theme .desc { color:inherit; }
+
+    .phone-view-mode .search,
+    .phone-view-mode #loginBtn,
+    .phone-view-mode #createAccountBtn,
+    .phone-view-mode #cashierLoginBtn,
+    .phone-view-mode .table-chip,
+    .phone-view-mode .header-order-tools .category-select {
+      display:none !important;
+    }
+
+    .phone-view-mode .bar {
+      flex-wrap:nowrap !important;
+      justify-content:space-between;
+    }
+
+    .phone-view-mode .brand {
+      flex:1 1 auto;
+      min-width:0;
+    }
+
+    .phone-view-mode .brand-name {
+      max-width:none;
+    }
+
+    .phone-view-mode .header-order-tools {
+      flex:0 0 auto !important;
+      width:auto !important;
+      order:initial !important;
+    }
+
+    .phone-view-mode .cart-btn {
+      display:grid !important;
+      place-items:center;
+    }
+
+    /* Standalone mobile customer design */
+    .phone-view-mode body {
+      background:#0b0d0e;
+    }
+
+    .phone-view-mode header {
+      position:sticky;
+      top:0;
+      z-index:30;
+      background:#0b0d0ef2;
+      border-bottom:1px solid #ffffff16;
+    }
+
+    .phone-view-mode .wrap {
+      width:100%;
+      max-width:none;
+      padding-inline:14px;
+    }
+
+    .phone-view-mode .bar {
+      min-height:64px !important;
+      padding:8px 0 !important;
+      gap:10px !important;
+    }
+
+    .phone-view-mode .logo {
+      width:42px !important;
+      height:42px !important;
+      border-radius:10px;
+    }
+
+    .phone-view-mode .brand-name {
+      font-size:1rem !important;
+      letter-spacing:.04em;
+      white-space:nowrap;
+    }
+
+    .phone-view-mode .cart-btn {
+      width:44px !important;
+      height:44px !important;
+      min-height:44px;
+      border-radius:50% !important;
+      background:#17191a !important;
+      border:1px solid #ffffff20 !important;
+    }
+
+    .phone-view-mode .hero {
+      min-height:190px !important;
+      height:190px;
+      margin:12px 0 18px !important;
+      border-radius:16px !important;
+    }
+
+    .phone-view-mode .hero-inner {
+      padding:18px !important;
+      max-width:78%;
+      align-self:flex-end;
+    }
+
+    .phone-view-mode .eyebrow,
+    .phone-view-mode .hero-copy,
+    .phone-view-mode #heroCta,
+    .phone-view-mode .hero-count {
+      display:none !important;
+    }
+
+    .phone-view-mode .hero h1 {
+      margin:0 !important;
+      font-size:2rem !important;
+      line-height:.92 !important;
+    }
+
+    .phone-view-mode .section-head {
+      margin:0 0 12px !important;
+      display:block;
+    }
+
+    .phone-view-mode .section-head h2 {
+      font-size:1.35rem !important;
+      margin-bottom:10px;
+    }
+
+    .phone-view-mode .chips {
+      display:flex !important;
+      flex-wrap:nowrap !important;
+      overflow-x:auto;
+      gap:7px;
+      padding:0 0 8px;
+      scrollbar-width:none;
+    }
+
+    .phone-view-mode .chips::-webkit-scrollbar {
+      display:none;
+    }
+
+    .phone-view-mode .chip {
+      flex:0 0 auto;
+      min-width:auto !important;
+      padding:8px 14px !important;
+      font-size:.8rem;
+    }
+
+    .phone-view-mode #menu,
+    .phone-view-mode #menu.custom-menu-theme {
+      display:grid;
+      grid-template-columns:1fr !important;
+      gap:10px !important;
+      padding:0 0 110px !important;
+      background:transparent !important;
+      border-radius:0 !important;
+      color:#f5f5f4 !important;
+    }
+
+    .phone-view-mode .menu-category-heading {
+      margin:12px 0 2px !important;
+      padding-bottom:7px;
+      font-size:1rem !important;
+    }
+
+    .phone-view-mode .card,
+    .phone-view-mode #menu.custom-menu-theme .card {
+      display:grid !important;
+      grid-template-columns:112px minmax(0,1fr);
+      min-height:112px;
+      border-radius:14px !important;
+      overflow:hidden;
+      background:#17191a !important;
+      color:#f5f5f4 !important;
+      border:1px solid #ffffff18 !important;
+      box-shadow:none !important;
+      transform:none !important;
+    }
+
+    .phone-view-mode .thumb {
+      width:112px;
+      height:112px;
+      aspect-ratio:auto !important;
+      font-size:2.4rem !important;
+      background:#101213 !important;
+    }
+
+    .phone-view-mode .thumb img {
+      width:100%;
+      height:100%;
+      object-fit:cover !important;
+    }
+
+    .phone-view-mode .card-body {
+      min-width:0;
+      padding:10px 11px !important;
+      gap:4px !important;
+    }
+
+    .phone-view-mode .card-body h3 {
+      font-size:.94rem !important;
+      line-height:1.2;
+    }
+
+    .phone-view-mode .desc {
+      min-height:0 !important;
+      font-size:.72rem !important;
+      line-height:1.3;
+      -webkit-line-clamp:2;
+      color:#a1a1aa !important;
+    }
+
+    .phone-view-mode .card-foot {
+      padding-top:3px;
+    }
+
+    .phone-view-mode .price {
+      font-size:.92rem !important;
+    }
+
+    .phone-view-mode .add {
+      width:34px !important;
+      height:34px !important;
+      font-size:14px;
+    }
+
+    .phone-view-mode .stepper button {
+      width:28px;
+      height:28px;
+    }
+
+    .phone-view-mode .cart-bar {
+      padding:9px 0;
+      background:#0d0f10f5;
+      border-top:1px solid #f9731644;
+    }
+
+    .phone-view-mode .cart-bar .wrap {
+      gap:10px;
+    }
+
+    .phone-view-mode .cart-bar .cta {
+      padding:11px 16px;
+      font-size:.82rem;
+    }
+
+    .phone-view-mode .chat-fab {
+      right:14px;
+      bottom:88px;
+    }
+  </style>
+</head>
+<body>
+  <script>
+    document.documentElement.classList.add("phone-view-mode");
+  </script>
+
+  <header>
+    <div class="wrap bar">
+      <div class="brand">
+        <img class="logo" src="/static/mb-bite-brew-logo.png" alt="MB Business Hub logo" width="42" height="42" decoding="async" />
+        <div class="brand-name" id="brandName">MB Business Hub</div>
+      </div>
+
+      <div class="header-order-tools">
+        <button class="cart-btn" onclick="openCart()" aria-label="View order">
+          🛒<span class="badge" id="cartBadge" hidden>0</span>
+        </button>
+      </div>
+
+      <div hidden aria-hidden="true">
+        <input id="searchInput" type="search" value="" />
+        <button id="loginBtn" type="button"></button>
+        <button id="createAccountBtn" type="button"></button>
+        <a id="cashierLoginBtn"></a>
+        <strong id="tableName"></strong>
+        <span id="connectedChip"></span>
+        <select id="categorySelect"></select>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <div id="message" class="notice">Loading menu…</div>
+
+    <section id="shop" hidden>
+      <div class="hero" id="hero">
+        <div class="hero-slides" id="heroSlides" aria-hidden="true"></div>
+        <div class="hero-inner">
+          <p class="eyebrow">Fresh from our kitchen</p>
+          <h1>Crave it.<br />Order it.<span>Enjoy it.</span></h1>
+          <p class="hero-copy">Your favorites, freshly prepared and delivered straight to your table.</p>
+          <button class="cta" id="heroCta" onclick="document.getElementById('menuTop').scrollIntoView({behavior:'smooth'})">
+            Explore the menu <span aria-hidden="true">→</span>
+          </button>
+        </div>
+        <div class="hero-count" id="heroCount">1 / 20</div>
+        <div class="hero-dots" id="heroDots" role="tablist" aria-label="Hero images"></div>
+      </div>
+
+      <div id="menuSection">
+        <div class="section-head" id="menuTop">
+          <h2>Popular Menu</h2>
+          <div class="chips" id="chips"></div>
+        </div>
+        <div class="grid" id="menu"></div>
+      </div>
+    </section>
+
+    <section id="confirmation" class="done" hidden>
+      <div class="tick">✓</div>
+      <h2>Order sent to the cashier</h2>
+      <p>No need to call a waiter — they can see your order now. You can also message them below.</p>
+      <div class="order-no" id="orderNumber"></div>
+      <div class="steps" id="steps"></div>
+      <p id="statusHelp"></p>
+      <p class="payment-confirmation" id="paymentConfirmation" hidden></p>
+      <button class="cta" style="margin-top:16px" onclick="openChat()">Message cashier</button>
+      <button class="ghost" style="margin-top:10px;display:block;margin-inline:auto" onclick="startAnotherOrder()">Order more food</button>
+    </section>
+  </main>
+
+  <button type="button" class="chat-fab" id="chatFab" onclick="openChat()" aria-label="Message cashier">
+    💬<span class="ping" id="chatPing" hidden></span>
+  </button>
+
+  <div class="cart-bar" id="cartBar" hidden>
+    <div class="wrap">
+      <div class="cart-sum">
+        <small id="cartCount">0 items</small>
+        <small class="payment-preview" id="paymentPreview">Payment: Pay at cashier</small>
+        <strong id="cartTotal">₱0.00</strong>
+      </div>
+      <button class="cta" onclick="openCart()">Review order</button>
+    </div>
+  </div>
+
+  <div class="session-toast" id="sessionToast" role="status" aria-live="polite">This table menu stays on one page. Use the menu, cart, payment, and chat controls here.</div>
+
+  <div class="sheet-back" id="cartSheet" onclick="closeOnBackdrop(event)">
+    <div class="sheet">
+      <h2>Your order</h2>
+      <p class="hint" id="sheetTable"></p>
+      <div id="cartLines"></div>
+      <div class="total-row"><span>Total</span><span id="sheetTotal">₱0.00</span></div>
+      <textarea id="customerNote" maxlength="500" placeholder="Special request (optional) — e.g. no onions, extra rice"></textarea>
+      <section class="payment-box">
+        <h3>Payment method</h3>
+        <p class="hint">Choose a payment QR or pay directly at the cashier.</p>
+        <p class="offline-payment-warning" id="offlinePaymentWarning" hidden>You are offline. Ordering and online payment cannot continue until the connection is restored. Please ask the cashier for assistance.</p>
+        <div id="paymentMethodList"></div>
+        <div class="payment-fields" id="paymentFields" hidden>
+          <input id="paymentReference" maxlength="120" placeholder="Payment reference number" />
+          <input id="paymentProof" type="file" accept="image/*" aria-label="Upload payment screenshot" />
+          <p class="hint" style="margin:7px 0 0">Optional screenshot · cashier will verify before marking paid.</p>
+        </div>
+      </section>
+      <div class="sheet-actions">
+        <button class="ghost" onclick="closeCart()">Keep browsing</button>
+        <button class="solid" id="placeButton" onclick="placeOrder()">Send order</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="sheet-back" id="chatSheet" onclick="closeChatBackdrop(event)">
+    <div class="sheet chat-sheet">
+      <div class="chat-head">
+        <h2>Message the cashier</h2>
+        <button class="chat-close-x" type="button" onclick="closeChat()" aria-label="Close chat">×</button>
+      </div>
+      <p class="hint">Connected via table QR · works on restaurant Wi‑Fi even without internet.</p>
+      <div class="chat-log" id="chatLog"></div>
+      <div class="reply-preview" id="customerReplyPreview" hidden style="display:none!important"><span id="customerReplyText"></span><button type="button" onclick="cancelCustomerReply()" aria-label="Cancel reply">×</button></div>
+      <form class="chat-compose" onsubmit="sendCustomerChat(event)">
+        <input id="chatInput" maxlength="500" placeholder="" autocomplete="off" autocorrect="on" autocapitalize="sentences" spellcheck="true" inputmode="text" />
+        <button type="submit">Send</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="sheet-back auth-center" id="loginSheet" onclick="closeLoginBackdrop(event)">
+    <div class="sheet auth-sheet">
+      <h2 id="loginTitle">Login or create your account</h2>
+      <p class="hint" id="loginHint">Choose the Google account already signed in on this device. No password or confirmation number needed.</p>
+
+      <div id="googleLoginArea" hidden>
+        <div id="googleButton"></div>
+      </div>
+      <p class="google-setup" id="googleSetupHint" hidden>Google login is not available yet. Please use email confirmation.</p>
+
+      <button class="ghost auth-full" id="useEmailBtn" type="button" onclick="showEmailLogin()">Use email instead</button>
+
+      <div id="emailStep" hidden>
+        <div class="auth-divider">email confirmation</div>
+        <label class="auth-label" for="loginEmail">Email</label>
+        <input id="loginEmail" type="email" placeholder="you@gmail.com" autocomplete="email" />
+        <button class="solid auth-full" type="button" id="sendCodeBtn" onclick="sendLoginCode()">Send confirmation number</button>
+      </div>
+
+      <div id="codeStep" hidden>
+        <label class="auth-label" for="loginCode">Confirmation number</label>
+        <input id="loginCode" type="text" inputmode="numeric" maxlength="6" placeholder="6-digit code" autocomplete="one-time-code" />
+        <p class="hint" id="devCodeHint" hidden></p>
+        <button class="solid auth-full" type="button" id="verifyCodeBtn" onclick="verifyLoginCode()">Verify & open my menu</button>
+        <button class="ghost auth-full" type="button" onclick="backToEmailStep()">Use a different email</button>
+      </div>
+
+      <p class="auth-error" id="loginError"></p>
+      <button class="ghost auth-full" type="button" onclick="closeLogin()">Close</button>
+    </div>
+  </div>
+
+  <script>
+    const accessCode = new URLSearchParams(location.search).get("table") || "";
+    const DEMO_ITEMS = [
+      {id: 1, category: "Rice Meals", name: "Chicken Inasal", description: "Char-grilled chicken, calamansi soy glaze, steamed rice and dipping sauce.", price: 149, image_url: "/static/foods/chicken-inasal.jpg"},
+      {id: 2, category: "Rice Meals", name: "Pork Sisig", description: "Crispy pork, onions and chili served sizzling with steamed rice.", price: 169, image_url: "/static/foods/pork-sisig.jpg"},
+      {id: 3, category: "Rice Meals", name: "Beef Tapa", description: "Tender marinated beef with garlic rice and a sunny-side egg.", price: 179, image_url: "/static/foods/beef-tapa.jpg"},
+      {id: 4, category: "Noodles", name: "Pancit Canton", description: "Stir-fried noodles with vegetables, shrimp and savory sauce.", price: 139, image_url: "/static/foods/pancit-canton.jpg"},
+      {id: 5, category: "Drinks", name: "Iced Tea", description: "Fresh-brewed iced tea, chilled and lightly sweetened.", price: 49, image_url: "/static/foods/iced-tea.jpg"},
+      {id: 6, category: "Desserts", name: "Leche Flan", description: "Silky caramel custard with a rich golden caramel top.", price: 79, image_url: "/static/foods/leche-flan.jpg"},
+      {id: 7, category: "Rice Meals", name: "Fried Chicken", description: "Crispy golden fried chicken with garlic rice.", price: 159, image_url: "/static/foods/fried-chicken.jpg"},
+      {id: 8, category: "Burgers", name: "Classic Burger", description: "Juicy beef patty, cheese, lettuce, tomato, and fries.", price: 189, image_url: "/static/foods/classic-burger.jpg"},
+      {id: 9, category: "Pizza", name: "Pepperoni Pizza", description: "Cheesy pizza topped with crispy pepperoni.", price: 299, image_url: "/static/foods/pepperoni-pizza.jpg"},
+      {id: 10, category: "Japanese", name: "Salmon Sushi", description: "Fresh salmon nigiri and rolls on a platter.", price: 249, image_url: "/static/foods/salmon-sushi.jpg"},
+      {id: 11, category: "Noodles", name: "Shrimp Pasta", description: "Creamy pasta tossed with garlic butter shrimp.", price: 229, image_url: "/static/foods/shrimp-pasta.jpg"},
+      {id: 12, category: "Drinks", name: "Mango Smoothie", description: "Thick tropical smoothie made from ripe mangoes.", price: 89, image_url: "/static/foods/mango-smoothie.jpg"},
+      {id: 13, category: "Desserts", name: "Chocolate Brownie", description: "Warm fudgy brownie with chocolate sauce.", price: 99, image_url: "/static/foods/chocolate-brownie.jpg"},
+      {id: 14, category: "Rice Meals", name: "Grilled Liempo", description: "Smoky grilled pork belly with dipping sauce and rice.", price: 189, image_url: "/static/foods/grilled-liempo.jpg"},
+      {id: 15, category: "Healthy", name: "Garden Salad", description: "Fresh greens, tomatoes, cucumber, and light dressing.", price: 129, image_url: "/static/foods/garden-salad.jpg"},
+      {id: 16, category: "Soups", name: "Sinigang", description: "Sour tamarind soup with veggies and savory broth.", price: 189, image_url: "/static/foods/sinigang.jpg"},
+      {id: 17, category: "Seafood", name: "Fish and Chips", description: "Crispy battered fish with golden fries.", price: 219, image_url: "/static/foods/fish-and-chips.jpg"},
+      {id: 18, category: "Drinks", name: "Choco Milkshake", description: "Thick chocolate milkshake topped with cream.", price: 119, image_url: "/static/foods/choco-milkshake.jpg"},
+      {id: 19, category: "Desserts", name: "Halo-Halo", description: "Crushed ice dessert with ube, leche flan, and sweet toppings.", price: 109, image_url: "/static/foods/halo-halo.jpg"},
+      {id: 20, category: "Chicken", name: "BBQ Wings", description: "Sticky barbecue chicken wings, glazed and grilled.", price: 169, image_url: "/static/foods/bbq-wings.jpg"}
+    ];
+    const STATUS_FLOW = ["pending", "confirmed", "preparing", "ready", "served"];
+    const STATUS_LABEL = {
+      pending: "Sent", confirmed: "Confirmed", preparing: "Preparing",
+      ready: "Ready", served: "Served", cancelled: "Cancelled"
+    };
+    const STATUS_HELP = {
+      pending: "Waiting for the cashier to confirm your order.",
+      confirmed: "Your order is confirmed and queued for the kitchen.",
+      preparing: "The kitchen is cooking your food.",
+      ready: "Your food is ready and will be served shortly.",
+      served: "Enjoy your meal!",
+      cancelled: "This order was cancelled. Please ask the cashier."
+    };
+    const EMOJI = [
+      [/coffee|latte|espresso|americano|brew/, "☕"],
+      [/tea|juice|soda|shake|drink|water/, "🥤"],
+      [/burger/, "🍔"],
+      [/pizza/, "🍕"],
+      [/sushi|sashimi|maki/, "🍣"],
+      [/noodle|pancit|pasta|ramen|spaghetti/, "🍜"],
+      [/chicken|inasal|wings/, "🍗"],
+      [/pork|sisig|beef|tapa|steak|bbq/, "🥩"],
+      [/fish|bangus|tilapia|seafood/, "🐟"],
+      [/rice|silog|meal/, "🍚"],
+      [/cake|flan|dessert|ice cream|halo/, "🍰"],
+      [/soup|sinigang|tinola/, "🍲"],
+      [/salad|veggie|vegetable/, "🥗"]
+    ];
+
+    let menuItems = [];
+    let cart = {};
+    let activeCategory = "All";
+    let currentOrder = null;
+    let statusTimer = null;
+    let demoMode = false;
+    let heroIndex = 0;
+    let heroTimer = null;
+    let chatTimer = null;
+    let lastChatId = 0;
+    let chatOpen = false;
+    let customerReplyTo = null;
+    let paymentMethods = [];
+    let selectedPaymentId = null;
+    let isConnected = navigator.onLine;
+    let connectionTimer = null;
+    const HERO_SLIDES = DEMO_ITEMS.map(item => item.image_url);
+
+    const money = value => new Intl.NumberFormat("en-PH", { style: "currency", currency: "PHP" }).format(value);
+    const escapeHtml = value => {
+      const div = document.createElement("div");
+      div.textContent = value == null ? "" : String(value);
+      return div.innerHTML;
+    };
+    const emojiFor = item => {
+      const text = `${item.name} ${item.category}`.toLowerCase();
+      const found = EMOJI.find(([pattern]) => pattern.test(text));
+      return found ? found[1] : "🍽️";
+    };
+
+    async function api(path, options = {}) {
+      const response = await fetch(path, options);
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data.detail || "Something went wrong. Please try again.");
+      return data;
+    }
+
+    function showError(message) {
+      const box = document.getElementById("message");
+      box.hidden = false;
+      box.className = "notice bad";
+      box.textContent = message;
+    }
+
+    function setConnectionStatus(online) {
+      isConnected = Boolean(online);
+      const chip = document.getElementById("connectedChip");
+      chip.classList.add("show");
+      chip.classList.toggle("offline", !isConnected);
+      chip.textContent = isConnected ? "Online · Cashier connected" : "Offline · Not connected";
+      document.getElementById("offlinePaymentWarning").hidden = isConnected;
+      document.querySelector(".payment-box").classList.toggle("offline", !isConnected);
+      renderPaymentMethods();
+      renderCartLines();
+    }
+
+    async function checkConnection() {
+      if (!accessCode || demoMode || !navigator.onLine) {
+        setConnectionStatus(false);
+        return;
+      }
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 4500);
+      try {
+        const response = await fetch(`/api/public/${encodeURIComponent(accessCode)}/menu`, {
+          cache: "no-store", signal: controller.signal
+        });
+        setConnectionStatus(response.ok);
+      } catch (_) {
+        setConnectionStatus(false);
+      } finally {
+        clearTimeout(timeout);
+      }
+    }
+
+    function startConnectionMonitoring() {
+      clearInterval(connectionTimer);
+      addEventListener("offline", () => setConnectionStatus(false));
+      addEventListener("online", checkConnection);
+      connectionTimer = setInterval(checkConnection, 10000);
+    }
+
+    async function loadMenu() {
+      if (!accessCode) {
+        demoMode = true;
+        menuItems = DEMO_ITEMS;
+        document.getElementById("brandName").textContent =
+          new URLSearchParams(location.search).get("phoneView") === "1"
+            ? "MB Business Hub"
+            : "Bite & Brew";
+        document.getElementById("tableName").textContent = "Preview";
+        document.getElementById("sheetTable").textContent = "Design preview · Scan a table QR to order";
+        document.getElementById("message").hidden = true;
+        document.getElementById("shop").hidden = false;
+        document.getElementById("menuSection").hidden = true;
+        document.getElementById("cartBar").hidden = true;
+        document.querySelector(".search").hidden = true;
+        document.querySelector(".cart-btn").hidden = true;
+        document.querySelector(".table-chip").hidden = true;
+        document.getElementById("heroCta").hidden = true;
+        return;
+      }
+      try {
+        const data = await api(`/api/public/${encodeURIComponent(accessCode)}/menu`);
+        document.title = `${data.restaurant_name} — Order`;
+        document.getElementById("brandName").textContent =
+          new URLSearchParams(location.search).get("phoneView") === "1"
+            ? "MB Business Hub"
+            : data.restaurant_name;
+        document.getElementById("tableName").textContent = data.table_name;
+        document.getElementById("sheetTable").textContent = `${data.table_name} · ${data.restaurant_name}`;
+        menuItems = data.items;
+        const menuTheme = data.menu_theme || {};
+        const menuElement = document.getElementById("menu");
+        for (const [key, variable] of [["background","--menu-bg"],["card","--menu-card"],["text","--menu-text"]]) {
+          if (/^#[0-9a-f]{6}$/i.test(menuTheme[key] || "")) menuElement.style.setProperty(variable, menuTheme[key]);
+        }
+        if (Object.keys(menuTheme).length) menuElement.classList.add("custom-menu-theme");
+        paymentMethods = data.payment_methods || [];
+        document.getElementById("message").hidden = true;
+        document.getElementById("shop").hidden = false;
+        setConnectionStatus(true);
+        startConnectionMonitoring();
+        document.getElementById("chatFab").classList.add("show");
+        startChatPolling();
+        renderChips();
+        renderMenu();
+      } catch (error) {
+        showError(error.message);
+      }
+    }
+
+    function renderChips() {
+      const categories = ["All", ...new Set(menuItems.map(item => item.category))];
+      const select = document.getElementById("categorySelect");
+      select.innerHTML = categories.map(category => `
+        <option value="${escapeHtml(category)}" ${category === activeCategory ? "selected" : ""}>${escapeHtml(category)}</option>
+      `).join("");
+      document.getElementById("chips").innerHTML = categories.map(category => `
+        <button type="button" class="chip ${category === activeCategory ? "active" : ""}"
+                data-category="${escapeHtml(category)}">${escapeHtml(category)}</button>
+      `).join("");
+      document.querySelectorAll("#chips .chip").forEach(button => {
+        button.addEventListener("click", () => selectCategory(button.dataset.category));
+      });
+    }
+
+    function selectCategory(category) {
+      activeCategory = category;
+      renderChips();
+      renderMenu();
+      const menuSection = document.getElementById("menuSection");
+      const headerHeight = document.querySelector("header").offsetHeight;
+      const top = window.scrollY + menuSection.getBoundingClientRect().top - headerHeight - 12;
+      window.scrollTo({top: Math.max(0, top), behavior: "smooth"});
+    }
+
+    function visibleItems() {
+      const query = document.getElementById("searchInput").value.trim().toLowerCase();
+      return menuItems.filter(item => {
+        const matchesCategory = activeCategory === "All" || item.category === activeCategory;
+        const matchesQuery = !query
+          || item.name.toLowerCase().includes(query)
+          || item.description.toLowerCase().includes(query)
+          || item.category.toLowerCase().includes(query);
+        return matchesCategory && matchesQuery;
+      });
+    }
+
+    function renderMenuCard(item) {
+        const quantity = cart[item.id] || 0;
+        const thumb = item.image_url
+          ? `<img src="${escapeHtml(item.image_url)}" alt="${escapeHtml(item.name)}" loading="lazy"
+                  onerror="this.replaceWith(document.createTextNode('${emojiFor(item)}'))" />`
+          : emojiFor(item);
+        const control = quantity
+          ? `<div class="stepper">
+               <button onclick="changeQuantity(${item.id}, -1)" aria-label="Remove one">−</button>
+               <span>${quantity}</span>
+               <button onclick="changeQuantity(${item.id}, 1)" aria-label="Add one">+</button>
+             </div>`
+          : `<button class="add" onclick="changeQuantity(${item.id}, 1)" aria-label="Add ${escapeHtml(item.name)}">🛒</button>`;
+        return `<article class="card">
+          <div class="thumb">${thumb}</div>
+          <div class="card-body">
+            <h3>${escapeHtml(item.name)}</h3>
+            <p class="desc">${escapeHtml(item.description)}</p>
+            <div class="card-foot ${demoMode ? "card-foot-end" : ""}">${demoMode ? "" : `<span class="price">${money(item.price)}</span>`}${control}</div>
+          </div>
+        </article>`;
+    }
+
+    function renderMenu() {
+      const items = visibleItems();
+      const menu = document.getElementById("menu");
+      if (!items.length) {
+        menu.innerHTML = `<div class="notice" style="grid-column:1/-1">No items match your search.</div>`;
+        return;
+      }
+      if (activeCategory === "All") {
+        const categories = [...new Set(items.map(item => item.category))];
+        menu.innerHTML = categories.map(category => {
+          const categoryItems = items.filter(item => item.category === category);
+          return `<h3 class="menu-category-heading">${escapeHtml(category)}</h3>${categoryItems.map(renderMenuCard).join("")}`;
+        }).join("");
+      } else {
+        menu.innerHTML = items.map(renderMenuCard).join("");
+      }
+    }
+
+    function changeQuantity(itemId, delta) {
+      const next = Math.max(0, Math.min(50, (cart[itemId] || 0) + delta));
+      if (next) cart[itemId] = next; else delete cart[itemId];
+      renderMenu();
+      updateCartBar();
+      if (document.getElementById("cartSheet").classList.contains("open")) renderCartLines();
+    }
+
+    function selectedLines() {
+      return menuItems.filter(item => cart[item.id]).map(item => ({ ...item, quantity: cart[item.id] }));
+    }
+
+    function cartTotals() {
+      const lines = selectedLines();
+      return {
+        lines,
+        count: lines.reduce((sum, item) => sum + item.quantity, 0),
+        total: lines.reduce((sum, item) => sum + item.price * item.quantity, 0)
+      };
+    }
+
+    function updateCartBar() {
+      const { count, total } = cartTotals();
+      const badge = document.getElementById("cartBadge");
+      badge.hidden = count === 0;
+      badge.textContent = count;
+      document.getElementById("cartBar").hidden = count === 0 || !document.getElementById("confirmation").hidden;
+      document.getElementById("cartCount").textContent = `${count} item${count === 1 ? "" : "s"}`;
+      const selectedMethod = paymentMethods.find(method => method.id === selectedPaymentId);
+      document.getElementById("paymentPreview").textContent = selectedMethod
+        ? `Payment: ${selectedMethod.provider}`
+        : paymentMethods.length ? "Payment: Select at checkout" : "Payment: Pay at cashier";
+      document.getElementById("cartTotal").textContent = demoMode ? "Design preview" : money(total);
+    }
+
+    function renderCartLines() {
+      const { lines, total } = cartTotals();
+      document.getElementById("cartLines").innerHTML = lines.length
+        ? lines.map(item => `
+            <div class="line">
+              <div class="line-name">${escapeHtml(item.name)}${demoMode ? "" : `<small>${money(item.price)} each</small>`}</div>
+              <div class="stepper">
+                <button onclick="changeQuantity(${item.id}, -1)" aria-label="Remove one">−</button>
+                <span>${item.quantity}</span>
+                <button onclick="changeQuantity(${item.id}, 1)" aria-label="Add one">+</button>
+              </div>
+              ${demoMode ? "" : `<strong>${money(item.price * item.quantity)}</strong>`}
+            </div>`).join("")
+        : `<p class="hint">Your order is empty. Add something tasty from the menu.</p>`;
+      document.getElementById("sheetTotal").textContent = demoMode ? "—" : money(total);
+      const placeButton = document.getElementById("placeButton");
+      placeButton.disabled = lines.length === 0 || demoMode || !isConnected;
+      placeButton.textContent = demoMode ? "Scan QR to order" : isConnected ? "Send order" : "Offline — cannot send order";
+      renderPaymentMethods();
+    }
+
+    function renderPaymentMethods() {
+      const options = [{id:null, provider:"Pay at cashier", account_name:"Cash or card at the counter", qr_image_url:""}, ...paymentMethods];
+      document.getElementById("paymentMethodList").innerHTML = options.map(method => `
+        <label class="payment-option ${selectedPaymentId === method.id ? "active" : ""}">
+          <input type="radio" name="paymentMethod" ${selectedPaymentId === method.id ? "checked" : ""} ${isConnected ? "" : "disabled"}
+            onchange="selectPayment(${method.id == null ? "null" : method.id})" />
+          <span><strong>${escapeHtml(method.provider)}</strong>
+            <small>${escapeHtml(method.account_name || "")}</small>
+            ${method.account_number_masked ? `<small>${escapeHtml(method.account_number_masked)}</small>` : ""}
+            ${method.instructions ? `<small>${escapeHtml(method.instructions)}</small>` : ""}</span>
+          ${method.qr_image_url ? `<img src="${escapeHtml(method.qr_image_url)}" alt="${escapeHtml(method.provider)} payment QR" />` : `<span></span>`}
+        </label>`).join("");
+      document.getElementById("paymentFields").hidden = selectedPaymentId == null || !isConnected;
+      const selectedMethod = paymentMethods.find(method => method.id === selectedPaymentId);
+      document.getElementById("paymentPreview").textContent = selectedMethod
+        ? `Payment: ${selectedMethod.provider}`
+        : paymentMethods.length ? "Payment: Pay at cashier selected" : "Payment: Pay at cashier (QR not configured yet)";
+    }
+
+    function selectPayment(id) {
+      selectedPaymentId = id;
+      renderPaymentMethods();
+    }
+
+    function openCart() {
+      renderCartLines();
+      document.getElementById("cartSheet").classList.add("open");
+    }
+    function closeCart() { document.getElementById("cartSheet").classList.remove("open"); }
+    function closeOnBackdrop(event) { if (event.target.id === "cartSheet") closeCart(); }
+
+    async function placeOrder() {
+      const button = document.getElementById("placeButton");
+      const original = button.textContent;
+      if (!isConnected) {
+        document.getElementById("offlinePaymentWarning").hidden = false;
+        return;
+      }
+      button.disabled = true;
+      button.textContent = "Sending…";
+      try {
+        const reference = document.getElementById("paymentReference").value.trim();
+        if (selectedPaymentId != null && !reference) {
+          throw new Error("Enter the payment reference number.");
+        }
+        currentOrder = await api(`/api/public/${encodeURIComponent(accessCode)}/orders`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            items: selectedLines().map(item => ({ menu_item_id: item.id, quantity: item.quantity })),
+            customer_note: document.getElementById("customerNote").value,
+            payment_method_id: selectedPaymentId,
+            payment_reference: reference
+          })
+        });
+        const proof = document.getElementById("paymentProof").files[0];
+        if (proof && selectedPaymentId != null) {
+          try {
+            const fd = new FormData();
+            fd.append("file", proof);
+            currentOrder = await api(
+              `/api/public/${encodeURIComponent(accessCode)}/orders/${encodeURIComponent(currentOrder.order_number)}/payment-proof`,
+              { method: "POST", body: fd }
+            );
+          } catch (uploadError) {
+            currentOrder.payment_proof_warning = uploadError.message;
+          }
+        }
+        cart = {};
+        renderMenu();
+        closeCart();
+        document.getElementById("shop").hidden = true;
+        document.getElementById("confirmation").hidden = false;
+        updateCartBar();
+        window.scrollTo({ top: 0 });
+        showStatus(currentOrder);
+        statusTimer = setInterval(refreshStatus, 4000);
+      } catch (error) {
+        showError(error.message);
+        window.scrollTo({ top: 0 });
+        closeCart();
+      } finally {
+        button.disabled = !isConnected;
+        button.textContent = isConnected ? original : "Offline — cannot send order";
+      }
+    }
+
+    async function refreshStatus() {
+      if (!currentOrder) return;
+      try {
+        currentOrder = await api(
+          `/api/public/${encodeURIComponent(accessCode)}/orders/${encodeURIComponent(currentOrder.order_number)}`
+        );
+        showStatus(currentOrder);
+      } catch (_) { /* keep the last known status */ }
+    }
+
+    function showStatus(order) {
+      document.getElementById("orderNumber").textContent = order.order_number;
+      document.getElementById("statusHelp").textContent = STATUS_HELP[order.status] || "";
+      const payment = document.getElementById("paymentConfirmation");
+      if (order.payment_method_label) {
+        const label = {unpaid:"Pay at cashier", pending:"Payment awaiting cashier verification", verified:"Payment verified", rejected:"Payment rejected — please contact cashier"}[order.payment_status] || order.payment_status;
+        payment.textContent = `${order.payment_method_label} · ${label}${order.payment_proof_warning ? " · Screenshot upload failed; show your reference to cashier." : ""}`;
+        payment.hidden = false;
+      } else {
+        payment.hidden = true;
+      }
+      const steps = order.status === "cancelled"
+        ? [`<span class="step cancelled">Cancelled</span>`]
+        : STATUS_FLOW.map((status, index) => {
+            const reached = index <= STATUS_FLOW.indexOf(order.status);
+            return `<span class="step ${reached ? "on" : ""}">${STATUS_LABEL[status]}</span>`;
+          });
+      document.getElementById("steps").innerHTML = steps.join("");
+      if (order.status === "served" || order.status === "cancelled") clearInterval(statusTimer);
+    }
+
+    function startAnotherOrder() {
+      clearInterval(statusTimer);
+      currentOrder = null;
+      cart = {};
+      document.getElementById("customerNote").value = "";
+      document.getElementById("paymentReference").value = "";
+      document.getElementById("paymentProof").value = "";
+      selectedPaymentId = null;
+      document.getElementById("confirmation").hidden = true;
+      document.getElementById("shop").hidden = false;
+      renderMenu();
+      updateCartBar();
+      window.scrollTo({ top: 0 });
+    }
+
+    function initHeroSlider() {
+      const slidesEl = document.getElementById("heroSlides");
+      const dotsEl = document.getElementById("heroDots");
+      const countEl = document.getElementById("heroCount");
+      if (!slidesEl || !dotsEl) return;
+
+      slidesEl.innerHTML = HERO_SLIDES.map((src, index) =>
+        `<div class="hero-slide${index === 0 ? " is-active" : ""}" style="background-image:url('${src}')"></div>`
+      ).join("");
+      dotsEl.innerHTML = HERO_SLIDES.map((_, index) =>
+        `<button type="button" class="hero-dot${index === 0 ? " active" : ""}" aria-label="Show image ${index + 1}" onclick="goHeroSlide(${index})"></button>`
+      ).join("");
+      if (countEl) countEl.textContent = `1 / ${HERO_SLIDES.length}`;
+
+      HERO_SLIDES.slice(1).forEach(src => { const img = new Image(); img.src = src; });
+      restartHeroTimer();
+    }
+
+    function goHeroSlide(nextIndex) {
+      const slides = [...document.querySelectorAll(".hero-slide")];
+      const dots = [...document.querySelectorAll(".hero-dot")];
+      const countEl = document.getElementById("heroCount");
+      if (!slides.length) return;
+      const current = slides[heroIndex];
+      heroIndex = ((nextIndex % slides.length) + slides.length) % slides.length;
+      slides.forEach(slide => slide.classList.remove("is-active", "is-leaving"));
+      current.classList.add("is-leaving");
+      slides[heroIndex].classList.add("is-active");
+      dots.forEach((dot, index) => dot.classList.toggle("active", index === heroIndex));
+      if (countEl) countEl.textContent = `${heroIndex + 1} / ${slides.length}`;
+      restartHeroTimer();
+    }
+
+    function nextHeroSlide() {
+      goHeroSlide(heroIndex + 1);
+    }
+
+    function restartHeroTimer() {
+      clearInterval(heroTimer);
+      heroTimer = setInterval(nextHeroSlide, 3200);
+    }
+
+    function openLogin() {
+      document.getElementById("loginError").textContent = "";
+      document.getElementById("loginSheet").classList.add("open");
+    }
+    function closeLogin() { document.getElementById("loginSheet").classList.remove("open"); }
+    function closeLoginBackdrop(event) { if (event.target.id === "loginSheet") closeLogin(); }
+    function backToEmailStep() {
+      document.getElementById("codeStep").hidden = true;
+      document.getElementById("emailStep").hidden = false;
+      document.getElementById("devCodeHint").hidden = true;
+      document.getElementById("loginError").textContent = "";
+    }
+
+    function showEmailLogin() {
+      document.getElementById("emailStep").hidden = false;
+      document.getElementById("useEmailBtn").hidden = true;
+      document.getElementById("loginHint").textContent = "Enter your email and we will send a confirmation number. No password needed.";
+      document.getElementById("loginEmail").focus();
+    }
+
+    async function handleGoogleCredential(response) {
+      const error = document.getElementById("loginError");
+      error.textContent = "Signing in with Google…";
+      try {
+        const result = await fetch("/api/auth/google", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ credential: response.credential })
+        });
+        const data = await result.json().catch(() => ({}));
+        if (!result.ok) throw new Error(data.detail || "Google login failed.");
+        localStorage.setItem("owner_token", data.token);
+        location.href = "/owner";
+      } catch (err) {
+        error.textContent = err.message;
+      }
+    }
+
+    async function setupGoogleLogin() {
+      try {
+        const config = await fetch("/api/auth/google/config").then(r => r.json());
+        if (!config.enabled) {
+          document.getElementById("googleSetupHint").hidden = false;
+          showEmailLogin();
+          return;
+        }
+        const script = document.createElement("script");
+        script.src = "https://accounts.google.com/gsi/client";
+        script.async = true;
+        script.onload = () => {
+          google.accounts.id.initialize({ client_id: config.client_id, callback: handleGoogleCredential });
+          google.accounts.id.renderButton(document.getElementById("googleButton"), {
+            type: "standard", theme: "outline", size: "large", text: "continue_with", shape: "pill", width: 360
+          });
+          document.getElementById("googleLoginArea").hidden = false;
+        };
+        document.head.appendChild(script);
+      } catch (_) {}
+    }
+
+    async function sendLoginCode() {
+      const email = document.getElementById("loginEmail").value.trim();
+      const error = document.getElementById("loginError");
+      const button = document.getElementById("sendCodeBtn");
+      error.textContent = "";
+      button.disabled = true;
+      button.textContent = "Sending…";
+      try {
+        const data = await fetch("/api/auth/email/start", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email })
+        }).then(async response => {
+          const payload = await response.json().catch(() => ({}));
+          if (!response.ok) throw new Error(payload.detail || "Could not send code.");
+          return payload;
+        });
+        document.getElementById("emailStep").hidden = true;
+        document.getElementById("codeStep").hidden = false;
+        document.getElementById("loginHint").textContent = `We sent a confirmation number to ${data.email}.`;
+        const hint = document.getElementById("devCodeHint");
+        if (data.dev_code) {
+          hint.hidden = false;
+          hint.textContent = `Local test code: ${data.dev_code}`;
+          document.getElementById("loginCode").value = data.dev_code;
+        } else {
+          hint.hidden = true;
+        }
+        document.getElementById("loginCode").focus();
+      } catch (err) {
+        error.textContent = err.message;
+      } finally {
+        button.disabled = false;
+        button.textContent = "Send confirmation number";
+      }
+    }
+
+    async function verifyLoginCode() {
+      const email = document.getElementById("loginEmail").value.trim();
+      const code = document.getElementById("loginCode").value.trim();
+      const error = document.getElementById("loginError");
+      const button = document.getElementById("verifyCodeBtn");
+      error.textContent = "";
+      button.disabled = true;
+      button.textContent = "Verifying…";
+      try {
+        const data = await fetch("/api/auth/email/verify", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, code })
+        }).then(async response => {
+          const payload = await response.json().catch(() => ({}));
+          if (!response.ok) throw new Error(payload.detail || "Could not verify code.");
+          return payload;
+        });
+        localStorage.setItem("owner_token", data.token);
+        location.href = "/owner";
+      } catch (err) {
+        error.textContent = err.message;
+      } finally {
+        button.disabled = false;
+        button.textContent = "Verify & open my menu";
+      }
+    }
+
+    function handleLoginButton() {
+      if (localStorage.getItem("owner_token")) {
+        location.href = "/owner";
+        return;
+      }
+      openLogin();
+    }
+
+    function refreshAccountHeader() {
+      const loggedIn = Boolean(localStorage.getItem("owner_token"));
+      const loginLabel = document.getElementById("loginLabel");
+      const accountButton = document.getElementById("createAccountBtn");
+      const accountLabel = document.getElementById("createAccountLabel");
+      loginLabel.textContent = loggedIn ? "My Account" : "Login";
+      accountLabel.textContent = loggedIn ? "✓ Logged in" : "Create your account";
+      accountButton.classList.toggle("logged-in", loggedIn);
+      accountButton.classList.toggle("account-primary", !loggedIn);
+      accountButton.disabled = loggedIn;
+    }
+
+    function enableCustomerTableMode() {
+      if (!accessCode) return;
+      document.getElementById("loginBtn").hidden = true;
+      document.getElementById("cashierLoginBtn").hidden = true;
+      document.getElementById("createAccountBtn").hidden = true;
+      history.replaceState({ tableSession: true }, "", location.href);
+      history.pushState({ tableSession: true }, "", location.href);
+      addEventListener("popstate", () => {
+        history.pushState({ tableSession: true }, "", location.href);
+        const toast = document.getElementById("sessionToast");
+        toast.classList.add("show");
+        clearTimeout(window.tableSessionToastTimer);
+        window.tableSessionToastTimer = setTimeout(() => toast.classList.remove("show"), 3200);
+      });
+    }
+
+    function openChat() {
+        if (!accessCode || demoMode) return;
+        chatOpen = true;
+
+        // Lock the menu/page behind the chat
+        document.body.style.overflow = "hidden";
+        document.documentElement.style.overflow = "hidden";
+
+        document.getElementById("chatSheet").classList.add("open");
+        document.getElementById("chatPing").hidden = true;
+        refreshChat(true);
+        document.getElementById("chatInput").focus();
+    }
+
+    function closeChat() {
+        chatOpen = false;
+
+        document.getElementById("chatSheet").classList.remove("open");
+
+        // Restore normal menu/page scrolling
+        document.body.style.overflow = "";
+        document.documentElement.style.overflow = "";
+    }
+    function closeChatBackdrop(event) {
+      if (event.target.id === "chatSheet") closeChat();
+    }
+    document.addEventListener("click", event => {
+      const selectedMenu = event.target.closest?.(".chat-message-menu");
+      document.querySelectorAll(".chat-message-menu[open]").forEach(menu => {
+        if (menu !== selectedMenu) menu.removeAttribute("open");
+      });
+      if (!event.target.closest?.(".chat-message-row")) {
+        document.querySelectorAll(".chat-message-row.actions-visible").forEach(row => row.classList.remove("actions-visible"));
+      }
+    });
+
+    function startChatPolling() {
+      clearInterval(chatTimer);
+      refreshChat(true);
+      chatTimer = setInterval(() => refreshChat(false), 3000);
+    }
+
+    async function refreshChat(reset) {
+      if (!accessCode || demoMode) return;
+      try {
+        const after = reset ? 0 : lastChatId;
+        const data = await api(`/api/public/${encodeURIComponent(accessCode)}/messages?after_id=${after}`);
+        const log = document.getElementById("chatLog");
+        if (reset) {
+          log.innerHTML = "";
+          lastChatId = 0;
+        }
+        const msgs = data.messages || [];
+        if (reset && !msgs.length) {
+          log.innerHTML = `<p class="hint">Say hi to the cashier — they can reply here.</p>`;
+        }
+        let gotCashier = false;
+        for (const m of msgs) {
+          if (m.id <= lastChatId) continue;
+          lastChatId = Math.max(lastChatId, m.id);
+          if (m.sender === "cashier") gotCashier = true;
+          if (log.querySelector(".hint")) log.innerHTML = "";
+          const time = new Date(`${m.created_at.replace(" ", "T")}Z`).toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"});
+          const row = document.createElement("div");
+          const side = m.sender === "customer" ? "me" : "them";
+          row.className = `chat-message-row ${side}`;
+          row.dataset.messageId = m.id;
+          row.dataset.body = m.body;
+          const moreMenu = m.sender === "customer"
+            ? `<details class="chat-message-menu">
+                 <summary aria-label="Message options" title="Message options">⋯</summary>
+                 <div class="chat-message-options">
+                   <button class="delete-message" type="button" onclick="deleteCustomerMessage(${m.id})">Delete</button>
+                   <button type="button" onclick="editCustomerMessage(${m.id})">Edit</button>
+                 </div>
+               </details>`
+            : "";
+          const emojiButtons = ["👍","❤️","😂","😮","😢","🙏"].map(emoji => `<button type="button" onclick="reactToCustomerMessage(${m.id}, '${emoji}')">${emoji}</button>`).join("");
+          const tools = `<div class="chat-inline-tools">
+            <details class="chat-message-menu"><summary aria-label="React to message" title="React">☺</summary><div class="chat-message-options reaction-picker">${emojiButtons}</div></details>
+            <button class="chat-inline-action" type="button" title="Reply to this message" aria-label="Reply to this message" onclick="replyToCustomerMessage(${m.id})">↩</button>
+            ${moreMenu}
+          </div>`;
+          const quote = m.reply_body ? `<div class="reply-quote">${m.reply_sender === "cashier" ? "Cashier" : "Customer"}: ${escapeHtml(m.reply_body)}</div>` : "";
+          const reaction = m.reaction ? `<span class="message-reaction">${escapeHtml(m.reaction)}</span>` : "";
+          const bubble = `<div class="c-bubble ${side}" onclick="toggleMessageActions(event, ${m.id})">${quote}<span class="chat-message-body">${escapeHtml(m.body)}</span><time>${m.sender === "cashier" ? "Cashier" : "You"} · ${time}</time>${reaction}</div>`;
+          row.innerHTML = side === "me" ? `${tools}${bubble}` : `${bubble}${tools}`;
+          log.appendChild(row);
+        }
+        if (msgs.length && chatOpen) log.scrollTop = log.scrollHeight;
+        if (gotCashier && !chatOpen) document.getElementById("chatPing").hidden = false;
+      } catch (_) { /* keep last messages */ }
+    }
+
+    async function sendCustomerChat(event) {
+      event.preventDefault();
+      const input = document.getElementById("chatInput");
+      const body = input.value.trim();
+      if (!body) return;
+      try {
+        await api(`/api/public/${encodeURIComponent(accessCode)}/messages`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ body, reply_to_id: customerReplyTo?.id || null }),
+        });
+        input.value = "";
+        cancelCustomerReply();
+        await refreshChat(false);
+      } catch (error) {
+        showError(error.message);
+      }
+    }
+
+    async function editCustomerMessage(messageId) {
+      const row = document.querySelector(`.chat-message-row[data-message-id="${messageId}"]`);
+      if (!row) return;
+      const body = prompt("Edit your message:", row.dataset.body || "");
+      if (body === null) return;
+      const text = body.trim();
+      if (!text) {
+        alert("Message cannot be empty.");
+        return;
+      }
+      try {
+        await api(`/api/public/${encodeURIComponent(accessCode)}/messages/${messageId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({body: text}),
+        });
+        await refreshChat(true);
+      } catch (error) {
+        showError(error.message);
+      }
+    }
+
+    async function deleteCustomerMessage(messageId) {
+      if (!confirm("Delete this message?")) return;
+      try {
+        await api(`/api/public/${encodeURIComponent(accessCode)}/messages/${messageId}`, {
+          method: "DELETE",
+        });
+        await refreshChat(true);
+      } catch (error) {
+        showError(error.message);
+      }
+    }
+
+    function replyToCustomerMessage(messageId) {
+      const row = document.querySelector(`.chat-message-row[data-message-id="${messageId}"]`);
+      if (!row) return;
+      customerReplyTo = {id: messageId, body: row.dataset.body || ""};
+      document.getElementById("customerReplyText").textContent = `Replying to: ${customerReplyTo.body}`;
+      document.getElementById("customerReplyPreview").hidden = false;
+      document.getElementById("chatInput").focus();
+    }
+
+    function toggleMessageActions(event, messageId) {
+      event.stopPropagation();
+      const selected = document.querySelector(`.chat-message-row[data-message-id="${messageId}"]`);
+      if (!selected) return;
+      const willShow = !selected.classList.contains("actions-visible");
+      document.querySelectorAll(".chat-message-row.actions-visible").forEach(row => row.classList.remove("actions-visible"));
+      if (willShow) selected.classList.add("actions-visible");
+    }
+
+    function cancelCustomerReply() {
+      customerReplyTo = null;
+      document.getElementById("customerReplyPreview").hidden = true;
+    }
+
+    async function reactToCustomerMessage(messageId, reaction) {
+      try {
+        await api(`/api/public/${encodeURIComponent(accessCode)}/messages/${messageId}/reaction`, {
+          method: "PATCH",
+          headers: {"Content-Type": "application/json"},
+          body: JSON.stringify({reaction}),
+        });
+        await refreshChat(true);
+      } catch (error) {
+        showError(error.message);
+      }
+    }
+
+    loadMenu();
+    initHeroSlider();
+    refreshAccountHeader();
+    setupGoogleLogin();
+    enableCustomerTableMode();
+  </script>
+</body>
+</html>
