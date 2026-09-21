@@ -1735,6 +1735,7 @@
 
     function openMenuForm() {
       if (document.getElementById("addMenuButton").disabled) return;
+      toggleMenuItemsPanel(false);
       cancelMenuEdit();
       showMenuForm();
     }
@@ -1752,22 +1753,41 @@
       document.getElementById("menuDishForm").hidden = true;
       document.getElementById("openMenuButton").setAttribute("aria-expanded", "false");
     }
-    function positionMenuForm() {
-      const form = document.getElementById("menuDishForm");
-      if (form.hidden) return;
-      const button = document.getElementById("openMenuButton");
+    function positionMenuPopover(panel, button) {
+      if (!panel || panel.hidden || !button) return;
       const rect = button.getBoundingClientRect();
       const gap = 12;
-      const width = form.offsetWidth;
-      const height = form.offsetHeight;
+      const width = panel.offsetWidth;
+      const height = panel.offsetHeight;
       const left = rect.right + gap + width <= innerWidth - gap
         ? rect.right + gap
         : Math.max(gap, Math.min(rect.left, innerWidth - width - gap));
       const top = Math.max(gap, Math.min(rect.top, innerHeight - height - gap));
-      form.style.left = `${left}px`;
-      form.style.top = `${top}px`;
+      panel.style.left = `${left}px`;
+      panel.style.top = `${top}px`;
     }
-    window.addEventListener("resize", positionMenuForm);
+    function positionMenuForm() {
+      positionMenuPopover(
+        document.getElementById("menuDishForm"),
+        document.getElementById("openMenuButton")
+      );
+    }
+    function toggleMenuItemsPanel(force) {
+      const panel = document.getElementById("menuItemsPanel");
+      const button = document.getElementById("editMenuButton");
+      const shouldOpen = typeof force === "boolean" ? force : panel.hidden;
+      if (shouldOpen) closeMenuForm(true);
+      panel.hidden = !shouldOpen;
+      button.setAttribute("aria-expanded", String(shouldOpen));
+      if (shouldOpen) requestAnimationFrame(() => positionMenuPopover(panel, button));
+    }
+    window.addEventListener("resize", () => {
+      positionMenuForm();
+      positionMenuPopover(
+        document.getElementById("menuItemsPanel"),
+        document.getElementById("editMenuButton")
+      );
+    });
     document.addEventListener("keydown", event => {
       if (event.key === "Escape" && !document.getElementById("menuDishForm").hidden) closeMenuForm();
     });
