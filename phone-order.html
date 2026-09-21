@@ -845,7 +845,17 @@
       <div id="menuSection">
         <div class="section-head" id="menuTop">
           <h2>Popular Menu</h2>
-          <div class="chips" id="chips"></div>
+          <label style="display:block;width:100%">
+            <span style="display:block;margin-bottom:7px;font-size:.82rem;font-weight:800;color:#d4d4d8">Category</span>
+            <select
+              id="categorySelect"
+              class="category-select"
+              style="display:block"
+              onchange="selectCategory(this.value)"
+              aria-label="Category"
+            ></select>
+          </label>
+          <div class="chips" id="chips" hidden></div>
         </div>
         <div class="grid" id="menu"></div>
       </div>
