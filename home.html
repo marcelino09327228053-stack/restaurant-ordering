@@ -169,6 +169,117 @@
       padding:22px;
       overflow:hidden;
     }
+    .home-slider-card{
+      min-height:390px;
+      padding:0;
+      background:#0d0f13;
+    }
+    .home-slides{
+      position:absolute;
+      inset:0;
+    }
+    .home-slide{
+      position:absolute;
+      inset:0;
+      background-position:center;
+      background-size:cover;
+      background-repeat:no-repeat;
+      opacity:0;
+      transform:scale(1.04);
+      transition:opacity .9s ease,transform 1.2s ease;
+    }
+    .home-slide.is-active{
+      opacity:1;
+      transform:scale(1);
+      z-index:1;
+    }
+    .home-slide.is-leaving{
+      opacity:0;
+      transform:scale(1.02);
+      z-index:0;
+    }
+    .home-slider-card:before{
+      content:"";
+      position:absolute;
+      inset:0;
+      z-index:2;
+      pointer-events:none;
+      background:
+        linear-gradient(90deg,#090a0dd9 0%,#090a0d88 42%,#090a0d22 72%,transparent 100%),
+        linear-gradient(0deg,#090a0ddd 0%,transparent 48%);
+    }
+    .home-slider-overlay{
+      position:absolute;
+      left:28px;
+      right:28px;
+      bottom:74px;
+      z-index:3;
+      max-width:420px;
+    }
+    .home-slider-overlay span{
+      display:block;
+      color:#fdba74;
+      font-size:.74rem;
+      font-weight:850;
+      text-transform:uppercase;
+      letter-spacing:.12em;
+      margin-bottom:8px;
+    }
+    .home-slider-overlay strong{
+      display:block;
+      color:#fff;
+      font-size:clamp(1.4rem,2.4vw,2rem);
+      line-height:1.1;
+      letter-spacing:-.03em;
+      text-shadow:0 3px 20px #000;
+    }
+    .home-slider-count{
+      position:absolute;
+      right:20px;
+      top:18px;
+      z-index:4;
+      padding:6px 10px;
+      border-radius:999px;
+      background:#0008;
+      border:1px solid #ffffff22;
+      color:#fff;
+      font-size:.76rem;
+      font-weight:800;
+    }
+    .home-slider-dots{
+      position:absolute;
+      left:22px;
+      right:22px;
+      bottom:48px;
+      z-index:4;
+      display:flex;
+      flex-wrap:wrap;
+      gap:6px;
+      justify-content:flex-end;
+    }
+    .home-slider-dot{
+      width:7px;
+      height:7px;
+      border:0;
+      padding:0;
+      border-radius:50%;
+      background:#ffffff44;
+      cursor:pointer;
+    }
+    .home-slider-dot.active{
+      background:var(--accent);
+      box-shadow:0 0 0 3px #f9731633;
+    }
+    .home-slider-card .status{
+      position:absolute;
+      left:20px;
+      right:20px;
+      bottom:14px;
+      z-index:4;
+      margin:0;
+      background:#090a0dcc;
+      backdrop-filter:blur(8px);
+    }
     .dashboard-card:after{
       content:"";
       position:absolute;
