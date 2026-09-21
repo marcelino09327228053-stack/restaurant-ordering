@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Restaurant</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #090b0b;
+      --panel: #17171b;
+      --panel-2: #1f1f24;
+      --line: #2b2b32;
+      --text: #f5f5f4;
+      --muted: #9a9aa3;
+      --orange: #f97316;
+      --orange-dark: #ea580c;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; min-height: 100vh; color: var(--text);
+      font-family: Outfit, system-ui, sans-serif;
+      background:
+        radial-gradient(circle at 50% -20%, #2b160d 0, transparent 34rem),
+        linear-gradient(180deg, #090b0b 0%, #0d1010 55%, #090a0a 100%);
+    }
+    body::before {
+      content: ""; position: fixed; inset: 0; pointer-events: none; opacity: .14;
+      background-image: linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px);
+      background-size: 80px 80px; mask-image: linear-gradient(to bottom, #000, transparent 55%);
+    }
+    .wrap { max-width: 1200px; margin: 0 auto; padding: 0 clamp(16px, 3vw, 36px); position: relative; z-index: 1; }
+    header {
+      position: sticky; top: 0; z-index: 20;
+      background: #090b0be8; border-bottom: 1px solid #ffffff14; backdrop-filter: blur(10px);
+    }
+    .bar {
+      display: flex; align-items: center; gap: 14px; min-height: 78px;
+    }
+    .logo {
+      width: 48px; height: 48px; border-radius: 50%; overflow: hidden;
+      background: linear-gradient(145deg, var(--orange), #c2410c);
+      box-shadow: 0 0 0 5px #f9731618; display: grid; place-items: center; font-size: 22px;
+      flex: 0 0 auto;
+    }
+    .logo img { width: 100%; height: 100%; object-fit: cover; }
+    .brand-name {
+      font-family: "Bebas Neue", Impact, sans-serif;
+      font-size: clamp(1.2rem, 2.4vw, 1.7rem); letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+    .grow { flex: 1; }
+    .ghost {
+      display: inline-flex; align-items: center; min-height: 42px; padding: 8px 16px;
+      border-radius: 999px; border: 1px solid #ffffff22; color: var(--text);
+      text-decoration: none; font-weight: 700; background: transparent;
+    }
+    .ghost:hover { border-color: var(--orange); color: #fed7aa; }
+
+    .hero {
+      position: relative; margin: 22px 0 28px; min-height: clamp(320px, 42vw, 520px);
+      border-radius: 24px; overflow: hidden; border: 1px solid #ffffff20;
+      box-shadow: 0 24px 80px #0009; background: #14100e;
+      animation: rise .75s cubic-bezier(.2,.8,.2,1) both;
+    }
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(18px); }
+      to { opacity: 1; transform: none; }
+    }
+    .slides { position: absolute; inset: 0; }
+    .slide {
+      position: absolute; inset: 0;
+      background: #0e0c0b center right / cover no-repeat;
+      opacity: 0; transform: translateX(6%);
+      transition: opacity .9s ease, transform 1.1s ease;
+    }
+    .slide.on { opacity: 1; transform: none; z-index: 1; }
+    .hero.style-slide .slide { transform: translateX(100%); opacity: 1; }
+    .hero.style-slide .slide.on { transform: translateX(0); }
+    .hero.style-zoom .slide { transform: scale(.72); filter: blur(8px); }
+    .hero.style-zoom .slide.on { transform: scale(1); filter: blur(0); }
+    .hero.style-split .slide { transform: translateY(35%) skewY(-4deg); clip-path: inset(0 50% 0 50%); }
+    .hero.style-split .slide.on { transform: none; clip-path: inset(0); }
+    .hero.style-kenburns .slide { transform: scale(1.18); transition-duration: 3.2s; }
+    .hero.style-kenburns .slide.on { transform: scale(1); }
+    .hero.style-flip { perspective: 1100px; }
+    .hero.style-flip .slide { transform: rotateY(90deg); transform-origin: left center; }
+    .hero.style-flip .slide.on { transform: rotateY(0); }
+    .hero.style-curtain .slide { transform: none; clip-path: inset(0 50%); }
+    .hero.style-curtain .slide.on { clip-path: inset(0); }
+    .hero.style-blur .slide { transform: scale(1.1); filter: blur(22px) saturate(.4); }
+    .hero.style-blur .slide.on { transform: scale(1); filter: blur(0) saturate(1); }
+    .hero.style-rotate .slide { transform: scale(.7) rotate(-8deg); }
+    .hero.style-rotate .slide.on { transform: scale(1) rotate(0); }
+    .hero.style-diagonal .slide { transform: translate(25%,25%); clip-path: polygon(100% 0,100% 0,100% 0); }
+    .hero.style-diagonal .slide.on { transform: none; clip-path: polygon(0 0,100% 0,100% 100%,0 100%); }
+    .hero::after {
+      content: ""; position: absolute; inset: 0; z-index: 1;
+      background: linear-gradient(90deg, #080808f7 0%, #090909d9 31%, #09090955 59%, transparent 78%);
+    }
+    .hero-inner { position: relative; z-index: 2; padding: clamp(28px, 5vw, 72px); max-width: 680px; }
+    .eyebrow {
+      margin: 0 0 12px; color: #fb923c; font-size: .78rem; font-weight: 900;
+      letter-spacing: .22em; text-transform: uppercase;
+    }
+    .hero h1 {
+      margin: 0; font-family: "Bebas Neue", Impact, sans-serif;
+      font-size: clamp(3rem, 8vw, 6.2rem); line-height: .86;
+      text-transform: uppercase; letter-spacing: .015em;
+      text-shadow: 0 6px 25px #000;
+    }
+    .hero h1 span { display: block; color: var(--orange); margin-top: .1em; }
+    .copy {
+      max-width: 420px; margin: 18px 0 0; color: #d5d5d5; line-height: 1.6;
+      animation: fadeUp .8s .15s both;
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: none; }
+    }
+    .dots {
+      position: absolute; right: 20px; bottom: 18px; z-index: 3;
+      display: flex; gap: 6px; flex-wrap: wrap; max-width: 50%; justify-content: flex-end;
+    }
+    .dot {
+      width: 7px; height: 7px; border-radius: 50%; border: 0; padding: 0;
+      background: #ffffff44; cursor: pointer;
+    }
+    .dot.on { background: var(--orange); box-shadow: 0 0 0 3px #f9731633; }
+
+    .section-head { margin: 10px 0 18px; }
+    .section-head h2 { margin: 0; font-size: clamp(1.5rem, 3vw, 2.1rem); }
+    .section-head h2::after {
+      content: ""; display: block; width: 42px; height: 3px; margin-top: 8px;
+      border-radius: 3px; background: var(--orange);
+    }
+
+    .grid {
+      display: grid; gap: clamp(14px, 1.5vw, 20px); padding-bottom: 60px;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    }
+    .card {
+      background: var(--panel); border: 1px solid var(--line); border-radius: 14px;
+      overflow: hidden; display: flex; flex-direction: column;
+      transition: transform .16s ease, border-color .16s ease;
+      animation: rise .55s both;
+    }
+    .card:hover { transform: translateY(-3px); border-color: #45454f; }
+    .thumb {
+      aspect-ratio: 1; background: #111; display: grid; place-items: center;
+      font-size: 2.6rem; overflow: hidden;
+    }
+    .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .card-body { padding: 12px 13px 14px; display: flex; flex-direction: column; gap: 6px; flex: 1; }
+    .card-body h3 { margin: 0; font-size: .98rem; }
+    .desc {
+      margin: 0; color: var(--muted); font-size: .8rem; line-height: 1.4;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+    }
+    .price { color: var(--orange); font-weight: 800; font-size: 1rem; margin-top: auto; }
+
+    .notice {
+      padding: 18px; border-radius: 14px; background: var(--panel);
+      border: 1px solid var(--line); color: var(--muted); margin: 40px 0;
+    }
+    .notice.bad { color: #fca5a5; background: #2a1214; border-color: #7f1d1d; }
+    .tables {
+      margin: 8px 0 48px; display: flex; flex-wrap: wrap; gap: 10px;
+    }
+    .tables a {
+      display: inline-flex; align-items: center; min-height: 40px; padding: 8px 16px;
+      border-radius: 999px; border: 1px solid #ffffff22; color: #fed7aa;
+      text-decoration: none; font-weight: 700; background: #17191a;
+    }
+    .tables a:hover { border-color: var(--orange); }
+    .company-design { position:relative; width:100%; aspect-ratio:9/5; margin:26px 0; overflow:hidden; border-radius:22px; border:1px solid var(--line); background:transparent; }
+    .company-design canvas { position:absolute; inset:0; width:100%!important; height:100%!important; }
+    .design-video { position:absolute; object-fit:cover; border-radius:12px; }
+  #menu.custom-menu-theme { background:var(--menu-bg,#0b0b0d); padding:20px; border-radius:16px; }
+    #menu.custom-menu-theme .card { background:var(--menu-card,#17171b); color:var(--menu-text,#f5f5f4); }
+    #menu.custom-menu-theme .desc { color:inherit; }
+  </style>
+  <script src="/static/vendor/fabric.min.js"></script>
+<script src="/static/banner-player.js"></script>
+</head>
+<body>
+  <header>
+    <div class="wrap bar">
+      <div class="logo" id="logo">🍔</div>
+      <div class="brand-name" id="brand">Restaurant</div>
+      <div class="grow"></div>
+      <a class="ghost" href="/">Platform home</a>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <div id="error" class="notice bad" hidden></div>
+
+    <section class="hero" id="hero" hidden>
+      <div class="slides" id="slides"></div>
+      <div class="hero-inner">
+        <p class="eyebrow">Taste the moment</p>
+        <h1 id="heroTitle">Bite<span>& Brew</span></h1>
+        <p class="copy" id="about"></p>
+      </div>
+      <div class="dots" id="dots"></div>
+    </section>
+
+    <section class="company-design" id="companyDesign" hidden><canvas id="companyCanvas" width="900" height="500"></canvas></section>
+
+    <div class="section-head">
+      <h2>On the menu</h2>
+    </div>
+    <div class="grid" id="menu"></div>
+
+    <div class="section-head" id="tablesHead" hidden>
+      <h2>Order at your table</h2>
+    </div>
+    <div class="tables" id="tables"></div>
+  </main>
+
+  <script>
+    const money = v => new Intl.NumberFormat("en-PH", { style: "currency", currency: "PHP" }).format(v);
+    const escapeHtml = v => {
+      const d = document.createElement("div");
+      d.textContent = v == null ? "" : String(v);
+      return d.innerHTML;
+    };
+
+    const slug = decodeURIComponent(location.pathname.split("/").filter(Boolean).pop() || "");
+    let slideIndex = 0;
+    let slideTimer = null;
+
+    function splitTitle(name) {
+      const parts = String(name || "Restaurant").trim().split(/\s+/);
+      if (parts.length === 1) return { a: parts[0], b: "kitchen" };
+      return { a: parts[0], b: parts.slice(1).join(" ") };
+    }
+
+    function setLogo(url, name) {
+      const el = document.getElementById("logo");
+      if (url) {
+        el.innerHTML = `<img src="${escapeHtml(url)}" alt="${escapeHtml(name)}" />`;
+      } else {
+        el.textContent = "🍔";
+      }
+    }
+
+    function renderCompanyDesign(design) {
+      if (!design?.enabled || !design.canvas || !window.fabric) return;
+      const wrap = document.getElementById("companyDesign");
+      wrap.hidden = false;
+      const canvas = new fabric.StaticCanvas("companyCanvas", { width:900, height:500 });
+      canvas.loadFromJSON(design.canvas, () => {
+        canvas.getObjects().filter(obj => obj.assetType === "video").forEach(obj => {
+          canvas.remove(obj);
+          const video = document.createElement("video");
+          video.className = "design-video";
+          video.src = obj.videoUrl;
+          video.autoplay = true; video.loop = true; video.muted = true; video.playsInline = true; video.controls = true;
+          video.style.left = `${(obj.left/900)*100}%`;
+          video.style.top = `${(obj.top/500)*100}%`;
+          video.style.width = `${((obj.width*obj.scaleX)/900)*100}%`;
+          video.style.height = `${((obj.height*obj.scaleY)/500)*100}%`;
+          video.style.transform = `rotate(${obj.angle||0}deg)`;
+          video.style.transformOrigin = "center";
+          wrap.appendChild(video);
+        });
+        canvas.renderAll();
+      });
+    }
+
+    function startSlides(count) {
+      clearInterval(slideTimer);
+      if (count < 2) return;
+      slideTimer = setInterval(() => showSlide((slideIndex + 1) % count), 3400);
+    }
+
+    function showSlide(i) {
+      const slides = [...document.querySelectorAll("#slides .slide")];
+      const dots = [...document.querySelectorAll("#dots .dot")];
+      if (!slides.length) return;
+      slides[slideIndex]?.classList.remove("on");
+      dots[slideIndex]?.classList.remove("on");
+      slideIndex = i;
+      slides[slideIndex]?.classList.add("on");
+      dots[slideIndex]?.classList.add("on");
+    }
+
+    let menuPreviewTheme = null;
+    function applyMenuTheme(theme) {
+      if (!theme) return;
+      const menu = document.getElementById("menu");
+      for (const [key, variable] of [["background","--menu-bg"],["card","--menu-card"],["text","--menu-text"]]) {
+        if (/^#[0-9a-f]{6}$/i.test(theme[key] || "")) menu.style.setProperty(variable, theme[key]);
+      }
+      menu.classList.add("custom-menu-theme");
+    }
+    if (new URLSearchParams(location.search).get("menuPreview") === "1") {
+      window.addEventListener("message", event => {
+        if (event.origin !== location.origin || event.source !== parent || event.data?.type !== "menu-theme-preview") return;
+        menuPreviewTheme = event.data.theme;
+        applyMenuTheme(menuPreviewTheme);
+      });
+    }
+    async function boot() {
+      if (!slug) {
+        document.getElementById("error").hidden = false;
+        document.getElementById("error").textContent = "Missing restaurant link.";
+        return;
+      }
+      try {
+        const res = await fetch(`/api/public/site/${encodeURIComponent(slug)}`);
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.detail || "Restaurant not found.");
+
+        document.title = data.restaurant_name;
+        document.getElementById("brand").textContent = data.restaurant_name;
+        setLogo(data.logo_url, data.restaurant_name);
+        renderCompanyDesign(data.custom_design);
+        if(data.custom_design?.bannerPublished?.slides?.length) {
+          const host=document.createElement("section");
+          document.getElementById("hero").before(host);
+          mountBannerPlayer(host,data.custom_design.bannerPublished);
+        }
+        if (!menuPreviewTheme) applyMenuTheme(data.custom_design?.menuTheme);
+        document.getElementById("about").textContent =
+          data.about_text || "Crafted plates. Warm nights. Made for sharing.";
+
+        const t = splitTitle(data.restaurant_name);
+        document.getElementById("heroTitle").innerHTML =
+          `${escapeHtml(t.a)}<span>${escapeHtml(t.b)}</span>`;
+
+        const heroes = (data.hero_images && data.hero_images.length)
+          ? data.hero_images
+          : (data.menu || []).map(m => m.image_url).filter(Boolean).slice(0, 8);
+
+        const hero = document.getElementById("hero");
+        hero.className = `hero style-${data.slideshow_style || "fade"}`;
+        const slides = document.getElementById("slides");
+        const dots = document.getElementById("dots");
+        if (heroes.length) {
+          hero.hidden = !!data.custom_design?.bannerPublished?.slides?.length;
+          slides.innerHTML = heroes.map((url, i) =>
+            `<div class="slide${i === 0 ? " on" : ""}" style="background-image:url('${escapeHtml(url)}')"></div>`
+          ).join("");
+          dots.innerHTML = heroes.map((_, i) =>
+            `<button class="dot${i === 0 ? " on" : ""}" type="button" aria-label="Slide ${i + 1}"></button>`
+          ).join("");
+          [...dots.children].forEach((btn, i) => btn.addEventListener("click", () => {
+            showSlide(i);
+            startSlides(heroes.length);
+          }));
+          startSlides(heroes.length);
+        }
+
+        const menu = data.menu || [];
+        document.getElementById("menu").innerHTML = menu.length
+          ? menu.map((item, i) => `
+            <article class="card" style="animation-delay:${Math.min(i, 8) * 0.05}s">
+              <div class="thumb">${item.image_url
+                ? `<img src="${escapeHtml(item.image_url)}" alt="" loading="lazy" />`
+                : "🍽"}</div>
+              <div class="card-body">
+                <h3>${escapeHtml(item.name)}</h3>
+                <p class="desc">${escapeHtml(item.description || item.category || "")}</p>
+                <div class="price">${money(item.price)}</div>
+              </div>
+            </article>`).join("")
+          : `<div class="notice">Menu is being prepared. Check back soon.</div>`;
+
+        const tables = data.tables || [];
+        if (tables.length) {
+          document.getElementById("tablesHead").hidden = false;
+          document.getElementById("tables").innerHTML = tables.map(t => {
+            const href = `/order?table=${encodeURIComponent(t.access_code)}`;
+            return `<a href="${href}">${escapeHtml(t.name)} — Order</a>`;
+          }).join("");
+        }
+      } catch (e) {
+        document.getElementById("error").hidden = false;
+        document.getElementById("error").textContent = e.message;
+      }
+    }
+
+    boot();
+  </script>
+</body>
+</html>

@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Join room</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #090b0b; --panel: #15181b; --panel-2: #1c2024; --line: #2c3136;
+      --text: #f4f1ec; --muted: #9a9590; --orange: #ff6a1a;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; min-height: 100vh; color: var(--text);
+      font-family: Outfit, system-ui, sans-serif;
+      background:
+        radial-gradient(ellipse 70% 40% at 50% 0%, #2a1408 0%, transparent 55%),
+        var(--bg);
+      display: flex; flex-direction: column;
+    }
+    button, input { font: inherit; color: inherit; }
+    [hidden] { display: none !important; }
+    header {
+      padding: 14px 16px; border-bottom: 1px solid #ffffff14;
+      background: #0a0b0ccc; backdrop-filter: blur(10px);
+    }
+    .brand {
+      font-family: "Bebas Neue", Impact, sans-serif;
+      letter-spacing: .08em; font-size: 1.35rem;
+    }
+    .brand span { color: var(--orange); }
+    .sub { color: var(--muted); font-size: .82rem; margin-top: 2px; }
+    main {
+      flex: 1; display: flex; flex-direction: column;
+      max-width: 720px; width: 100%; margin: 0 auto; padding: 14px;
+      min-height: 0;
+    }
+    .gate, .error {
+      background: var(--panel); border: 1px solid var(--line);
+      border-radius: 16px; padding: 18px; margin-top: 20px;
+    }
+    .error { color: #fecaca; border-color: #7f1d1d; background: #2a1214; }
+    label { display: block; font-size: .82rem; font-weight: 700; margin: 0 0 6px; }
+    input {
+      width: 100%; padding: 12px 14px; border-radius: 12px; margin-bottom: 12px;
+      border: 1px solid var(--line); background: var(--panel-2); outline: 0;
+    }
+    .solid {
+      width: 100%; border: 0; border-radius: 12px; min-height: 46px;
+      background: linear-gradient(135deg, #ff7a18, #e9430a); color: #fff;
+      font-weight: 800; cursor: pointer;
+    }
+    .hint { color: var(--muted); font-size: .86rem; line-height: 1.45; margin: 0 0 14px; }
+    .chat {
+      flex: 1; display: flex; flex-direction: column; min-height: 0;
+      background: var(--panel); border: 1px solid var(--line); border-radius: 16px;
+      overflow: hidden;
+    }
+    .chat-head {
+      padding: 12px 14px; border-bottom: 1px solid var(--line);
+      display: flex; justify-content: space-between; gap: 10px; align-items: center;
+    }
+    .chat-head strong { font-size: 1rem; }
+    .pill {
+      font-size: .72rem; font-weight: 800; padding: 4px 10px; border-radius: 999px;
+      background: #052e16; border: 1px solid #14532d; color: #86efac;
+    }
+    .log {
+      flex: 1; overflow: auto; padding: 14px; display: flex; flex-direction: column; gap: 8px;
+      min-height: 280px;
+    }
+    .bubble {
+      max-width: 85%; padding: 10px 12px; border-radius: 14px;
+      font-size: .92rem; line-height: 1.4;
+    }
+    .bubble.me { align-self: flex-end; background: #2a1408; border: 1px solid #7c2d12; color: #fed7aa; }
+    .bubble.them { align-self: flex-start; background: var(--panel-2); border: 1px solid var(--line); }
+    .bubble time { display: block; margin-top: 4px; font-size: .7rem; color: var(--muted); }
+    .compose {
+      display: flex; gap: 8px; padding: 12px; border-top: 1px solid var(--line);
+    }
+    .compose input { margin: 0; flex: 1; }
+    .compose button {
+      border: 0; border-radius: 12px; padding: 0 16px; font-weight: 800;
+      background: var(--orange); color: #fff; cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand" id="restName">ROOM <span>CHAT</span></div>
+    <div class="sub" id="roomSub">Connecting…</div>
+  </header>
+
+  <main>
+    <div id="bootError" class="error" hidden></div>
+
+    <section class="gate" id="gate">
+      <h2 style="margin:0 0 8px" id="gateTitle">Join room</h2>
+      <p class="hint">Connected via QR to the cashier. Enter your name so the group knows who’s talking.</p>
+      <label for="displayName">Your name / station</label>
+      <input id="displayName" maxlength="40" placeholder="e.g. Chef Jo / Warehouse 1" />
+      <button class="solid" type="button" onclick="enterRoom()">Enter group chat</button>
+    </section>
+
+    <section class="chat" id="chat" hidden>
+      <div class="chat-head">
+        <div>
+          <strong id="chatTitle">Room</strong>
+          <div class="sub" id="chatHint">Group chat with cashier</div>
+        </div>
+        <span class="pill">Connected</span>
+      </div>
+      <div class="log" id="log"></div>
+      <form class="compose" onsubmit="sendMsg(event)">
+        <input id="msgInput" maxlength="500" placeholder="Message the group / cashier…" autocomplete="off" />
+        <button type="submit">Send</button>
+      </form>
+    </section>
+  </main>
+
+  <script>
+    const code = decodeURIComponent(location.pathname.split("/").filter(Boolean).pop() || "");
+    let room = null;
+    let myName = localStorage.getItem(`room_name_${code}`) || "";
+    let lastId = 0;
+    let timer = null;
+
+    const escapeHtml = v => {
+      const d = document.createElement("div");
+      d.textContent = v == null ? "" : String(v);
+      return d.innerHTML;
+    };
+
+    async function api(path, options = {}) {
+      const res = await fetch(path, {
+        headers: { "Content-Type": "application/json", ...(options.headers || {}) },
+        ...options,
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.detail || "Request failed.");
+      return data;
+    }
+
+    async function boot() {
+      if (!code) {
+        document.getElementById("bootError").hidden = false;
+        document.getElementById("bootError").textContent = "Invalid room link.";
+        document.getElementById("gate").hidden = true;
+        return;
+      }
+      try {
+        room = await api(`/api/public/rooms/${encodeURIComponent(code)}`);
+        document.getElementById("restName").innerHTML =
+          `${escapeHtml(room.restaurant_name)} <span>OPS</span>`;
+        document.getElementById("roomSub").textContent = room.display_caption || "Scan connected";
+        document.getElementById("gateTitle").textContent = `Join ${room.name}`;
+        document.getElementById("chatTitle").textContent = room.name;
+        document.title = `${room.name} — Ops chat`;
+        if (myName) {
+          document.getElementById("displayName").value = myName;
+          enterRoom();
+        }
+      } catch (e) {
+        document.getElementById("bootError").hidden = false;
+        document.getElementById("bootError").textContent = e.message;
+        document.getElementById("gate").hidden = true;
+      }
+    }
+
+    function enterRoom() {
+      myName = document.getElementById("displayName").value.trim() || "Staff";
+      localStorage.setItem(`room_name_${code}`, myName);
+      document.getElementById("gate").hidden = true;
+      document.getElementById("chat").hidden = false;
+      document.getElementById("chatHint").textContent = `You: ${myName} · group with cashier`;
+      startPolling();
+    }
+
+    function startPolling() {
+      clearInterval(timer);
+      refresh(true);
+      timer = setInterval(() => refresh(false), 2500);
+    }
+
+    async function refresh(reset) {
+      try {
+        const after = reset ? 0 : lastId;
+        const data = await api(`/api/public/rooms/${encodeURIComponent(code)}/messages?after_id=${after}`);
+        const log = document.getElementById("log");
+        if (reset) { log.innerHTML = ""; lastId = 0; }
+        const msgs = data.messages || [];
+        if (reset && !msgs.length) {
+          log.innerHTML = `<p class="hint" style="text-align:center;margin:auto">No messages yet. Say hello to cashier / team.</p>`;
+        }
+        for (const m of msgs) {
+          if (m.id <= lastId) continue;
+          lastId = Math.max(lastId, m.id);
+          if (log.querySelector(".hint")) log.innerHTML = "";
+          const mine = m.sender === "member" && (m.sender_name || "") === myName;
+          const time = new Date(`${m.created_at.replace(" ", "T")}Z`).toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"});
+          const who = m.sender === "cashier" ? "Cashier" : (m.sender_name || "Staff");
+          const el = document.createElement("div");
+          el.className = `bubble ${mine ? "me" : "them"}`;
+          el.innerHTML = `${escapeHtml(m.body)}<time>${escapeHtml(who)} · ${time}</time>`;
+          log.appendChild(el);
+        }
+        if (msgs.length) log.scrollTop = log.scrollHeight;
+      } catch (_) {}
+    }
+
+    async function sendMsg(event) {
+      event.preventDefault();
+      const input = document.getElementById("msgInput");
+      const body = input.value.trim();
+      if (!body) return;
+      try {
+        await api(`/api/public/rooms/${encodeURIComponent(code)}/messages`, {
+          method: "POST",
+          body: JSON.stringify({ body, sender_name: myName }),
+        });
+        input.value = "";
+        await refresh(false);
+      } catch (e) {
+        alert(e.message);
+      }
+    }
+
+    boot();
+  </script>
+</body>
+</html>

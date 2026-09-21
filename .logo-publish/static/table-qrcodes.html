@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Table QR Codes · My Restaurant</title>
+  <style>
+    :root { --orange:#f25b0a; --ink:#121212; --muted:#626262; }
+    * { box-sizing:border-box; }
+    body { margin:0; padding:34px; background:#eceae6; color:var(--ink); font-family:Arial,sans-serif; }
+    .toolbar { max-width:1100px; margin:0 auto 24px; display:flex; justify-content:space-between; align-items:center; gap:20px; }
+    .toolbar h1 { margin:0; font-size:28px; }
+    .toolbar p { margin:5px 0 0; color:var(--muted); }
+    button { border:0; border-radius:10px; padding:12px 20px; background:var(--orange); color:white; font-weight:800; cursor:pointer; }
+    .sheet { max-width:1100px; margin:auto; display:grid; grid-template-columns:repeat(2,1fr); gap:20px; }
+    .card { min-height:420px; padding:25px; background:white; border:2px solid #dedbd5; border-radius:22px; display:flex; flex-direction:column; align-items:center; text-align:center; break-inside:avoid; }
+    .brand { font-size:14px; font-weight:900; letter-spacing:.18em; text-transform:uppercase; }
+    .brand::before { content:""; display:inline-block; width:11px; height:11px; margin-right:8px; border-radius:50%; background:var(--orange); }
+    h2 { margin:14px 0 3px; font-size:32px; }
+    .hint { margin:0 0 12px; color:var(--muted); font-size:14px; }
+    img { width:245px; height:245px; display:block; }
+    .scan { margin:10px 0 0; font-weight:800; }
+    .url { margin:6px 0 0; color:var(--muted); font-size:11px; overflow-wrap:anywhere; }
+    @media(max-width:700px) { body{padding:16px}.sheet{grid-template-columns:1fr}.toolbar{align-items:flex-start}.card{min-height:auto} }
+    @media print {
+      @page { size:A4; margin:9mm; }
+      body { padding:0; background:white; }
+      .toolbar { display:none; }
+      .sheet { display:block; max-width:none; }
+      .card { width:100%; height:129mm; margin:0; border:2px solid #222; border-radius:14px; justify-content:center; page-break-after:always; }
+      .card:last-child { page-break-after:auto; }
+      img { width:75mm; height:75mm; }
+    }
+  </style>
+</head>
+<body>
+  <div class="toolbar">
+    <div><h1>Table QR Codes</h1><p>Print one page per table, then place it where guests can easily scan.</p></div>
+    <button onclick="window.print()">Print QR Codes</button>
+  </div>
+  <main class="sheet">
+    <article class="card"><div class="brand">My Restaurant</div><h2>Table 1</h2><p class="hint">Scan to view the menu and order</p><img src="qrcodes/table-1.png" alt="QR code for Table 1"><p class="scan">SCAN · ORDER · ENJOY</p><p class="url">192.168.1.122:8000/order?table=hiDmqB_UyH0</p></article>
+    <article class="card"><div class="brand">My Restaurant</div><h2>Table 2</h2><p class="hint">Scan to view the menu and order</p><img src="qrcodes/table-2.png" alt="QR code for Table 2"><p class="scan">SCAN · ORDER · ENJOY</p><p class="url">192.168.1.122:8000/order?table=Kp1LXLoc6mo</p></article>
+    <article class="card"><div class="brand">My Restaurant</div><h2>Table 3</h2><p class="hint">Scan to view the menu and order</p><img src="qrcodes/table-3.png" alt="QR code for Table 3"><p class="scan">SCAN · ORDER · ENJOY</p><p class="url">192.168.1.122:8000/order?table=jfMTczfE2eQ</p></article>
+    <article class="card"><div class="brand">My Restaurant</div><h2>Table 4</h2><p class="hint">Scan to view the menu and order</p><img src="qrcodes/table-4.png" alt="QR code for Table 4"><p class="scan">SCAN · ORDER · ENJOY</p><p class="url">192.168.1.122:8000/order?table=wPlfK6lXvs4</p></article>
+    <article class="card"><div class="brand">My Restaurant</div><h2>Table 5</h2><p class="hint">Scan to view the menu and order</p><img src="qrcodes/table-5.png" alt="QR code for Table 5"><p class="scan">SCAN · ORDER · ENJOY</p><p class="url">192.168.1.122:8000/order?table=L_pYu3BR5s8</p></article>
+    <article class="card"><div class="brand">My Restaurant</div><h2>Table 6</h2><p class="hint">Scan to view the menu and order</p><img src="qrcodes/table-6.png" alt="QR code for Table 6"><p class="scan">SCAN · ORDER · ENJOY</p><p class="url">192.168.1.122:8000/order?table=suqa2ay_ZEk</p></article>
+    <article class="card"><div class="brand">My Restaurant</div><h2>Table 7</h2><p class="hint">Scan to view the menu and order</p><img src="qrcodes/table-7.png" alt="QR code for Table 7"><p class="scan">SCAN · ORDER · ENJOY</p><p class="url">192.168.1.122:8000/order?table=Out7Tk6REnQ</p></article>
+    <article class="card"><div class="brand">My Restaurant</div><h2>Table 8</h2><p class="hint">Scan to view the menu and order</p><img src="qrcodes/table-8.png" alt="QR code for Table 8"><p class="scan">SCAN · ORDER · ENJOY</p><p class="url">192.168.1.122:8000/order?table=UiaePN_zhks</p></article>
+    <article class="card"><div class="brand">My Restaurant</div><h2>Table 9</h2><p class="hint">Scan to view the menu and order</p><img src="qrcodes/table-9.png" alt="QR code for Table 9"><p class="scan">SCAN · ORDER · ENJOY</p><p class="url">192.168.1.122:8000/order?table=TTcO7JVTOcM</p></article>
+    <article class="card"><div class="brand">My Restaurant</div><h2>Table 10</h2><p class="hint">Scan to view the menu and order</p><img src="qrcodes/table-10.png" alt="QR code for Table 10"><p class="scan">SCAN · ORDER · ENJOY</p><p class="url">192.168.1.122:8000/order?table=nJgiJ9gxJoQ</p></article>
+  </main>
+</body>
+</html>

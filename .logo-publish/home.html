@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MB Business Hub</title>
+  <style>
+    :root { --bg:#08090b; --panel:#111318; --line:#292d35; --text:#f7f7f5; --muted:#9da3ae; --accent:#f97316; --accent2:#ea580c; }
+    * { box-sizing:border-box; }
+    [hidden] { display:none !important; }
+    body { margin:0; min-height:100vh; font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif; color:var(--text); background:radial-gradient(circle at 15% 15%,#4a220e88,transparent 34%),radial-gradient(circle at 85% 80%,#7c2d1233,transparent 30%),var(--bg); }
+    .wrap { width:min(1120px,calc(100% - 32px)); margin:auto; }
+    header { min-height:76px; display:flex; align-items:center; gap:14px; border-bottom:1px solid #ffffff12; }
+    .brand { display:flex; align-items:center; gap:12px; text-decoration:none; color:inherit; }
+    .logo { width:54px; height:54px; border-radius:50%; object-fit:contain; display:block; box-shadow:0 10px 30px #f9731630; flex:none; }
+    .brand strong { display:block; font-size:1.05rem; letter-spacing:.02em; }
+    .brand small { display:block; color:var(--muted); }
+    .grow { flex:1; }
+    nav { display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; }
+    .btn { border:1px solid var(--line); background:#14171c; color:var(--text); text-decoration:none; padding:10px 15px; border-radius:12px; font-weight:750; cursor:pointer; font:inherit; }
+    .btn:hover { border-color:#4a4f58; }
+    .btn.primary { border:0; background:linear-gradient(135deg,var(--accent),var(--accent2)); box-shadow:0 10px 26px #f9731630; }
+    .btn.danger { border-color:#6f2424; color:#fecaca; background:#2a1214; }
+    main { padding:70px 0 48px; }
+    .hero { display:grid; grid-template-columns:1.1fr .9fr; gap:44px; align-items:center; }
+    h1 { font-size:clamp(2.8rem,7vw,6.3rem); line-height:.9; margin:12px 0 18px; letter-spacing:-.055em; }
+    h1 span { color:var(--accent); }
+    .lead { color:#c7c9cf; font-size:clamp(1rem,2vw,1.2rem); line-height:1.65; max-width:680px; }
+    .actions { display:flex; gap:10px; flex-wrap:wrap; margin-top:26px; }
+    .card { border:1px solid #ffffff16; border-radius:28px; padding:28px; background:linear-gradient(180deg,#171a20dd,#0f1115ee); box-shadow:0 30px 80px #0008; }
+    .restaurant-logo { width:180px; height:180px; margin:0 auto 20px; border-radius:50%; object-fit:contain; display:block; box-shadow:0 20px 55px #f9731633; }
+    .card h2 { margin:0; text-align:center; font-size:2rem; }
+    .card p { text-align:center; color:var(--muted); margin:8px 0 0; }
+    .status { margin-top:20px; padding:14px; border-radius:14px; border:1px solid var(--line); background:#0b0d11; color:var(--muted); text-align:center; }
+    footer { color:#777d88; font-size:.84rem; padding:32px 0 40px; }
+    @media(max-width:760px){ .hero{grid-template-columns:1fr}.card{order:-1}.brand small{display:none} header{align-items:flex-start;padding:14px 0} nav{max-width:62%} }
+  </style>
+</head>
+<body>
+  <header class="wrap">
+    <a class="brand" href="/">
+      <img class="logo" src="/static/mb-bite-brew-logo.png?v=4" alt="MB Bite & Brew logo" />
+      <div><strong>MB Business Hub</strong><small>Business Management Platform</small></div>
+    </a>
+    <div class="grow"></div>
+    <nav>
+      <button class="btn" type="button" id="lockButton" hidden onclick="toggleOwnerLock()">Lock Account</button>
+      <a class="btn primary" href="/account" id="authButton">Log In / Create Account</a>
+      <a class="btn" href="/login" id="cashierLoginButton">Cashier Login</a>
+    </nav>
+  </header>
+
+  <main class="wrap">
+    <section class="hero">
+      <div>
+        <h1>MB <span>Business Hub</span></h1>
+        <p class="lead">One home for restaurant ordering, business pages, tables and QR, payments, cashier operations, and the tools you add next.</p>
+        <div class="actions" id="guestActions">
+          <a class="btn primary" href="/account">Log In / Create Account</a>
+        </div>
+        <div class="actions" id="ownerActions" hidden>
+          <a class="btn primary" href="/owner">Design Your Page</a>
+        </div>
+      </div>
+
+      <aside class="card">
+        <img class="restaurant-logo" src="/static/mb-bite-brew-logo.png?v=4" alt="MB Bite & Brew logo" />
+        <h2>MB Bite &amp; Brew</h2>
+        <p>Restaurant demo brand inside MB Business Hub</p>
+        <div class="status" id="sessionStatus">Checking account…</div>
+      </aside>
+    </section>
+  </main>
+
+  <footer class="wrap">MB Business Hub · Built for restaurants and growing businesses.</footer>
+
+  <script>
+    const OWNER_TOKEN = "owner_token";
+    const OWNER_LOCKED = "owner_locked";
+    const lockButton = document.getElementById("lockButton");
+    const authButton = document.getElementById("authButton");
+    const guestActions = document.getElementById("guestActions");
+    const ownerActions = document.getElementById("ownerActions");
+
+    function setSignedIn(owner) {
+      const locked = localStorage.getItem(OWNER_LOCKED) === "1";
+      lockButton.hidden = false;
+      lockButton.textContent = locked ? "Unlock Account" : "Lock Account";
+      authButton.textContent = "Logout";
+      authButton.href = "#";
+      authButton.className = "btn danger";
+      authButton.onclick = event => { event.preventDefault(); logoutOwner(); };
+      guestActions.hidden = true;
+      ownerActions.hidden = locked;
+      document.getElementById("sessionStatus").textContent = locked
+        ? `Owner account locked${owner?.email ? ` · ${owner.email}` : ""}`
+        : `Signed in${owner?.restaurant_name ? ` · ${owner.restaurant_name}` : ""}`;
+    }
+
+    function setSignedOut() {
+      lockButton.hidden = true;
+      authButton.textContent = "Log In / Create Account";
+      authButton.href = "/account";
+      authButton.className = "btn primary";
+      authButton.onclick = null;
+      guestActions.hidden = false;
+      ownerActions.hidden = true;
+      document.getElementById("sessionStatus").textContent = "Create an account or log in to manage your business.";
+    }
+
+    async function loadSession() {
+      const token = localStorage.getItem(OWNER_TOKEN);
+      if (!token) { setSignedOut(); return; }
+      try {
+        const response = await fetch("/api/owner/me", {headers:{Authorization:`Bearer ${token}`}});
+        if (!response.ok) throw new Error();
+        setSignedIn(await response.json());
+      } catch (_) {
+        localStorage.removeItem(OWNER_TOKEN);
+        localStorage.removeItem(OWNER_LOCKED);
+        setSignedOut();
+      }
+    }
+
+    function toggleOwnerLock() {
+      const locked = localStorage.getItem(OWNER_LOCKED) === "1";
+      if (locked) {
+        location.href = "/account?unlock=1";
+        return;
+      }
+      localStorage.setItem(OWNER_LOCKED, "1");
+      loadSession();
+    }
+
+    async function logoutOwner() {
+      const token = localStorage.getItem(OWNER_TOKEN);
+      if (!token) { setSignedOut(); return; }
+      if (!confirm("Log out of the owner account? The owner will receive a security notice.")) return;
+      try {
+        await fetch("/api/owner/logout-notify", {method:"POST", headers:{Authorization:`Bearer ${token}`}});
+      } catch (_) { }
+      localStorage.removeItem(OWNER_TOKEN);
+      localStorage.removeItem(OWNER_LOCKED);
+      setSignedOut();
+    }
+
+    loadSession();
+  </script>
+</body>
+</html>

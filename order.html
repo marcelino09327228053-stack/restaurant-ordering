@@ -391,9 +391,65 @@
       border: 1px solid var(--line); background: var(--panel-2); color: var(--text); outline: 0;
     }
     .chat-compose button {
-      border: 0; border-radius: 12px; background: var(--orange); color: #fff;
-      font-weight: 800; padding: 0 16px; cursor: pointer;
-    }
+  border: 0; border-radius: 12px; background: var(--orange); color: #fff;
+  font-weight: 800; padding: 0 16px; cursor: pointer;
+}
+
+/* Full-screen customer chat on phone */
+@media (max-width: 768px) {
+  #chatSheet.sheet-back.open {
+    position: fixed !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100dvh !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    display: flex !important;
+    align-items: stretch !important;
+    justify-content: stretch !important;
+    overflow: hidden !important;
+    z-index: 9999 !important;
+  }
+
+  #chatSheet .chat-sheet {
+    width: 100% !important;
+    max-width: none !important;
+    height: 100dvh !important;
+    max-height: none !important;
+    margin: 0 !important;
+    border-radius: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
+  }
+
+  #chatSheet .chat-head {
+    flex: 0 0 auto;
+  }
+
+  #chatSheet .hint {
+    flex: 0 0 auto;
+  }
+
+  #chatSheet .chat-log {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain;
+  }
+
+  #chatSheet .reply-preview {
+    flex: 0 0 auto;
+  }
+
+  #chatSheet .chat-compose {
+    flex: 0 0 auto;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+.connected-chip {
     .connected-chip {
       display: none; align-items: center; gap: 6px; padding: 5px 10px;
       border-radius: 999px; background: #052e16; border: 1px solid #14532d;
@@ -1315,16 +1371,27 @@
     }
 
     function openChat() {
-      if (!accessCode || demoMode) return;
-      chatOpen = true;
-      document.getElementById("chatSheet").classList.add("open");
-      document.getElementById("chatPing").hidden = true;
-      refreshChat(true);
-      document.getElementById("chatInput").focus();
+        if (!accessCode || demoMode) return;
+        chatOpen = true;
+
+        // Lock the menu/page behind the chat
+        document.body.style.overflow = "hidden";
+        document.documentElement.style.overflow = "hidden";
+
+        document.getElementById("chatSheet").classList.add("open");
+        document.getElementById("chatPing").hidden = true;
+        refreshChat(true);
+        document.getElementById("chatInput").focus();
     }
+
     function closeChat() {
-      chatOpen = false;
-      document.getElementById("chatSheet").classList.remove("open");
+        chatOpen = false;
+
+        document.getElementById("chatSheet").classList.remove("open");
+
+        // Restore normal menu/page scrolling
+        document.body.style.overflow = "";
+        document.documentElement.style.overflow = "";
     }
     function closeChatBackdrop(event) {
       if (event.target.id === "chatSheet") closeChat();

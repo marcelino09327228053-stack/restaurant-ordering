@@ -1,0 +1,10 @@
+fastapi
+uvicorn
+python-dotenv
+PyJWT
+bcrypt>=5.0,<6
+qrcode[pil]
+python-multipart
+google-auth
+psycopg[binary]>=3.2,<4
+cloudinary>=1.44,<2

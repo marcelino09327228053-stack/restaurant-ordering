@@ -1,0 +1,1962 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Site Builder</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #070809;
+      --panel: #121416;
+      --panel-2: #1a1d20;
+      --line: #2a2e33;
+      --text: #f4f1ec;
+      --muted: #9a9590;
+      --orange: #ff6a1a;
+      --orange-deep: #e04505;
+      --glow: #ff6a1a44;
+      --ok: #86efac;
+      --bad: #fca5a5;
+      --editor-w: min(440px, 100%);
+    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      color: var(--text);
+      font-family: Outfit, system-ui, sans-serif;
+      background:
+        radial-gradient(ellipse 80% 50% at 0% 0%, #2a1408 0%, transparent 50%),
+        radial-gradient(ellipse 60% 40% at 100% 100%, #1a0e08 0%, transparent 45%),
+        #070809;
+      overflow: hidden;
+    }
+    button, input, textarea { font: inherit; color: inherit; }
+    [hidden] { display: none !important; }
+
+    .top {
+      height: 64px; display: flex; align-items: center; gap: 14px;
+      padding: 0 18px; border-bottom: 1px solid #ffffff12;
+      background: #0a0b0ccc; backdrop-filter: blur(14px);
+    }
+    .mark {
+      width: 40px; height: 40px; border-radius: 50%;
+      background: linear-gradient(145deg, var(--orange), #b91c1c);
+      box-shadow: 0 0 0 4px #ff6a1a18; display: grid; place-items: center;
+      font-family: "Bebas Neue", Impact, sans-serif; font-size: 1.2rem; color: #fff;
+    }
+    .top h1 {
+      margin: 0; font-family: "Bebas Neue", Impact, sans-serif;
+      font-size: 1.55rem; letter-spacing: .06em; font-weight: 400;
+    }
+    .top h1 span { color: var(--orange); }
+    .top .grow { flex: 1; }
+    .pub {
+      display: flex; align-items: center; gap: 8px; min-width: 0;
+      padding: 7px 12px; border-radius: 999px; background: #ffffff08;
+      border: 1px solid #ffffff18; max-width: min(420px, 36vw);
+    }
+    .pub code {
+      flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+      font-size: .82rem; color: #fdba74;
+    }
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+      min-height: 40px; padding: 8px 14px; border-radius: 12px; cursor: pointer;
+      border: 1px solid var(--line); background: var(--panel); color: var(--text);
+      text-decoration: none; font-weight: 700; white-space: nowrap;
+      transition: transform .15s ease, border-color .15s ease, background .15s ease;
+    }
+    .btn:hover { border-color: #555; transform: translateY(-1px); }
+    .btn.solid {
+      border: 0; background: linear-gradient(135deg, #ff7a18, #e9430a); color: #fff;
+      box-shadow: 0 8px 22px var(--glow);
+    }
+    .btn.solid:hover { filter: brightness(1.06); }
+    .btn.danger { border-color: #7f1d1d; background: #2a1214; color: #fca5a5; }
+    .btn.danger:hover { border-color: #ef4444; color: #fecaca; }
+    .btn:disabled { opacity: .55; cursor: not-allowed; transform: none; }
+
+    .shell {
+      display: grid; grid-template-columns: var(--editor-w) 1fr;
+      height: calc(100vh - 64px);
+    }
+    .editor {
+      overflow: auto; border-right: 1px solid #ffffff12;
+      background: #0c0e10ee; padding: 18px 16px 40px;
+    }
+    .preview-pane {
+      position: relative; display: grid; place-items: center;
+      padding: 22px; overflow: hidden;
+    }
+    .preview-pane::before {
+      content: ""; position: absolute; inset: 0; pointer-events: none;
+      background:
+        radial-gradient(circle at 70% 20%, #ff6a1a22, transparent 40%),
+        radial-gradient(circle at 20% 80%, #ffffff06, transparent 35%);
+      animation: pulseGlow 6s ease-in-out infinite;
+    }
+    @keyframes pulseGlow {
+      0%, 100% { opacity: .7; }
+      50% { opacity: 1; }
+    }
+    .device {
+      position: relative; z-index: 1; width: min(920px, 100%);
+      height: min(860px, calc(100vh - 120px));
+      border-radius: 22px; overflow: hidden;
+      border: 1px solid #ffffff22;
+      box-shadow: 0 30px 80px #000000aa, 0 0 0 1px #ff6a1a18;
+      background: #090b0b;
+      transform: translateY(0); animation: floatIn .7s cubic-bezier(.2,.8,.2,1) both;
+    }
+    @keyframes floatIn {
+      from { opacity: 0; transform: translateY(24px) scale(.97); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .device-bar {
+      height: 38px; display: flex; align-items: center; gap: 8px;
+      padding: 0 14px; background: #111417; border-bottom: 1px solid #ffffff10;
+    }
+    .dot { width: 9px; height: 9px; border-radius: 50%; background: #3f3f46; }
+    .dot.r { background: #ef4444; } .dot.y { background: #eab308; } .dot.g { background: #22c55e; }
+    .device-bar span {
+      margin-left: 8px; font-size: .75rem; color: var(--muted);
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .device-stage { height: calc(100% - 38px); overflow: auto; }
+
+    .block {
+      background: var(--panel); border: 1px solid var(--line);
+      border-radius: 16px; padding: 14px; margin-bottom: 14px;
+    }
+    .block h2 {
+      margin: 0 0 4px; font-size: .95rem; font-weight: 800; letter-spacing: .04em;
+      text-transform: uppercase;
+    }
+    .block h2::after {
+      content: ""; display: block; width: 36px; height: 3px; margin-top: 7px;
+      border-radius: 3px; background: var(--orange);
+    }
+    .hint { margin: 8px 0 12px; color: var(--muted); font-size: .82rem; line-height: 1.45; }
+
+    label { display: block; font-size: .8rem; font-weight: 600; color: #d4d4d8; margin: 0 0 6px; }
+    input, textarea {
+      width: 100%; padding: 11px 12px; margin-bottom: 10px;
+      border-radius: 11px; border: 1px solid var(--line);
+      background: var(--panel-2); outline: 0;
+    }
+    input:focus, textarea:focus { border-color: #ff6a1a88; box-shadow: 0 0 0 3px #ff6a1a22; }
+    textarea { min-height: 72px; resize: vertical; }
+    .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+    .drop {
+      position: relative; border: 1.5px dashed #ffffff33; border-radius: 14px;
+      background: linear-gradient(180deg, #15181b, #101214);
+      min-height: 110px; padding: 16px; cursor: pointer;
+      display: grid; place-items: center; text-align: center;
+      transition: border-color .15s ease, background .15s ease, transform .15s ease;
+    }
+    .drop:hover, .drop.drag {
+      border-color: var(--orange); background: #1a120e;
+      transform: scale(1.01); box-shadow: inset 0 0 40px #ff6a1a14;
+    }
+    .drop strong { display: block; font-size: .92rem; margin-bottom: 4px; }
+    .drop small { color: var(--muted); font-size: .78rem; }
+    .drop input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+
+    .logo-preview {
+      width: 72px; height: 72px; border-radius: 50%; object-fit: cover;
+      border: 2px solid #ff6a1a55; box-shadow: 0 0 0 5px #ff6a1a14;
+      margin-bottom: 8px;
+    }
+    .hero-thumbs {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px;
+    }
+    .hero-thumbs .thumb {
+      position: relative; aspect-ratio: 4/3; border-radius: 10px; overflow: hidden;
+      border: 1px solid #ffffff18; background: #111;
+    }
+    .hero-thumbs img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .hero-thumbs button {
+      position: absolute; top: 4px; right: 4px; width: 24px; height: 24px;
+      border: 0; border-radius: 50%; background: #000000bb; color: #fff;
+      cursor: pointer; font-size: .75rem;
+    }
+
+    .menu-item {
+      display: grid; grid-template-columns: 54px 1fr auto; gap: 10px; align-items: center;
+      padding: 10px 0; border-top: 1px solid #ffffff10;
+    }
+    .menu-pic {
+      width: 54px; height: 54px; border-radius: 10px; object-fit: cover;
+      background: #1a1a1a; border: 1px solid #ffffff14;
+      display: grid; place-items: center; font-size: 1.3rem; overflow: hidden;
+    }
+    .menu-pic img { width: 100%; height: 100%; object-fit: cover; }
+    .menu-item strong { display: block; font-size: .9rem; }
+    .menu-item small { color: var(--muted); font-size: .75rem; }
+    .price-tag { color: var(--orange); font-weight: 800; font-size: .9rem; }
+    .table-qr-card {
+      display: grid; grid-template-columns: 112px 1fr; gap: 12px; align-items: center;
+      margin-top: 12px; padding: 12px; border: 1px solid var(--line); border-radius: 14px;
+      background: #101214;
+    }
+    .table-qr-card img { width: 112px; height: 112px; padding: 5px; border-radius: 10px; background: white; object-fit: contain; }
+    .table-qr-meta small { display: block; margin-top: 5px; color: #fdba74; overflow-wrap: anywhere; }
+    .table-qr-actions { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 10px; }
+    .table-qr-actions .btn { min-height: 34px; padding: 6px 10px; font-size: .76rem; }
+    @media (max-width: 480px) { .table-qr-card { grid-template-columns: 1fr; } .table-qr-card img { width: 150px; height: 150px; margin: auto; } }
+    .payment-item {
+      display: grid; grid-template-columns: 62px 1fr; gap: 10px;
+      padding: 11px 0; border-top: 1px solid #ffffff10; align-items: center;
+    }
+    .payment-item img { width: 62px; height: 62px; object-fit: contain; border-radius: 10px; background: white; padding: 3px; }
+    .payment-meta strong, .payment-meta small { display: block; }
+    .payment-meta small { color: var(--muted); margin-top: 2px; }
+    .payment-actions { display: flex; gap: 6px; margin-top: 7px; flex-wrap: wrap; }
+
+    .toast {
+      position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%) translateY(20px);
+      z-index: 200; padding: 12px 18px; border-radius: 12px; font-weight: 700;
+      opacity: 0; pointer-events: none; transition: .25s ease;
+      border: 1px solid var(--line); background: #15181c; max-width: 90vw;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    .toast.ok { color: var(--ok); border-color: #14532d; background: #052e16; }
+    .toast.bad { color: var(--bad); border-color: #7f1d1d; background: #2a1214; }
+
+    /* Live preview (Bite & Brew) */
+    .pv { color: var(--text); min-height: 100%; }
+    .pv-head {
+      display: flex; align-items: center; gap: 12px; padding: 14px 18px;
+      border-bottom: 1px solid #ffffff14; background: #090b0be8; position: sticky; top: 0; z-index: 2;
+    }
+    .pv-logo {
+      width: 44px; height: 44px; border-radius: 50%; object-fit: cover;
+      background: linear-gradient(145deg, var(--orange), #c2410c);
+      box-shadow: 0 0 0 4px #f9731618; display: grid; place-items: center;
+      font-size: 1.2rem; overflow: hidden; flex: 0 0 auto;
+    }
+    .pv-logo img { width: 100%; height: 100%; object-fit: cover; }
+    .pv-brand {
+      font-family: "Bebas Neue", Impact, sans-serif; font-size: 1.35rem;
+      letter-spacing: .08em; text-transform: uppercase;
+    }
+    .pv-hero {
+      position: relative; margin: 18px; min-height: 280px; border-radius: 20px;
+      overflow: hidden; border: 1px solid #ffffff20; background: #14100e;
+    }
+    .pv-slides { position: absolute; inset: 0; }
+    .pv-slide {
+      position: absolute; inset: 0;
+      background: #0e0c0b center/cover no-repeat;
+      opacity: 0; transform: scale(1.04);
+      transition: opacity .9s ease, transform 1.2s ease;
+    }
+    .pv-slide.on { opacity: 1; transform: scale(1); z-index: 1; }
+    .pv-hero.style-slide .pv-slide { transform: translateX(100%); opacity: 1; }
+    .pv-hero.style-slide .pv-slide.on { transform: translateX(0); }
+    .pv-hero.style-zoom .pv-slide { transform: scale(.72); filter: blur(8px); }
+    .pv-hero.style-zoom .pv-slide.on { transform: scale(1); filter: blur(0); }
+    .pv-hero.style-split .pv-slide { transform: translateY(35%) skewY(-4deg); clip-path: inset(0 50% 0 50%); }
+    .pv-hero.style-split .pv-slide.on { transform: none; clip-path: inset(0); }
+    .pv-hero.style-kenburns .pv-slide { transform: scale(1.18); transition-duration: 3.2s; }
+    .pv-hero.style-kenburns .pv-slide.on { transform: scale(1); }
+    .pv-hero.style-flip { perspective: 1100px; }
+    .pv-hero.style-flip .pv-slide { transform: rotateY(90deg); transform-origin: left center; }
+    .pv-hero.style-flip .pv-slide.on { transform: rotateY(0); }
+    .pv-hero.style-curtain .pv-slide { transform: none; clip-path: inset(0 50%); }
+    .pv-hero.style-curtain .pv-slide.on { clip-path: inset(0); }
+    .pv-hero.style-blur .pv-slide { transform: scale(1.1); filter: blur(22px) saturate(.4); }
+    .pv-hero.style-blur .pv-slide.on { transform: scale(1); filter: blur(0) saturate(1); }
+    .pv-hero.style-rotate .pv-slide { transform: scale(.7) rotate(-8deg); }
+    .pv-hero.style-rotate .pv-slide.on { transform: scale(1) rotate(0); }
+    .pv-hero.style-diagonal .pv-slide { transform: translate(25%,25%); clip-path: polygon(100% 0,100% 0,100% 0); }
+    .pv-hero.style-diagonal .pv-slide.on { transform: none; clip-path: polygon(0 0,100% 0,100% 100%,0 100%); }
+    .style-picker { display:grid; grid-template-columns:repeat(2,1fr); gap:7px; margin:10px 0; }
+    .style-controls { margin:12px 0 15px; padding:12px; border:1px solid #f9731666; border-radius:13px; background:#21130d; }
+    .style-controls label { color:#fdba74; font-weight:900; }
+    .style-option { padding:9px 8px; border:1px solid var(--line); border-radius:10px; background:var(--panel-2); color:var(--text); cursor:pointer; font-weight:700; font-size:.78rem; }
+    .style-option.active { border-color:var(--orange); background:#2a160d; color:#fed7aa; }
+    .pv-hero::after {
+      content: ""; position: absolute; inset: 0; z-index: 1;
+      background: linear-gradient(90deg, #080808f7 0%, #090909d9 35%, transparent 78%);
+    }
+    .pv-hero-inner { position: relative; z-index: 2; padding: 36px 28px; max-width: 520px; }
+    .pv-eyebrow {
+      margin: 0 0 10px; color: #fb923c; font-size: .72rem; font-weight: 900;
+      letter-spacing: .22em; text-transform: uppercase;
+    }
+    .pv-hero h2 {
+      margin: 0; font-family: "Bebas Neue", Impact, sans-serif;
+      font-size: clamp(2.6rem, 6vw, 4.4rem); line-height: .88;
+      text-transform: uppercase; letter-spacing: .02em;
+    }
+    .pv-hero h2 span { display: block; color: var(--orange); }
+    .pv-copy { margin: 14px 0 0; color: #d5d5d5; line-height: 1.55; font-size: .92rem; max-width: 380px; }
+    .pv-section { padding: 8px 18px 28px; }
+    .pv-section h3 {
+      margin: 0 0 14px; font-size: 1.35rem;
+    }
+    .pv-section h3::after {
+      content: ""; display: block; width: 40px; height: 3px; margin-top: 6px;
+      border-radius: 3px; background: var(--orange);
+    }
+    .pv-grid {
+      display: grid; gap: 12px;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    }
+    .pv-card {
+      background: #17171b; border: 1px solid #2b2b32; border-radius: 14px; overflow: hidden;
+      transition: transform .18s ease;
+    }
+    .pv-card:hover { transform: translateY(-3px); }
+    .pv-thumb {
+      aspect-ratio: 1; background: #111;
+      display: grid; place-items: center; font-size: 2rem; overflow: hidden;
+    }
+    .pv-thumb img { width: 100%; height: 100%; object-fit: cover; }
+    .pv-card-body { padding: 10px 11px 12px; }
+    .pv-card-body strong { display: block; font-size: .88rem; margin-bottom: 4px; }
+    .pv-card-body em { color: var(--orange); font-style: normal; font-weight: 800; font-size: .9rem; }
+
+    .empty-preview {
+      color: var(--muted); text-align: center; padding: 40px 20px; font-size: .9rem;
+    }
+
+    @media (max-width: 960px) {
+      body { overflow: auto; }
+      .shell { grid-template-columns: 1fr; height: auto; }
+      .preview-pane { min-height: 70vh; padding: 14px; }
+      .device { height: 70vh; }
+      .pub { display: none; }
+    }
+    .design-room { position:fixed; inset:0; z-index:100; background:#0b0b0d; display:grid; grid-template-rows:auto 1fr; }
+    .design-room[hidden] { display:none; }
+    .design-top { min-height:64px; display:flex; align-items:center; gap:8px; flex-wrap:wrap; padding:10px 16px; border-bottom:1px solid var(--line); background:#111114; }
+    .design-top h2 { margin:0 12px 0 0; font-size:1rem; letter-spacing:.08em; }
+    .design-work { display:grid; grid-template-columns:320px minmax(0,1fr); min-height:0; }
+    .design-tools { padding:14px; border-right:1px solid var(--line); overflow:auto; background:#121216; }
+    .design-tools .btn { width:100%; margin-bottom:8px; text-align:left; }
+    .template-card { width:100%; margin:0 0 14px; padding:10px; border:1px solid #b99a5b; border-radius:14px; background:#f3ede1; color:#173d31; cursor:pointer; text-align:left; }
+    .template-card-preview { height:72px; margin-bottom:8px; border-radius:9px; overflow:hidden; display:grid; grid-template-columns:38% 62%; background:#f7f2e8; box-shadow:inset 0 0 0 1px #0001; }
+    .template-card-preview i:first-child { background:#173d31; }
+    .template-card-preview i:last-child { background:linear-gradient(135deg,#f7f2e8 50%,#c49a49 51%); }
+    .template-card strong,.template-card small { display:block; }
+    .template-card small { margin-top:3px; color:#6b6253; }
+    .shape-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:7px; margin:7px 0 12px; }
+    .shape-btn { min-height:58px; border:1px solid var(--line); border-radius:11px; background:#1d1d22; color:#fff; cursor:pointer; font-size:1.35rem; }
+    .shape-btn span { display:block; margin-top:3px; font-size:.63rem; color:var(--muted); }
+    .design-slideshow { position:absolute; z-index:5; top:72px; left:16px; width:min(380px,calc(100vw - 32px)); max-height:calc(100vh - 88px); overflow:auto; padding:14px; border:1px solid #f9731688; border-radius:16px; background:#17130f; box-shadow:0 22px 60px #000c; }
+    .design-slideshow[hidden] { display:none; }
+    .design-slideshow h3 { margin:0 0 5px; color:#fdba74; font-size:.9rem; }
+    .slideshow-head { display:flex; align-items:center; gap:8px; margin-bottom:8px; }
+    .slideshow-head .grow { flex:1; }
+    body.studio-only > .top, body.studio-only > .shell { display:none!important; }
+    .studio-panel { position:absolute; z-index:9; top:calc(var(--studio-header-height,64px) + 8px); left:calc(var(--tool-rail-width,0px) + 12px); width:min(430px,calc(100% - var(--tool-rail-width,0px) - 24px)); max-height:calc(100% - var(--studio-header-height,64px) - 20px); overflow:auto; padding:14px; border:1px solid #ffffff24; border-radius:16px; background:#151519; box-shadow:0 22px 60px #000c; }
+    .studio-panel[hidden] { display:none; }
+    .studio-panel.wide { width:min(980px,calc(100% - var(--tool-rail-width,0px) - 24px)); }
+    .studio-panel-head { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+    .studio-panel-head h3 { margin:0; color:#fdba74; }
+    .studio-panel-body > .block { margin:0; border:0; padding:0; box-shadow:none; }
+    #previewPanelBody .device { height:min(72vh,760px); }
+    .design-board-wrap { overflow:auto; min-width:0; min-height:0; display:grid; place-items:center; padding:16px; background:radial-gradient(circle,#332014,#0b0b0d 65%); }
+    .design-board { position:relative; width:900px; height:500px; background:#f4efe5; box-shadow:0 20px 60px #000a; }
+    .design-board .canvas-container { position:absolute!important; inset:0; }
+    @media(max-width:760px){.design-work{grid-template-columns:1fr;grid-template-rows:150px minmax(0,1fr)}.design-tools{display:flex;gap:6px;overflow:auto;border-right:0;border-bottom:1px solid var(--line)}.design-tools .btn{width:auto;white-space:nowrap;margin:0}.design-board-wrap{padding:12px}}
+    .design-tools details { border-top:1px solid var(--line); padding:10px 0; }
+    .design-tools summary { cursor:pointer; font-weight:700; margin-bottom:10px; }
+    .design-tools select { width:100%;padding:10px;margin-bottom:10px;background:var(--panel-2);color:var(--text);border:1px solid var(--line);border-radius:8px; }
+    .design-tools .tool-row { display:flex;gap:5px; }
+    .design-tools .tool-row .btn { min-width:0;padding:7px;font-size:.75rem;text-align:center; }
+    #designLayers { max-height:220px;overflow:auto; }
+    #designLayers button { overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
+
+    /* Compact tool rail; the original canvas and Fabric coordinates stay unchanged. */
+    .design-work { position:relative;grid-template-columns:52px 0 minmax(0,1fr);grid-template-rows:minmax(0,1fr); }
+    .design-work.tool-panel-open { grid-template-columns:52px 244px minmax(0,1fr); }
+    .tool-rail { grid-column:1;grid-row:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 4px;overflow-y:auto;min-height:0;background:#111216;border-right:1px solid #2a2e33;z-index:8; }
+    .tool-icon { display:flex;align-items:center;justify-content:center;flex:0 0 auto;width:40px;height:40px;padding:9px;border:1px solid transparent;border-radius:9px;background:transparent;color:#b8bdc7;cursor:pointer; }
+    .tool-icon img { width:20px;height:20px;filter:invert(78%);pointer-events:none; }
+    .tool-icon:hover { background:#24262d; }
+    .tool-icon:focus-visible { outline:2px solid #ff8c42;outline-offset:-2px; }
+    .tool-icon[aria-expanded="true"] { background:#ff6a1a20;border-color:#ff6a1a75; }
+    .tool-icon[aria-expanded="true"] img { filter:invert(60%) sepia(90%) saturate(2400%) hue-rotate(345deg); }
+    .tool-icon.tool-danger:hover { background:#7f1d1d55;border-color:#b84848; }
+    .editor-tool-tooltip { position:fixed;z-index:500;pointer-events:none;padding:7px 10px;border:1px solid #414550;border-radius:7px;background:#24262e;color:#f4f1ec;font-size:12px;font-weight:600;box-shadow:0 4px 14px #0006;white-space:nowrap; }
+    .tool-panel { grid-column:2;grid-row:1;min-width:0;min-height:0;display:flex;flex-direction:column;background:#15161b;border-right:1px solid #30323a;z-index:7; }
+    .tool-panel-header { display:flex;align-items:center;justify-content:space-between;padding:10px 10px 10px 14px;border-bottom:1px solid #2a2e33; }
+    .tool-panel-header h3 { margin:0;font-size:.85rem;font-weight:700; }
+    .tool-panel-header .tool-icon { width:28px;height:28px;padding:5px; }
+    #editorToolContents { display:block;padding:14px 12px;overflow:auto;min-height:0;border:0;background:transparent; }
+    #editorToolContents .btn { min-height:34px;padding:7px 9px;font-size:.78rem;border-radius:8px;white-space:normal; }
+    #editorToolContents .tool-row { display:flex;gap:5px; }
+    #editorToolContents .tool-row .btn { flex:1;text-align:center; }
+    #editorToolContents label { font-size:.73rem;color:#aeb3bf;margin-top:8px; }
+    #editorToolContents input,#editorToolContents select { min-width:0;font-size:.8rem; }
+    #editorToolContents .template-card { margin:0; }
+    #editorToolContents .shape-btn { min-height:52px; }
+    #editorToolContents #designLayers { max-height:none; }
+    #editorToolContents .design-slideshow { position:static;width:auto;max-height:none;padding:0;border:0;box-shadow:none;background:transparent;overflow:visible; }
+    #editorToolContents .slideshow-head { display:none; }
+    .design-work > .design-board-wrap { grid-column:3;grid-row:1; }
+    @media(max-width:900px) {
+      .design-work.tool-panel-open { grid-template-columns:52px 0 minmax(0,1fr); }
+      .tool-panel { position:absolute;left:52px;top:0;bottom:0;width:min(244px,calc(100% - 52px));box-shadow:12px 0 30px #0007; }
+    }
+    .shape-btn svg { width:30px;height:30px;fill:none;stroke:currentColor;stroke-width:5;stroke-linejoin:round;stroke-linecap:round; }
+    .background-swatches { display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin:12px 0; }
+    .background-swatches button { height:26px;border:1px solid #ffffff55;border-radius:5px;cursor:pointer; }
+    .object-color-editor { border:0;padding:0;margin:0 0 12px;min-width:0; }
+    .object-color-editor:disabled { opacity:.45; }
+    .object-color-editor input[type=range], #backgroundColorEditor input[type=range] { width:100%;margin-bottom:6px; }
+    .design-top .btn[aria-expanded="true"], .design-top .btn[aria-pressed="true"] {
+      color:#fff3e8;background:#ff6a1a30;border-color:#ff8a45;
+      box-shadow:0 0 0 1px #ff6a1a35,0 0 16px #ff6a1a35;
+    }
+    .design-room { --tool-rail-width:0px; }
+    .design-room.canvas-tools-visible { --tool-rail-width:52px; }
+    .design-room:not(.canvas-tools-visible) .tool-rail { display:none; }
+    .design-room:not(.canvas-tools-visible) .design-work { grid-template-columns:0 0 minmax(0,1fr); }
+    .design-room:not(.canvas-tools-visible) .design-work.tool-panel-open { grid-template-columns:0 244px minmax(0,1fr); }
+    @media(max-width:900px) {
+      .design-room:not(.canvas-tools-visible) .design-work.tool-panel-open { grid-template-columns:0 0 minmax(0,1fr); }
+      .design-room:not(.canvas-tools-visible) .tool-panel { left:12px;width:min(244px,calc(100% - 24px)); }
+    }
+    .design-room:not(.canvas-tools-visible) .design-board-wrap { display:none; }
+    .design-room:not(.canvas-tools-visible) .studio-panel {
+      left:12px; right:12px; bottom:12px; width:auto; max-height:none;
+      box-shadow:none;
+    }
+    .design-room:not(.canvas-tools-visible) .design-work.tool-panel-open { grid-template-columns:minmax(0,1fr); }
+    .design-room:not(.canvas-tools-visible) .tool-panel {
+      position:absolute; inset:8px 12px 12px; width:auto; grid-column:1;
+      border:1px solid #ffffff24; border-radius:16px; box-shadow:none;
+    }
+    .design-room:not(.canvas-tools-visible) #menuPanel {
+      left:50%; right:auto; transform:translateX(-50%);
+      width:min(1120px,calc(100% - 32px));
+      top:calc(var(--studio-header-height,64px) + 16px); bottom:16px;
+    }
+    #menuCustomerPreview { max-width:100%; margin-inline:auto; }
+    #menuPhonePreview[aria-pressed="true"] { border-color:#f97316;background:#f9731625; }
+  </style>
+  <script src="/static/vendor/fabric.min.js"></script>
+  <script src="/static/banner-player.js"></script>
+  <script src="/static/design-templates.js"></script>
+</head>
+<body>
+  <header class="top">
+    <div class="mark">BB</div>
+    <h1>SITE <span>BUILDER</span></h1>
+    <div class="grow"></div>
+    <button class="btn solid" type="button" onclick="openDesignRoom()">Design Your Page</button>
+    <a class="btn solid" href="/login">Cashier</a>
+    <a class="btn" href="/">Home</a>
+  </header>
+
+  <div class="shell">
+    <aside class="editor">
+      <section class="block" id="brandBuilder">
+        <h2>Brand</h2>
+        <p class="hint">Drag or paste your logo. This becomes the face of your restaurant page.</p>
+        <div class="drop" id="logoDrop" data-kind="logo">
+          <img class="logo-preview" id="logoPreview" hidden alt="" />
+          <div>
+            <strong>Drop logo here</strong>
+            <small>or click · JPG/PNG/WEBP · paste works too</small>
+          </div>
+          <input type="file" accept="image/*" />
+        </div>
+        <label for="nameInput">Restaurant name</label>
+        <input id="nameInput" maxlength="80" placeholder="e.g. Mama’s Kitchen" />
+        <label for="aboutInput">Tagline / about</label>
+        <textarea id="aboutInput" maxlength="500" placeholder="What makes your food unforgettable?"></textarea>
+        <button class="btn solid" type="button" style="width:100%" onclick="saveSite()">Save brand</button>
+      </section>
+
+      <section class="block" id="menuBuilder">
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+          <button class="btn solid" type="button" onclick="openMenuForm()">+ Add Menu</button>
+          <button class="btn" type="button" onclick="document.getElementById('menuItemsPanel').hidden=!document.getElementById('menuItemsPanel').hidden">Edit / Delete</button>
+          <button class="btn" id="menuPhonePreview" type="button" aria-pressed="false" onclick="toggleMenuPhonePreview()">Phone preview</button>
+        </div>
+
+        <div style="margin-bottom:12px"><iframe id="menuCustomerPreview" title="Customer menu page" style="display:block;border:1px solid var(--line);width:100%;height:520px;background:#fff" scrolling="no" onload="setupMenuFrameSize()"></iframe></div>
+        <div id="menuDishForm" hidden>
+        <button class="btn" type="button" onclick="document.getElementById('menuDishForm').hidden=true">Close form</button>
+        <h2 id="menuFormTitle">Menu dish</h2>
+        <p class="hint">Add a dish with an optional photo. Customers see it on your public page.</p>
+        <div class="drop" id="menuDrop" data-kind="menu" style="min-height:88px;margin-bottom:10px">
+          <img id="menuPhotoPreview" alt="Selected dish photo" hidden style="display:block;width:100%;max-height:220px;object-fit:contain;border-radius:10px;margin-bottom:10px" />
+          <div id="menuDropLabel">
+            <strong>Drop dish photo</strong>
+            <small id="menuPhotoHint">optional</small>
+          </div>
+          <input type="file" accept="image/*" />
+        </div>
+        <div class="row2">
+          <div>
+            <label for="menuCategory">Category (required)</label>
+            <select id="menuCategory" onchange="toggleCustomCategory()" style="width:100%;padding:12px;border:1px solid var(--line);border-radius:10px;background:var(--panel-2);color:var(--text);font:inherit">
+              <option value="">Select category</option>
+            </select>
+            <input id="customMenuCategory" hidden aria-label="New category" maxlength="80" placeholder="Type new category" onblur="commitCustomCategory()" onkeydown="if(event.key === 'Enter'){event.preventDefault();commitCustomCategory();}else if(event.key === 'Escape'){this.value='';commitCustomCategory();}" />
+          </div>
+          <div>
+            <label for="menuPrice">Price (₱, required)</label>
+            <input id="menuPrice" type="number" min="1" step="0.01" placeholder="199" />
+          </div>
+        </div>
+        <label for="menuName">Item name (optional)</label>
+        <input id="menuName" maxlength="120" placeholder="Signature burger" />
+        <label for="menuDescription">Description (optional)</label>
+        <input id="menuDescription" maxlength="500" placeholder="Short tasty line" />
+        <button id="addMenuButton" class="btn solid" type="button" style="width:100%" onclick="addMenuItem()">Add to menu</button>
+        <button class="btn" id="cancelMenuEdit" hidden type="button" onclick="cancelMenuEdit()">Cancel edit</button>
+        <p id="menuFeedback" class="hint" role="status" aria-live="polite"></p>
+        </div>
+        <div id="menuItemsPanel" hidden><div id="menuList"></div></div>
+      </section>
+
+      <section class="block" id="tablesBuilder">
+        <h2>Table order links</h2>
+        <p class="hint">QR / share links for dine-in tables.</p>
+        <div style="display:flex;gap:8px">
+          <input id="tableNameInput" maxlength="80" placeholder="Table 1" style="margin:0;flex:1" />
+          <button class="btn solid" type="button" onclick="addTable()">Add</button>
+        </div>
+        <div id="tableList"></div>
+      </section>
+
+      <section class="block" id="paymentsBuilder">
+        <h2>Payment QR codes</h2>
+        <p class="hint">Add as many GCash, Maya, bank, or other payment QR codes as you need. Only active methods appear at checkout.</p>
+        <div class="drop" style="min-height:96px;margin-bottom:10px">
+          <div>
+            <strong id="paymentQrLabel">Choose payment QR image</strong>
+            <small>JPG/PNG/WEBP · up to 8MB</small>
+          </div>
+          <input id="paymentQrFile" type="file" accept="image/*" onchange="preparePaymentQr(this.files[0])" />
+        </div>
+        <div class="row2">
+          <div><label for="paymentProvider">Provider</label><input id="paymentProvider" maxlength="80" placeholder="GCash" /></div>
+          <div><label for="paymentAccount">Account name</label><input id="paymentAccount" maxlength="120" placeholder="Juan Dela Cruz" /></div>
+        </div>
+        <label for="paymentNumber">Masked account number</label>
+        <input id="paymentNumber" maxlength="80" placeholder="09•• ••• •123" />
+        <label for="paymentInstructions">Customer instructions</label>
+        <input id="paymentInstructions" maxlength="300" placeholder="Enter the order number as message" />
+        <button class="btn solid" type="button" style="width:100%" onclick="addPaymentMethod()">Add payment QR</button>
+        <div id="paymentMethodList"></div>
+      </section>
+    </aside>
+
+    <section class="preview-pane">
+      <div class="device">
+        <div class="device-bar">
+          <i class="dot r"></i><i class="dot y"></i><i class="dot g"></i>
+          <span id="deviceUrl">live preview</span>
+        </div>
+        <div class="device-stage" id="livePreview"></div>
+      </div>
+    </section>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <section class="design-room" id="designRoom" hidden>
+    <div class="design-top">
+      <button class="btn" id="designPageButton" type="button" aria-pressed="true" onclick="showDesignPage()">Design Your Page</button>
+      <button class="btn" type="button" data-studio-panel="menuPanel" aria-controls="menuPanel" aria-expanded="false" onclick="toggleStudioPanel('menuPanel')">Menu</button>
+      <button class="btn" type="button" data-studio-panel="tablesPanel" aria-controls="tablesPanel" aria-expanded="false" onclick="toggleStudioPanel('tablesPanel')">Tables & QR</button>
+      <button class="btn" type="button" data-studio-panel="paymentsPanel" aria-controls="paymentsPanel" aria-expanded="false" onclick="toggleStudioPanel('paymentsPanel')">Payments</button>
+      <div class="grow"></div>
+      <a class="btn" href="/">Home</a>
+      </div>
+    <section class="design-slideshow" id="slideshowPanel" hidden>
+      <h3>Banner slideshow</h3><p class="hint">Edit each slide on the canvas. Save Draft keeps it private. Publish only when ready.</p>
+      <div style="display:grid;gap:8px">
+        <button class="btn" onclick="addBannerSlide()">+ New slide</button>
+        <button class="btn" onclick="removeBannerSlide()">Remove current slide</button>
+        <div id="bannerSlideList"></div>
+        <label>Seconds per slide<input id="bannerSeconds" type="number" min="2" max="60" value="4" onchange="captureBannerSlide()" /></label>
+        <button class="btn" onclick="previewBannerDraft()">Preview / Play</button>
+        <button class="btn" onclick="saveCompanyDesign()">Save Draft</button>
+        <button class="btn solid" onclick="publishBannerDraft()">Use as Menu Banner</button>
+      </div>
+      <div hidden>
+      <div class="slideshow-head"><h3>Hero Slideshow</h3><div class="grow"></div><button class="btn" type="button" onclick="toggleSlideshowPanel(false)">Close</button></div>
+      <p class="hint">Add hero photos and choose their animation.</p>
+      <div class="drop" id="heroDrop" data-kind="hero">
+        <div><strong>Drop hero photos</strong><small>multiple ok · up to 20</small></div>
+        <input type="file" accept="image/*" multiple />
+      </div>
+      <div class="hero-thumbs" id="heroThumbs"></div>
+      <label>Slideshow style</label>
+      <div class="style-picker" id="stylePicker">
+        <button class="style-option" type="button" data-style="fade" onclick="selectSlideshowStyle('fade')">Fade</button>
+        <button class="style-option" type="button" data-style="slide" onclick="selectSlideshowStyle('slide')">Slide</button>
+        <button class="style-option" type="button" data-style="zoom" onclick="selectSlideshowStyle('zoom')">Zoom</button>
+        <button class="style-option" type="button" data-style="split" onclick="selectSlideshowStyle('split')">Split Reveal</button>
+        <button class="style-option" type="button" data-style="kenburns" onclick="selectSlideshowStyle('kenburns')">Ken Burns</button>
+        <button class="style-option" type="button" data-style="flip" onclick="selectSlideshowStyle('flip')">3D Flip</button>
+        <button class="style-option" type="button" data-style="curtain" onclick="selectSlideshowStyle('curtain')">Curtain</button>
+        <button class="style-option" type="button" data-style="blur" onclick="selectSlideshowStyle('blur')">Blur Focus</button>
+        <button class="style-option" type="button" data-style="rotate" onclick="selectSlideshowStyle('rotate')">Rotate In</button>
+        <button class="style-option" type="button" data-style="diagonal" onclick="selectSlideshowStyle('diagonal')">Diagonal Wipe</button>
+      </div>
+      <button class="btn solid" type="button" style="width:100%" onclick="saveSlideshowStyle()">Save slideshow</button>
+      </div>
+    </section>
+    <section class="studio-panel" id="brandPanel" hidden><div class="studio-panel-head"><h3>Brand</h3><div class="grow"></div><button class="btn" onclick="toggleStudioPanel('brandPanel',false)">Close</button></div><div class="studio-panel-body" id="brandPanelBody"></div></section>
+    <section class="studio-panel wide" id="menuPanel" hidden><div class="studio-panel-head"><h3>Menu</h3><div class="grow"></div><button class="btn" onclick="toggleStudioPanel('menuPanel',false)">Close</button></div><div class="studio-panel-body" id="menuPanelBody"></div></section>
+    <section class="studio-panel wide" id="tablesPanel" hidden><div class="studio-panel-head"><h3>Tables & QR Codes</h3><div class="grow"></div><button class="btn" onclick="toggleStudioPanel('tablesPanel',false)">Close</button></div><div class="studio-panel-body" id="tablesPanelBody"></div></section>
+    <section class="studio-panel" id="paymentsPanel" hidden><div class="studio-panel-head"><h3>Payment Methods</h3><div class="grow"></div><button class="btn" onclick="toggleStudioPanel('paymentsPanel',false)">Close</button></div><div class="studio-panel-body" id="paymentsPanelBody"></div></section>
+    <section class="studio-panel wide" id="previewPanel" hidden><div class="studio-panel-head"><h3>Live Restaurant Preview</h3><div class="grow"></div><button class="btn" onclick="toggleStudioPanel('previewPanel',false)">Close</button></div><div class="studio-panel-body" id="previewPanelBody"></div></section>
+    <div class="design-work">
+      <nav class="tool-rail" aria-label="Editor tools" id="editorToolRail"></nav>
+      <aside class="tool-panel" id="editorToolPanel" hidden aria-labelledby="editorToolTitle">
+        <div class="tool-panel-header"><h3 id="editorToolTitle">Tools</h3><button type="button" class="tool-icon" title="Close panel" aria-label="Close tool panel" onclick="closeEditorTool()"><img src="/static/vendor/lucide/x.svg" alt="" /></button></div>
+        <div class="design-tools" id="editorToolContents"></div>
+      </aside>
+      <aside id="legacyDesignTools" hidden>
+        <label>Ready-made template</label>
+        <button class="template-card" type="button" onclick="applyElegantTemplate()">
+          <span class="template-card-preview"><i></i><i></i></span>
+          <strong>Elegant Editorial</strong>
+          <small>Cream · forest green · gold</small>
+        </button>
+        <button class="btn solid" type="button" onclick="addDesignText()">+ Add Text</button>
+        <details open><summary>Text formatting</summary>
+        <label for="designTextColor">Text color</label><input id="designTextColor" type="color" value="#ffffff" style="width:100%;height:40px" oninput="setDesignProperty('fill',this.value)" />
+        <label for="designFont">Font</label><select id="designFont" onchange="setDesignProperty('fontFamily',this.value)"><option>Arial</option><option>Georgia</option><option>Verdana</option><option>Tahoma</option><option>Courier New</option><option>Impact</option></select>
+        <label for="designFontSize">Font size</label><input id="designFontSize" type="number" min="8" max="200" value="42" onchange="setDesignProperty('fontSize',Math.max(8,Math.min(200,Number(this.value))))" />
+        <div class="tool-row"><button class="btn" onclick="toggleDesignText('fontWeight','bold','normal')">Bold</button><button class="btn" onclick="toggleDesignText('fontStyle','italic','normal')">Italic</button><button class="btn" onclick="toggleDesignText('underline',true,false)">Underline</button></div>
+        <label for="designTextAlign">Text alignment</label><select id="designTextAlign" onchange="setDesignProperty('textAlign',this.value)"><option value="left">Left</option><option value="center">Center</option><option value="right">Right</option></select>
+        </details>
+        <label>Shapes</label>
+        <div class="shape-grid"><button class="shape-btn" type="button" onclick="addDesignShape('box')" aria-label="Add Rectangle"><svg viewBox="-5 -5 110 110" aria-hidden="true"><path d="M10 25H90V75H10Z" /></svg><span>Rectangle</span></button><button class="shape-btn" type="button" onclick="addDesignShape('round')" aria-label="Add Rounded"><svg viewBox="-5 -5 110 110" aria-hidden="true"><path d="M25 25H75Q90 25 90 40V60Q90 75 75 75H25Q10 75 10 60V40Q10 25 25 25Z" /></svg><span>Rounded</span></button><button class="shape-btn" type="button" onclick="addDesignShape('circle')" aria-label="Add Circle"><svg viewBox="-5 -5 110 110" aria-hidden="true"><path d="M90 50A40 40 0 1 1 10 50A40 40 0 1 1 90 50" /></svg><span>Circle</span></button><button class="shape-btn" type="button" onclick="addDesignShape('triangle')" aria-label="Add Triangle"><svg viewBox="-5 -5 110 110" aria-hidden="true"><path d="M50 10L95 90H5Z" /></svg><span>Triangle</span></button><button class="shape-btn" type="button" onclick="addDesignShape('line')" aria-label="Add Line"><svg viewBox="-5 -5 110 110" aria-hidden="true"><path d="M10 85L90 15" /></svg><span>Line</span></button><button class="shape-btn" type="button" onclick="addDesignShape('star')" aria-label="Add Star"><svg viewBox="-5 -5 110 110" aria-hidden="true"><path d="M50 5L62 35L95 35L69 55L80 90L50 70L20 90L31 55L5 35L38 35Z" /></svg><span>Star</span></button><button class="shape-btn" type="button" onclick="addDesignShape('ellipse')" aria-label="Add Ellipse"><svg viewBox="-5 -5 110 110" aria-hidden="true"><path d="M95 50A45 28 0 1 1 5 50A45 28 0 1 1 95 50" /></svg><span>Ellipse</span></button><button class="shape-btn" type="button" onclick="addDesignShape('diamond')" aria-label="Add Diamond"><svg viewBox="-5 -5 110 110" aria-hidden="true"><path d="M50 5L90 50L50 95L10 50Z" /></svg><span>Diamond</span></button><button class="shape-btn" type="button" onclick="addDesignShape('pentagon')" aria-label="Add Pentagon"><svg viewBox="-5 -5 110 110" aria-hidden="true"><path d="M50 5L95 40L78 92H22L5 40Z" /></svg><span>Pentagon</span></button><button class="shape-btn" type="button" onclick="addDesignShape('hexagon')" aria-label="Add Hexagon"><svg viewBox="-5 -5 110 110" aria-hidden="true"><path d="M25 8H75L98 50L75 92H25L2 50Z" /></svg><span>Hexagon</span></button><button class="shape-btn" type="button" onclick="addDesignShape('octagon')" aria-label="Add Octagon"><svg viewBox="-5 -5 110 110" aria-hidden="true"><path d="M30 5H70L95 30V70L70 95H30L5 70V30Z" /></svg><span>Octagon</span></button><button class="shape-btn" type="button" onclick="addDesignShape('trapezoid')" aria-label="Add Trapezoid"><svg viewBox="-5 -5 110 110" aria-hidden="true"><path d="M25 20H75L98 80H2Z" /></svg><span>Trapezoid</span></button><button class="shape-btn" type="button" onclick="addDesignShape('parallelogram')" aria-label="Add Parallelogram"><svg viewBox="-5 -5 110 110" aria-hidden="true"><path d="M28 20H98L72 80H2Z" /></svg><span>Parallelogram</span></button><button class="shape-btn" type="button" onclick="addDesignShape('arrow')" aria-label="Add Arrow"><svg viewBox="-5 -5 110 110" aria-hidden="true"><path d="M0 30H60V0L100 50L60 100V70H0Z" /></svg><span>Arrow</span></button><button class="shape-btn" type="button" onclick="addDesignShape('chevron')" aria-label="Add Chevron"><svg viewBox="-5 -5 110 110" aria-hidden="true"><path d="M0 0H40L100 50L40 100H0L60 50Z" /></svg><span>Chevron</span></button><button class="shape-btn" type="button" onclick="addDesignShape('heart')" aria-label="Add Heart"><svg viewBox="-5 -5 110 110" aria-hidden="true"><path d="M50 90C-20 45 5 -10 50 25C95 -10 120 45 50 90Z" /></svg><span>Heart</span></button><button class="shape-btn" type="button" onclick="addDesignShape('cross')" aria-label="Add Cross"><svg viewBox="-5 -5 110 110" aria-hidden="true"><path d="M35 0H65V35H100V65H65V100H35V65H0V35H35Z" /></svg><span>Cross</span></button><button class="shape-btn" type="button" onclick="addDesignShape('speech')" aria-label="Add Speech bubble"><svg viewBox="-5 -5 110 110" aria-hidden="true"><path d="M10 5H90Q100 5 100 15V65Q100 75 90 75H40L15 100V75H10Q0 75 0 65V15Q0 5 10 5Z" /></svg><span>Speech bubble</span></button><button class="shape-btn" type="button" onclick="addDesignShape('drop')" aria-label="Add Teardrop"><svg viewBox="-5 -5 110 110" aria-hidden="true"><path d="M50 0C40 30 10 48 10 65A40 35 0 0 0 90 65C90 48 60 30 50 0Z" /></svg><span>Teardrop</span></button><button class="shape-btn" type="button" onclick="addDesignShape('crescent')" aria-label="Add Crescent"><svg viewBox="-5 -5 110 110" aria-hidden="true"><path d="M75 5A48 48 0 1 0 75 95A50 50 0 0 1 75 5Z" /></svg><span>Crescent</span></button></div>
+        <label>Selected object color</label>
+        <input id="shapeColor" type="color" value="#f97316" style="width:100%;height:42px;margin-bottom:10px" />
+        <button class="btn" type="button" onclick="document.getElementById('designImageInput').click()">+ Add Image / Logo</button>
+        <button class="btn" type="button" onclick="document.getElementById('designVideoInput').click()">+ Add Video</button>
+        <input id="designImageInput" type="file" accept="image/*" hidden />
+        <input id="designVideoInput" type="file" accept="video/mp4,video/webm" hidden />
+        <label>Board background</label>
+        <input id="designBg" type="color" value="#111111" style="width:100%;height:42px" />
+        <button class="btn" type="button" onclick="transparentDesignBg()">Transparent background</button>
+        <button class="btn" type="button" onclick="moveDesignLayer(1)">Bring forward</button>
+        <button class="btn" type="button" onclick="moveDesignLayer(-1)">Send backward</button>
+        <button class="btn danger" type="button" onclick="deleteDesignObject()">Delete selected</button>
+        <details open><summary>Object tools</summary>
+        <div class="tool-row"><button class="btn" onclick="duplicateDesignObject()">Duplicate</button><button class="btn" onclick="toggleDesignLock()">Lock / Unlock</button></div>
+        <div class="tool-row"><button class="btn" onclick="flipDesignObject('flipX')">Flip horizontal</button><button class="btn" onclick="flipDesignObject('flipY')">Flip vertical</button></div>
+        <div class="tool-row"><button class="btn" onclick="groupDesignObjects()">Group</button><button class="btn" onclick="ungroupDesignObjects()">Ungroup</button></div>
+        <div class="tool-row"><button class="btn" onclick="copyDesignObject()">Copy</button><button class="btn" onclick="pasteDesignObject()">Paste</button></div>
+        <label for="designOpacity">Opacity</label><input id="designOpacity" type="range" min="0" max="100" value="100" onchange="setDesignProperty('opacity',Number(this.value)/100)" />
+        <label>Align object to board</label><div class="tool-row"><button class="btn" onclick="alignDesignObject('left')">Left</button><button class="btn" onclick="alignDesignObject('center')">Center</button><button class="btn" onclick="alignDesignObject('right')">Right</button></div>
+        <div class="tool-row"><button class="btn" onclick="alignDesignObject('top')">Top</button><button class="btn" onclick="alignDesignObject('middle')">Middle</button><button class="btn" onclick="alignDesignObject('bottom')">Bottom</button></div>
+        </details>
+        <details open><summary>Layers (top first)</summary><div id="designLayers"></div></details>
+        <label for="designZoom">Board size</label><select id="designZoom" onchange="fitDesignBoard()"><option value="1.4">140% (default)</option value="1">100%</option><option value="0.75">75%</option><option value="0.5">50%</option><option value="fit">Fit screen</option></select>
+        <button class="btn" onclick="exportDesignImage()">Download PNG</button>
+        <p class="hint">Ctrl+Z: undo · Ctrl+Y: redo · Ctrl+D: duplicate · Delete: remove. Double-click text to edit. Drag, resize, and rotate any selected object.</p>
+      </aside>
+      <div class="design-board-wrap"><div class="design-board"><canvas id="designCanvas" width="900" height="500"></canvas></div></div>
+    </div>
+  </section>
+
+  <script>
+    const money = v => new Intl.NumberFormat("en-PH", { style: "currency", currency: "PHP" }).format(v);
+    const escapeHtml = v => {
+      const d = document.createElement("div");
+      d.textContent = v == null ? "" : String(v);
+      return d.innerHTML;
+    };
+
+    let owner = null;
+    let menu = [];
+    let editingMenuId = null;
+    let tables = [];
+    let paymentMethods = [];
+    let pendingMenuImage = "";
+    let pendingPaymentQr = "";
+    let slideTimer = null;
+    let slideIndex = 0;
+    let selectedSlideshowStyle = "fade";
+
+    function token() { return localStorage.getItem("owner_token"); }
+    function authHeaders(json = true) {
+      const t = token();
+      if (!t) { location.href = "/"; return {}; }
+      const h = { Authorization: `Bearer ${t}` };
+      if (json) h["Content-Type"] = "application/json";
+      return h;
+    }
+
+    async function api(path, options = {}) {
+      const wantsJson = !(options.body instanceof FormData);
+      options.headers = { ...authHeaders(wantsJson), ...(options.headers || {}) };
+      const res = await fetch(path, options);
+      if (res.status === 401) {
+        localStorage.removeItem("owner_token");
+        location.href = "/";
+        throw new Error("Please log in again.");
+      }
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.detail || "Request failed.");
+      return data;
+    }
+
+    const designExtraProperties = ["assetType","videoUrl","lockMovementX","lockMovementY","lockScalingX","lockScalingY","lockRotation","borderColor","borderScaleFactor","cornerColor","cornerStrokeColor","transparentCorners","cornerSize","padding"];
+    let designCanvas = null;
+    let designHistory = [];
+    let designFuture = [];
+    let designRestoring = false;
+
+    function designSnapshot() {
+      if (!designCanvas || designRestoring) return;
+      const snapshot = JSON.stringify(designCanvas.toJSON(designExtraProperties));
+      syncDesignTools();
+      syncBackgroundColors();
+      if (designHistory[designHistory.length - 1] === snapshot) return;
+      designHistory.push(snapshot);
+      if (designHistory.length > 40) designHistory.shift();
+      designFuture = [];
+    }
+
+    function syncDesignTools() {
+      if (!designCanvas) return;
+      const item = designCanvas.getActiveObject();
+      const text = item && ["i-text","textbox","text"].includes(item.type);
+      const textColor = document.getElementById("designTextColor");
+      textColor.disabled = !text;
+      if(text && /^#[0-9a-f]{6}$/i.test(item.fill || "")) textColor.value = item.fill;
+      for (const [id,key] of [["designFont","fontFamily"],["designFontSize","fontSize"],["designTextAlign","textAlign"]]) {
+        const input = document.getElementById(id);
+        input.disabled = !text;
+        if (text) input.value = item[key];
+      }
+      document.getElementById("designOpacity").value = Math.round((item?.opacity ?? 1)*100);
+      const color = item?.type === "line" ? item.stroke : item?.fill;
+      if (/^#[0-9a-f]{6}$/i.test(color || "")) document.getElementById("shapeColor").value = color;
+      syncObjectColorEditor("text",textColor.value,!text || !!item?.lockMovementX);
+      syncObjectColorEditor("shape",document.getElementById("shapeColor").value,!!item?.lockMovementX);
+      syncShapeOutlineControls();
+      const layers = document.getElementById("designLayers"); layers.replaceChildren();
+      [...designCanvas.getObjects()].reverse().forEach(object => {
+        const button = document.createElement("button"); button.type = "button"; button.className = "btn";
+        button.textContent = `${object.lockMovementX ? "🔒 " : ""}${object.text || object.assetType || object.type}`;
+        button.setAttribute("aria-pressed", String(object === item));
+        if (object === item) button.classList.add("solid");
+        button.onclick = () => { designCanvas.setActiveObject(object); designCanvas.requestRenderAll(); syncDesignTools(); };
+        layers.appendChild(button);
+      });
+    }
+    function setDesignProperty(key, value) {
+      const item = designCanvas?.getActiveObject();
+      if (!item || item.lockMovementX || designRestoring) return;
+      if (["fontFamily","fontSize","textAlign","fontWeight","fontStyle","underline"].includes(key) && !["text","i-text","textbox"].includes(item.type)) return;
+      if (typeof value === "number" && !Number.isFinite(value)) return;
+      item.set(key,value); item.setCoords(); designCanvas.requestRenderAll(); designSnapshot();
+    }
+    function toggleDesignText(key, on, off) {
+      const item = designCanvas?.getActiveObject(); if(item) setDesignProperty(key,item[key] === on ? off : on);
+    }
+    function flipDesignObject(key) { const item=designCanvas?.getActiveObject(); if(item) setDesignProperty(key,!item[key]); }
+    function toggleDesignLock() {
+      const item = designCanvas?.getActiveObject();
+      if (!item || item.type === "activeSelection" || designRestoring) return;
+      const locked = !item.lockMovementX;
+      item.set({lockMovementX:locked,lockMovementY:locked,lockScalingX:locked,lockScalingY:locked,lockRotation:locked});
+      designCanvas.requestRenderAll(); designSnapshot();
+    }
+    function moveDesignLayer(direction) {
+      const item = designCanvas?.getActiveObject(); if (!item || item.lockMovementX || designRestoring) return;
+      if(direction > 0) designCanvas.bringForward(item); else designCanvas.sendBackwards(item);
+      designCanvas.requestRenderAll(); designSnapshot();
+    }
+    function alignDesignObject(edge) {
+      const item = designCanvas?.getActiveObject(); if(!item || item.lockMovementX || designRestoring) return;
+      const box = item.getBoundingRect(true,true);
+      let dx=0,dy=0;
+      if(edge === "left") dx=-box.left;
+      if(edge === "center") dx=(900-box.width)/2-box.left;
+      if(edge === "right") dx=900-box.width-box.left;
+      if(edge === "top") dy=-box.top;
+      if(edge === "middle") dy=(500-box.height)/2-box.top;
+      if(edge === "bottom") dy=500-box.height-box.top;
+      item.set({left:item.left+dx,top:item.top+dy}); item.setCoords();
+      designCanvas.requestRenderAll(); designSnapshot();
+    }
+    function duplicateDesignObject() {
+      const item = designCanvas?.getActiveObject(); if(!item || designRestoring) return;
+      designRestoring = true;
+      item.clone(copy => {
+        designCanvas.discardActiveObject();
+        copy.set({left:copy.left+20,top:copy.top+20});
+        if(copy.type === "activeSelection") {
+          copy.canvas = designCanvas; copy.forEachObject(object => designCanvas.add(object));
+        } else designCanvas.add(copy);
+        designCanvas.setActiveObject(copy); copy.setCoords();
+        designRestoring=false; designCanvas.requestRenderAll(); designSnapshot();
+      },designExtraProperties);
+    }
+    let designClipboard = null;
+    function copyDesignObject() {
+      const item = designCanvas?.getActiveObject(); if(!item || designRestoring) return;
+      item.clone(copy => { designClipboard=copy;toast("Object copied.",true); },designExtraProperties);
+    }
+    function pasteDesignObject() {
+      if(!designClipboard || designRestoring) return;
+      designRestoring=true;
+      designClipboard.clone(copy => {
+        designCanvas.discardActiveObject();copy.set({left:copy.left+20,top:copy.top+20});
+        if(copy.type === "activeSelection") {copy.canvas=designCanvas;copy.forEachObject(object=>designCanvas.add(object));}
+        else designCanvas.add(copy);
+        designCanvas.setActiveObject(copy);copy.setCoords();designRestoring=false;designCanvas.requestRenderAll();designSnapshot();
+      },designExtraProperties);
+    }
+    function groupDesignObjects() {
+      const item=designCanvas?.getActiveObject();
+      if(!item || item.type !== "activeSelection" || designRestoring) {toast("Hold Shift and select multiple objects to group.");return;}
+      if(item.getObjects().some(object=>object.lockMovementX || object.assetType === "video")) {toast("Unlock objects and exclude videos before grouping.");return;}
+      designRestoring=true; item.toGroup(); designRestoring=false; designCanvas.requestRenderAll();designSnapshot();
+    }
+    function ungroupDesignObjects() {
+      const item=designCanvas?.getActiveObject();
+      if(!item || item.type !== "group" || item.assetType === "video" || item.lockMovementX || designRestoring) return;
+      designRestoring=true;item.toActiveSelection();designRestoring=false;designCanvas.requestRenderAll();designSnapshot();
+    }
+    function exportDesignImage() {
+      if (!designCanvas) return;
+      try {
+        const link=document.createElement("a"); link.download="restaurant-design.png";
+        link.href=designCanvas.toDataURL({format:"png",multiplier:2}); link.click();
+        toast("PNG exported. Video objects appear as placeholders.",true);
+      } catch(e) { toast("Could not export. Try using uploaded local images."); }
+    }
+    document.addEventListener("keydown", event => {
+      if(!designCanvas || document.getElementById("designRoom").hidden || designRestoring) return;
+      if(event.target.closest("input,textarea,select,[contenteditable=true]") || designCanvas.getActiveObject()?.isEditing) return;
+      if([...document.querySelectorAll(".studio-panel,.design-slideshow")].some(panel => !panel.hidden)) return;
+      const modifier=event.ctrlKey || event.metaKey;
+      if(modifier && event.key.toLowerCase() === "z") {event.preventDefault(); event.shiftKey ? redoDesign() : undoDesign();}
+      else if(modifier && event.key.toLowerCase() === "y") {event.preventDefault();redoDesign();}
+      else if(modifier && event.key.toLowerCase() === "d") {event.preventDefault();duplicateDesignObject();}
+      else if(modifier && event.key.toLowerCase() === "c") {event.preventDefault();copyDesignObject();}
+      else if(modifier && event.key.toLowerCase() === "v") {event.preventDefault();pasteDesignObject();}
+      else if(event.key === "Delete" || event.key === "Backspace") {event.preventDefault();deleteDesignObject();}
+    });
+
+    function fitDesignBoard() {
+      if (!designCanvas || document.getElementById("designRoom").hidden) return;
+      const wrap = document.querySelector(".design-board-wrap");
+      const style = getComputedStyle(wrap);
+      const width = wrap.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
+      const height = wrap.clientHeight - parseFloat(style.paddingTop) - parseFloat(style.paddingBottom);
+      if (width <= 0 || height <= 0) return;
+      const zoom = document.getElementById("designZoom").value;
+      const scale = Math.min(zoom === "fit" ? Infinity : Number(zoom), width / 900, height / 500);
+      const board = document.querySelector(".design-board");
+      board.style.width = `${900 * scale}px`;
+      board.style.height = `${500 * scale}px`;
+      // Scale the display only: saved designs keep their original coordinates.
+      designCanvas.setDimensions({ width: `${900 * scale}px`, height: `${500 * scale}px` }, { cssOnly: true });
+      designCanvas.calcOffset();
+    }
+
+    function initDesignCanvas() {
+      if (designCanvas) return;
+      designCanvas = new fabric.Canvas("designCanvas", { preserveObjectStacking:true, backgroundColor:"#f4efe5" });
+      ["selection:created","selection:updated","selection:cleared"].forEach(event => designCanvas.on(event,syncDesignTools));
+      const boardObserver = new ResizeObserver(fitDesignBoard);
+      boardObserver.observe(document.querySelector(".design-board-wrap"));
+      ["object:added", "object:modified", "object:removed", "text:changed"].forEach(event => designCanvas.on(event, designSnapshot));
+      document.getElementById("designBg").addEventListener("input", event => {
+        designCanvas.setBackgroundColor(event.target.value, designCanvas.renderAll.bind(designCanvas));
+        designSnapshot();
+      });
+      document.getElementById("shapeColor").addEventListener("input", event => {
+        const item = designCanvas.getActiveObject();
+        if (!item || item.lockMovementX || designRestoring) return;
+        if (item.type === "line") item.set("stroke", event.target.value);
+        else item.set("fill", event.target.value);
+        designCanvas.requestRenderAll(); designSnapshot();
+      });
+      document.getElementById("designImageInput").addEventListener("change", event => uploadDesignAsset(event, false));
+      document.getElementById("designVideoInput").addEventListener("change", event => uploadDesignAsset(event, true));
+    }
+
+    function openDesignRoom() {
+      if (!window.fabric) { toast("Design editor is still loading."); return; }
+      document.getElementById("designRoom").hidden = false;
+      initDesignCanvas();
+      setCanvasToolsVisible(true);
+      requestAnimationFrame(fitDesignBoard);
+      const saved = owner?.custom_design?.bannerDraft?.slides?.[0] || owner?.custom_design?.canvas;
+      initBannerDraft();
+      designRestoring = true;
+      if (Array.isArray(saved?.objects)) {
+        designCanvas.loadFromJSON(saved, () => {
+          designCanvas.renderAll(); designRestoring = false; designSnapshot();
+          document.getElementById("designBg").value = /^#[0-9a-f]{6}$/i.test(designCanvas.backgroundColor || "") ? designCanvas.backgroundColor : "#111111";
+        });
+      } else {
+        designRestoring = false;
+        applyElegantTemplate(true);
+      }
+    }
+
+    function syncTopToolbar() {
+      document.querySelectorAll(".design-top [data-studio-panel]").forEach(button => {
+        const panel = document.getElementById(button.dataset.studioPanel);
+        button.setAttribute("aria-expanded", String(!!panel && !panel.hidden));
+      });
+    }
+    function showDesignPage() {
+      document.querySelectorAll(".studio-panel").forEach(panel => panel.hidden = true);
+      closeEditorTool();
+      setCanvasToolsVisible(true);
+      syncTopToolbar();
+    }
+    function setCanvasToolsVisible(visible) {
+      document.getElementById("designPageButton").setAttribute("aria-pressed", String(visible));
+      document.getElementById("designRoom").classList.toggle("canvas-tools-visible",visible);
+      const tooltip=document.getElementById("editorToolTooltip");if(tooltip)tooltip.hidden=true;
+      requestAnimationFrame(()=>{if(designCanvas)fitDesignBoard();});
+    }
+    function toggleSlideshowPanel(force) {
+      const open = typeof force === "boolean" ? force : activeEditorTool !== "slideshow";
+      if(open) {showDesignPage();openEditorTool("slideshow",true);}
+      else if(activeEditorTool === "slideshow") closeEditorTool();
+    }
+    function toggleStudioPanel(id, force) {
+      const target = document.getElementById(id);
+      const shouldOpen = typeof force === "boolean" ? force : target.hidden;
+      document.querySelectorAll(".studio-panel").forEach(item => item.hidden = true);
+      closeEditorTool();
+      target.hidden = !shouldOpen;
+      setCanvasToolsVisible(!shouldOpen);
+      syncTopToolbar();
+      if (id === "previewPanel" && shouldOpen) renderPreview();
+      if (id === "menuPanel" && shouldOpen) {
+        document.getElementById("menuCustomerPreview").style.width = "100%";
+        document.getElementById("menuPhonePreview").setAttribute("aria-pressed","false");
+        refreshMenuCustomerPage();
+      }
+    }
+    let activeEditorTool = null;
+    const editorToolGroups = [
+      ["image","Add Image / Logo","image"], ["video","Add Video","video"],
+      ["text","Text","type"],
+      ["transform","Resize","move"], ["slideshow","Slideshow","gallery-horizontal-end"],
+      ["background","Background","paint-bucket"], ["shapes","Shapes","shapes"],
+      ["templates","Templates","layout-template"], ["export","Export","download"]
+    ];
+    function closeEditorTool() {
+      activeEditorTool = null;
+      document.getElementById("editorToolPanel").hidden = true;
+      document.querySelector(".design-work").classList.remove("tool-panel-open");
+      document.querySelectorAll(".tool-section").forEach(panel=>panel.hidden=true);
+      document.querySelectorAll(".tool-rail [aria-expanded]").forEach(button=>button.setAttribute("aria-expanded","false"));
+      document.getElementById("slideshowPanel").hidden=true;
+      setCanvasToolsVisible(![...document.querySelectorAll(".studio-panel")].some(panel => !panel.hidden));
+      syncTopToolbar();
+      requestAnimationFrame(()=>{if(designCanvas)fitDesignBoard();});
+    }
+    function openEditorTool(id, force=false) {
+      if(!force && activeEditorTool===id) {closeEditorTool();return;}
+      closeEditorTool();
+      document.querySelectorAll(".studio-panel").forEach(panel=>panel.hidden=true);
+      activeEditorTool=id;
+      document.getElementById("editorToolPanel").hidden=false;
+      document.getElementById("editorToolTitle").textContent=editorToolGroups.find(group=>group[0]===id)[1];
+      document.getElementById(`tool-section-${id}`).hidden=false;
+      document.querySelector(".design-work").classList.add("tool-panel-open");
+      document.getElementById(`tool-button-${id}`).setAttribute("aria-expanded","true");
+      document.getElementById("slideshowPanel").hidden=id!=="slideshow";
+      syncTopToolbar();
+      requestAnimationFrame(()=>{if(designCanvas)fitDesignBoard();});
+    }
+    function setupEditorSidebar() {
+      const source=document.getElementById("legacyDesignTools");
+      if(!source) return;
+      const rail=document.getElementById("editorToolRail");
+      const panels={};
+      // Retain the controls for existing event bindings without showing a tool button.
+      panels.object = document.createElement("section");
+      panels.object.hidden = true;
+      document.getElementById("editorToolContents").appendChild(panels.object);
+      editorToolGroups.forEach(([id,title,icon])=>{
+        const button=document.createElement("button");button.type="button";button.className="tool-icon";
+        button.id=`tool-button-${id}`;button.title=title;button.setAttribute("aria-label",title);
+        button.setAttribute("aria-expanded","false");button.setAttribute("aria-controls",`tool-section-${id}`);
+        button.innerHTML=`<img src="/static/vendor/lucide/${icon}.svg" alt="" />`;
+        button.onclick=()=>openEditorTool(id);rail.appendChild(button);
+        const panel=document.createElement("section");panel.className="tool-section";panel.id=`tool-section-${id}`;panel.hidden=true;
+        document.getElementById("editorToolContents").appendChild(panel);panels[id]=panel;
+      });
+      const move=(id,node)=>{if(node)panels[id].appendChild(node);};
+      const control=(id,selector)=>{
+        const node=source.querySelector(selector);if(!node)return;
+        const previous=node.previousElementSibling;
+        if(previous?.tagName==="LABEL")move(id,previous);
+        move(id,node);
+      };
+      const action=(id,prefix)=>control(id,`[onclick^="${prefix}"]`);
+      control("templates",".template-card");
+      populateDesignTemplates(panels.templates);
+      action("text","addDesignText(");
+      const textDetails=source.querySelector("details");
+      [...textDetails.children].filter(node=>node.tagName!=="SUMMARY").forEach(node=>move("text",node));textDetails.remove();
+      control("shapes",".shape-grid");control("shapes","#shapeColor");
+      action("image","document.getElementById('designImageInput')");control("image","#designImageInput");
+      action("video","document.getElementById('designVideoInput')");control("video","#designVideoInput");
+      control("background","#designBg");
+      const colors=document.createElement("div"); colors.id="backgroundColorEditor";
+      colors.innerHTML=`<div id="backgroundSwatches" class="background-swatches"></div>`;
+      move("background",colors);
+      ["#ffffff","#f4efe5","#111111","#173d31","#f97316","#c69a48","#ef4444","#3b82f6","#a855f7","#ec4899","#22c55e","#06b6d4"].forEach(color=>{
+        const swatch=document.createElement("button");swatch.type="button";swatch.style.background=color;swatch.title=color;swatch.setAttribute("aria-label",`Background ${color}`);swatch.onclick=()=>setBackgroundColor(color);document.getElementById("backgroundSwatches").appendChild(swatch);
+      });
+      action("background","transparentDesignBg(");
+      action("object","moveDesignLayer(1)");action("object","moveDesignLayer(-1)");
+      [["Undo", "undo-2", undoDesign], ["Redo", "redo-2", redoDesign]].forEach(([label, icon, action]) => {
+        const button = document.createElement("button");
+        button.type = "button"; button.className = "tool-icon";
+        button.title = label; button.setAttribute("aria-label", label);
+        button.innerHTML = `<img src="/static/vendor/lucide/${icon}.svg" alt="" />`;
+        button.onclick = action; rail.appendChild(button);
+      });
+      const deletion=source.querySelector('[onclick="deleteDesignObject()"]');
+      deletion.className="tool-icon tool-danger";deletion.title="Clear Page";deletion.setAttribute("aria-label","Clear Page");
+      deletion.setAttribute("onclick","clearDesignPage()");
+      deletion.innerHTML='<img src="/static/vendor/lucide/eraser.svg" alt="" />';rail.appendChild(deletion);
+      const saveButton=document.createElement("button");saveButton.type="button";saveButton.className="tool-icon";
+      saveButton.title="Save Draft";saveButton.setAttribute("aria-label","Save Draft");
+      saveButton.style.background="#ff6a1a30";
+      saveButton.innerHTML='<img src="/static/vendor/lucide/save.svg" alt="" />';
+      saveButton.onclick=()=>saveCompanyDesign();rail.appendChild(saveButton);
+      const objectDetails=source.querySelector("details");
+      [...objectDetails.children].filter(node=>node.tagName!=="SUMMARY").forEach(node=>{
+        const handler=node.querySelector("[onclick]")?.getAttribute("onclick") || "";
+        move("object",node);
+      });objectDetails.remove();
+      const layerList = source.querySelector("#designLayers");
+      layerList.hidden = true;
+      document.getElementById("editorToolContents").appendChild(layerList);
+      control("transform","#designZoom");action("export","exportDesignImage(");
+      // Flip controls stay in Object Tools, alongside the other existing object actions.
+      const transformHint=document.createElement("p");transformHint.className="hint";transformHint.textContent="Drag the selected object's handles to resize or rotate. Board size changes only your editing view.";move("transform",transformHint);
+      move("slideshow",document.getElementById("slideshowPanel"));
+      const hint=source.querySelector("p.hint");move("object",hint);
+      installObjectColorEditor("text",document.getElementById("designTextColor"));
+      installObjectColorEditor("shape",document.getElementById("shapeColor"));
+      const outline = document.createElement("fieldset");
+      outline.id = "shapeOutlineControls";
+      outline.className = "object-color-editor";
+      outline.innerHTML = `<legend>Shape outline</legend>
+        <label for="shapeLineWidth">Line Thickness (px)</label>
+        <input id="shapeLineWidth" type="range" min="0" max="100" step="1" value="0" style="width:100%;accent-color:#f97316" oninput="applyShapeOutline('width', this.value)" />
+        <label for="shapeLineColor">Line Color</label>
+        <input id="shapeLineColor" type="color" value="#173d31" style="width:100%;height:42px" oninput="applyShapeOutline('color', this.value)" />
+        <label style="display:flex;align-items:center;gap:8px"><input id="shapeNoFill" type="checkbox" style="width:auto" onchange="applyShapeOutline('fill', this.checked)" /> No Fill (transparent inside)</label>
+        <p class="hint">Select a shape to edit its outline. Line shapes have no fill.</p>`;
+      move("shapes", outline);
+      source.remove();
+      const tooltip = document.createElement("div");
+      tooltip.id = "editorToolTooltip";
+      tooltip.className = "editor-tool-tooltip";
+      tooltip.setAttribute("role", "tooltip");
+      tooltip.hidden = true;
+      document.body.appendChild(tooltip);
+      const hideTooltip = () => { tooltip.hidden = true; };
+      document.querySelectorAll(".tool-icon").forEach(button => {
+        const label = button.getAttribute("title") || button.getAttribute("aria-label");
+        button.removeAttribute("title");
+        const showTooltip = () => {
+          const rect = button.getBoundingClientRect();
+          tooltip.textContent = label;
+          tooltip.hidden = false;
+          tooltip.style.left = `${Math.max(4, Math.min(rect.right + 8, window.innerWidth - tooltip.offsetWidth - 4))}px`;
+          tooltip.style.top = `${Math.max(4, Math.min(rect.top + (rect.height - tooltip.offsetHeight) / 2, window.innerHeight - tooltip.offsetHeight - 4))}px`;
+        };
+        button.addEventListener("mouseenter", showTooltip);
+        button.addEventListener("mouseleave", hideTooltip);
+        button.addEventListener("focus", showTooltip);
+        button.addEventListener("blur", hideTooltip);
+        button.addEventListener("click", hideTooltip);
+      });
+      rail.addEventListener("scroll", hideTooltip);
+      window.addEventListener("resize", hideTooltip);
+    }
+
+    function setupStudioWorkspace() {
+      setupEditorSidebar();
+      const header = document.querySelector(".design-top");
+      const updatePanelOffset = () => {
+        if (header.offsetHeight) document.getElementById("designRoom").style.setProperty("--studio-header-height", `${header.offsetHeight}px`);
+      };
+      new ResizeObserver(updatePanelOffset).observe(header);
+      updatePanelOffset();
+      const moves = [
+        ["brandBuilder","brandPanelBody"], ["menuBuilder","menuPanelBody"],
+        ["tablesBuilder","tablesPanelBody"], ["paymentsBuilder","paymentsPanelBody"]
+      ];
+      moves.forEach(([source,target]) => document.getElementById(target).appendChild(document.getElementById(source)));
+      document.getElementById("previewPanelBody").appendChild(document.querySelector(".preview-pane .device"));
+      document.body.classList.add("studio-only");
+      document.title = "Design Your Page";
+    }
+    function closeDesignRoom() { toggleSlideshowPanel(false); document.getElementById("designRoom").hidden = true; }
+    function addDesignText() {
+      if (!designCanvas || designRestoring) return;
+      const center = designCanvas.getCenter();
+      let fill = "#17212b";
+      // Sample the rendered background, including shapes behind the new text.
+      try {
+        designCanvas.renderAll();
+        const canvas = designCanvas.lowerCanvasEl;
+        const pixel = canvas.getContext("2d").getImageData(Math.floor(canvas.width / 2), Math.floor(canvas.height / 2), 1, 1).data;
+        const brightness = (pixel[0] * 299 + pixel[1] * 587 + pixel[2] * 114) / 1000;
+        if (pixel[3] > 128 && brightness < 140) fill = "#ffffff";
+      } catch (_) { /* A dark default remains readable on the cream board. */ }
+      const item = new fabric.Textbox("Your text", {
+        left:center.left, top:center.top, originX:"center", originY:"center",
+        width:300, fill, fontSize:42, fontFamily:"Arial", fontWeight:"bold",
+        borderColor:"#f97316", borderScaleFactor:3, cornerColor:"#ffffff",
+        cornerStrokeColor:"#f97316", transparentCorners:false, cornerSize:14, padding:10
+      });
+      designCanvas.add(item).setActiveObject(item);
+      item.setCoords();
+      designCanvas.requestRenderAll();
+    }
+    function addDesignBox() {
+      addDesignShape("box");
+    }
+    function installObjectColorEditor(kind, input) {
+      const fieldset=document.createElement("fieldset");
+      fieldset.id=`${kind}ColorEditor`;fieldset.className="object-color-editor";
+      fieldset.setAttribute("aria-label",`${kind === "text" ? "Text" : "Shape"} color controls`);
+      const swatches=document.createElement("div");swatches.className="background-swatches";
+      fieldset.appendChild(swatches);
+      ["#ffffff","#f4efe5","#111111","#173d31","#f97316","#c69a48","#ef4444","#3b82f6","#a855f7","#ec4899","#22c55e","#06b6d4"].forEach(color=>{
+        const button=document.createElement("button");button.type="button";button.style.background=color;
+        button.title=color;button.setAttribute("aria-label",`${kind} color ${color}`);
+        button.onclick=()=>applyObjectEditorColor(kind,color);swatches.appendChild(button);
+      });
+      input.after(fieldset);
+      input.addEventListener("input",()=>syncObjectColorEditor(kind,input.value,input.disabled || !!designCanvas?.getActiveObject()?.lockMovementX));
+      syncObjectColorEditor(kind,input.value,kind === "text");
+    }
+    function syncObjectColorEditor(kind,color,disabled=false) {
+      const fieldset=document.getElementById(`${kind}ColorEditor`);if(!fieldset)return;
+      fieldset.disabled=disabled;
+      if(!/^#[0-9a-f]{6}$/i.test(color || ""))return;
+    }
+    function applyObjectEditorColor(kind,color) {
+      const input=document.getElementById(kind === "text" ? "designTextColor" : "shapeColor");
+      if(!/^#[0-9a-f]{6}$/i.test(color)) {toast("Use a hex color such as #173d31.");syncObjectColorEditor(kind,input.value);return;}
+      const item=designCanvas?.getActiveObject();
+      if(item?.lockMovementX || designRestoring)return;
+      if(kind === "text" && (!item || !["text","textbox","i-text"].includes(item.type)))return;
+      input.value=color;
+      input.dispatchEvent(new Event("input",{bubbles:true}));
+      syncObjectColorEditor(kind,input.value);
+    }
+    function syncBackgroundColors() {
+      const color=designCanvas?.backgroundColor;
+      if(/^#[0-9a-f]{6}$/i.test(color || "")) document.getElementById("designBg").value=color;
+    }
+    function setBackgroundColor(color) {
+      if(!/^#[0-9a-f]{6}$/i.test(color)) {toast("Use a hex color such as #173d31.");syncBackgroundColors();return;}
+      if(!designCanvas)return;
+      designCanvas.setBackgroundColor(color,designCanvas.renderAll.bind(designCanvas));designSnapshot();
+    }
+    const designShapePaths = {"diamond": "M50 5L90 50L50 95L10 50Z", "trapezoid": "M25 20H75L98 80H2Z", "parallelogram": "M28 20H98L72 80H2Z", "arrow": "M0 30H60V0L100 50L60 100V70H0Z", "chevron": "M0 0H40L100 50L40 100H0L60 50Z", "heart": "M50 90C-20 45 5 -10 50 25C95 -10 120 45 50 90Z", "cross": "M35 0H65V35H100V65H65V100H35V65H0V35H35Z", "speech": "M10 5H90Q100 5 100 15V65Q100 75 90 75H40L15 100V75H10Q0 75 0 65V15Q0 5 10 5Z", "drop": "M50 0C40 30 10 48 10 65A40 35 0 0 0 90 65C90 48 60 30 50 0Z", "crescent": "M75 5A48 48 0 1 0 75 95A50 50 0 0 1 75 5Z"};
+    function selectedOutlineShape() {
+      const item = designCanvas?.getActiveObject();
+      return item && ["rect","circle","triangle","ellipse","polygon","polyline","path","line"].includes(item.type) ? item : null;
+    }
+    function syncShapeOutlineControls() {
+      const panel = document.getElementById("shapeOutlineControls");
+      if (!panel) return;
+      const item = selectedOutlineShape();
+      panel.disabled = !item || !!item.lockMovementX;
+      if (!item) return;
+      document.getElementById("shapeLineWidth").value = item.stroke ? item.strokeWidth : 0;
+      if (/^#[0-9a-f]{6}$/i.test(item.stroke || "")) document.getElementById("shapeLineColor").value = item.stroke;
+      const checkbox = document.getElementById("shapeNoFill");
+      checkbox.checked = item.type === "line" || !item.fill || item.fill === "transparent" || item.fill === "rgba(0,0,0,0)";
+      checkbox.disabled = item.type === "line";
+    }
+    function applyShapeOutline(kind, value) {
+      const item = selectedOutlineShape();
+      if (!item || item.lockMovementX || designRestoring) return;
+      if (kind === "width" && (!Number.isFinite(Number(value)) || Number(value) < 0 || Number(value) > 100)) {
+        syncShapeOutlineControls(); return;
+      }
+      designSnapshot();
+      if (kind === "width") item.set({strokeWidth:Number(value), stroke:item.stroke || document.getElementById("shapeLineColor").value});
+      if (kind === "color") item.set({stroke:value, strokeWidth:item.strokeWidth > 0 ? item.strokeWidth : 2});
+      if (kind === "fill" && item.type !== "line") {
+        item.set("fill", value ? null : document.getElementById("shapeColor").value);
+        if (value && (!item.stroke || !item.strokeWidth)) item.set({stroke:document.getElementById("shapeLineColor").value, strokeWidth:2});
+      }
+      item.setCoords();
+      designCanvas.requestRenderAll();
+      designSnapshot();
+      syncShapeOutlineControls();
+    }
+    function addDesignShape(type) {
+      const color = document.getElementById("shapeColor").value;
+      let item;
+      if (type === "circle") item = new fabric.Circle({ left:180, top:120, radius:80, fill:color });
+      else if (type === "triangle") item = new fabric.Triangle({ left:180, top:110, width:180, height:160, fill:color });
+      else if (type === "line") item = new fabric.Line([180,180,430,180], { stroke:color, strokeWidth:10, strokeLineCap:"round" });
+      else if (type === "round") item = new fabric.Rect({ left:160, top:120, width:260, height:150, fill:color, rx:32, ry:32 });
+      else if (type === "ellipse") item = new fabric.Ellipse({left:180,top:120,rx:110,ry:65,fill:color});
+      else if (["pentagon","hexagon","octagon"].includes(type)) {
+        const sides={pentagon:5,hexagon:6,octagon:8}[type];
+        item=new fabric.Polygon(Array.from({length:sides},(_,i)=>({x:90+90*Math.cos(i*2*Math.PI/sides-Math.PI/2),y:90+90*Math.sin(i*2*Math.PI/sides-Math.PI/2)})),{left:180,top:110,fill:color});
+      }
+      else if (designShapePaths[type]) item=new fabric.Path(designShapePaths[type],{left:180,top:110,fill:color});
+      else if (type === "star") {
+        const points=[]; for(let i=0;i<10;i++){const radius=i%2===0?90:40,angle=-Math.PI/2+i*Math.PI/5;points.push({x:radius*Math.cos(angle),y:radius*Math.sin(angle)});}
+        item = new fabric.Polygon(points, { left:180, top:100, fill:color });
+      } else item = new fabric.Rect({ left:160, top:120, width:260, height:150, fill:color });
+      designCanvas.add(item).setActiveObject(item); designCanvas.requestRenderAll();
+    }
+    function populateDesignTemplates(panel) {
+      const hint=document.createElement("p");hint.className="hint";hint.textContent="10 editable designs. Applying a template replaces the board; Undo restores it.";panel.prepend(hint);
+      restaurantTemplates.forEach(template=>{
+        const button=document.createElement("button");button.type="button";button.className="template-card";button.style.marginTop="12px";
+        button.setAttribute("aria-label",`Apply ${template.name} template`);
+        const preview=document.createElement("img");preview.alt="";preview.style.cssText="display:block;width:100%;height:auto;border-radius:8px;margin-bottom:8px";
+        const title=document.createElement("strong");title.textContent=template.name;
+        const description=document.createElement("small");description.textContent=template.description;
+        button.append(preview,title,description);button.onclick=()=>applyRestaurantTemplate(template.id);panel.appendChild(button);
+        const canvas=new fabric.StaticCanvas(document.createElement("canvas"),{width:225,height:125,backgroundColor:template.bg,enableRetinaScaling:false});
+        canvas.setZoom(.25);buildRestaurantTemplate(template.id,"Your Business Name","").forEach(item=>canvas.add(item));canvas.renderAll();
+        preview.src=canvas.toDataURL({format:"png"});canvas.dispose();
+      });
+    }
+    function applyRestaurantTemplate(id) {
+      const template=restaurantTemplates.find(item=>item.id===id);
+      if(!template || !designCanvas || designRestoring)return;
+      const objects=buildRestaurantTemplate(id,"Your Business Name",owner?.about_text || "");
+      designSnapshot();designRestoring=true;designCanvas.clear();
+      designCanvas.setBackgroundColor(template.bg,()=>{});
+      objects.forEach(item=>designCanvas.add(item));
+      designRestoring=false;designCanvas.discardActiveObject();designCanvas.requestRenderAll();designSnapshot();
+      toast(`${template.name} applied. Edit any text or shape, then Save Design.`,true);
+    }
+    function applyElegantTemplate(automatic = false) {
+      if (!designCanvas || designRestoring) return;
+      designSnapshot();
+      designRestoring = true;
+      designCanvas.clear();
+      designCanvas.setBackgroundColor("#f4efe5", () => {});
+      const restaurant = "YOUR BUSINESS NAME";
+      const tagline = owner?.about_text || "Seasonal plates, thoughtfully made.";
+      const objects = [
+        new fabric.Rect({left:0,top:0,width:342,height:500,fill:"#173d31",selectable:true}),
+        new fabric.Rect({left:58,top:76,width:62,height:4,fill:"#c69a48"}),
+        new fabric.IText("WELCOME TO",{left:58,top:98,fill:"#d8c69f",fontFamily:"Arial",fontSize:17,fontWeight:"bold",charSpacing:220}),
+        new fabric.Textbox(restaurant,{left:55,top:142,width:255,fill:"#fffaf0",fontFamily:"Georgia",fontSize:44,fontWeight:"bold",lineHeight:.92}),
+        new fabric.Textbox(tagline,{left:58,top:324,width:235,fill:"#d7ded8",fontFamily:"Arial",fontSize:17,lineHeight:1.35}),
+        new fabric.Circle({left:548,top:60,radius:128,fill:"#c69a48",opacity:.18}),
+        new fabric.Circle({left:612,top:118,radius:95,fill:"rgba(0,0,0,0)",stroke:"#c69a48",strokeWidth:3}),
+        new fabric.IText("FRESH",{left:418,top:105,fill:"#173d31",fontFamily:"Georgia",fontSize:76,fontWeight:"bold"}),
+        new fabric.IText("LOCAL",{left:480,top:185,fill:"#c07b2c",fontFamily:"Georgia",fontSize:76,fontStyle:"italic"}),
+        new fabric.Textbox("GOOD FOOD. GOOD COMPANY.",{left:458,top:302,width:350,fill:"#173d31",fontFamily:"Arial",fontSize:19,fontWeight:"bold",charSpacing:120,textAlign:"center"}),
+        new fabric.Rect({left:548,top:358,width:190,height:54,fill:"#173d31",rx:27,ry:27}),
+        new fabric.IText("VIEW OUR MENU",{left:581,top:376,fill:"#fffaf0",fontFamily:"Arial",fontSize:16,fontWeight:"bold"})
+      ];
+      objects.forEach(item => designCanvas.add(item));
+      designRestoring = false;
+      designCanvas.discardActiveObject();
+      designCanvas.requestRenderAll();
+      designSnapshot();
+      document.getElementById("designBg").value = "#f4efe5";
+      toast("Elegant Editorial template applied. Edit any text or shape.", true);
+    }
+    function clearDesignPage() {
+      if (!designCanvas || designRestoring) return;
+      designSnapshot();
+      designRestoring = true;
+      designCanvas.discardActiveObject();
+      designCanvas.clear();
+      designCanvas.setBackgroundColor("#f4efe5", () => {});
+      designRestoring = false;
+      designCanvas.requestRenderAll();
+      designSnapshot();
+      toast("Page cleared. Use Undo to restore it.", true);
+    }
+    function deleteDesignObject() {
+      if (!designCanvas || designRestoring) return;
+      const items = designCanvas.getActiveObjects().filter(item => !item.lockMovementX);
+      designRestoring = true;
+      designCanvas.discardActiveObject(); items.forEach(item => designCanvas.remove(item));
+      designRestoring = false; designCanvas.requestRenderAll(); designSnapshot();
+    }
+    function transparentDesignBg() { designCanvas.setBackgroundColor("rgba(0,0,0,0)", designCanvas.renderAll.bind(designCanvas)); designSnapshot(); }
+
+    async function uploadDesignAsset(event, video) {
+      const file = event.target.files?.[0]; if (!file) return;
+      try {
+        const data = await uploadFile(video ? "design_video" : "design", file);
+        if (video) {
+          const box = new fabric.Rect({ width:360, height:200, fill:"#090909", stroke:"#f97316", strokeWidth:4, rx:14, ry:14 });
+          const label = new fabric.Text("VIDEO", { fill:"#ffffff", fontSize:32, fontWeight:"bold", originX:"center", originY:"center" });
+          const group = new fabric.Group([box,label], { left:180, top:130, assetType:"video", videoUrl:data.url });
+          designCanvas.add(group).setActiveObject(group); designCanvas.requestRenderAll();
+        } else {
+          fabric.Image.fromURL(data.url, image => { image.scaleToWidth(320); image.set({left:180,top:100}); designCanvas.add(image).setActiveObject(image); designCanvas.requestRenderAll(); });
+        }
+        toast(video ? "Video added." : "Image added.", true);
+      } catch (error) { toast(error.message); }
+      event.target.value = "";
+    }
+
+    let bannerSlides = [], bannerSlideIndex = 0, bannerBusy = false, draftPlayer = null;
+    function initBannerDraft() {
+      bannerSlides = JSON.parse(JSON.stringify(owner?.custom_design?.bannerDraft?.slides || []));
+      bannerSlideIndex = 0;
+      document.getElementById("bannerSeconds").value = owner?.custom_design?.bannerDraft?.seconds || 4;
+      renderBannerSlides();
+    }
+    function captureBannerSlide() {
+      if (!designCanvas || designRestoring) return;
+      bannerSlides[bannerSlideIndex] = designCanvas.toJSON(designExtraProperties);
+      renderBannerSlides();
+    }
+    function renderBannerSlides() {
+      document.getElementById("bannerSlideList").innerHTML = Array.from({length:Math.max(1,bannerSlides.length)},(_,i)=>
+        `<button class="btn ${i===bannerSlideIndex?'solid':''}" style="margin:3px" onclick="selectBannerSlide(${i})">Slide ${i+1}</button>`).join("");
+    }
+    function selectBannerSlide(index) {
+      if (designRestoring || bannerBusy) return;
+      captureBannerSlide(); bannerSlideIndex=index;
+      restoreDesign(bannerSlides[index],true); renderBannerSlides();
+      // History belongs to one slide, preventing Undo from replacing a different slide.
+    }
+    function addBannerSlide() {
+      if (designRestoring || bannerBusy) return;
+      captureBannerSlide();
+      if (bannerSlides.length >= 20) {toast("Up to 20 slides.");return;}
+      bannerSlideIndex=bannerSlides.length;
+      bannerSlides.push({version:"5.3.0",objects:[],background:"#f4efe5"});
+      restoreDesign(bannerSlides[bannerSlideIndex],true);renderBannerSlides();
+    }
+    function removeBannerSlide() {
+      if (designRestoring || bannerBusy || bannerSlides.length < 2) {toast("Keep at least one slide.");return;}
+      bannerSlides.splice(bannerSlideIndex,1);bannerSlideIndex=Math.min(bannerSlideIndex,bannerSlides.length-1);
+      restoreDesign(bannerSlides[bannerSlideIndex],true);renderBannerSlides();
+    }
+    function bannerDraft() {
+      captureBannerSlide();
+      return {slides:JSON.parse(JSON.stringify(bannerSlides)),seconds:Math.min(60,Math.max(2,Number(document.getElementById("bannerSeconds").value)||4))};
+    }
+    async function saveCompanyDesign() {
+      if (bannerBusy || designRestoring) return;
+      bannerBusy=true;
+      try {
+        const draft=bannerDraft();
+        owner=await api("/api/owner/site",{method:"PATCH",body:JSON.stringify({custom_design:{...owner.custom_design,bannerDraft:draft}})});
+        toast("Draft saved. Customer banner is unchanged.",true);
+      } catch(error) {toast(error.message);} finally {bannerBusy=false;}
+    }
+    async function publishBannerDraft() {
+      if (bannerBusy || designRestoring) return;
+      bannerBusy=true;
+      try {
+        const draft=bannerDraft();
+        owner=await api("/api/owner/site",{method:"PATCH",body:JSON.stringify({custom_design:{...owner.custom_design,bannerDraft:draft,bannerPublished:draft}})});
+        refreshMenuCustomerPage();toast("Menu banner published.",true);
+      } catch(error) {toast(error.message);} finally {bannerBusy=false;}
+    }
+    function previewBannerDraft() {
+      if (designRestoring) return;
+      const dialog=document.getElementById("bannerPreviewDialog");dialog.showModal();
+      draftPlayer?.destroy();draftPlayer=mountBannerPlayer(document.getElementById("bannerDraftPreview"),bannerDraft());
+    }
+    function closeBannerPreview() {draftPlayer?.destroy();draftPlayer=null;document.getElementById("bannerPreviewDialog").close();}
+
+    function restoreDesign(json, resetHistory=false) {
+      designRestoring = true;
+      designCanvas.loadFromJSON(json, () => { designCanvas.renderAll(); designRestoring=false; if(resetHistory){designHistory=[];designFuture=[];designSnapshot();} syncDesignTools(); syncBackgroundColors(); });
+    }
+    function undoDesign() { if(designRestoring || designHistory.length<2)return; const current=designHistory.pop(); designFuture.push(current); restoreDesign(designHistory[designHistory.length-1]); }
+    function redoDesign() { if(designRestoring)return; const next=designFuture.pop(); if(!next)return; designHistory.push(next); restoreDesign(next); }
+
+    function toast(msg, ok = false) {
+      const el = document.getElementById("toast");
+      el.textContent = msg;
+      el.className = "toast show " + (ok ? "ok" : "bad");
+      clearTimeout(toast._t);
+      toast._t = setTimeout(() => el.classList.remove("show"), 3200);
+    }
+
+    function logout() {
+      localStorage.removeItem("owner_token");
+      location.href = "/";
+    }
+
+    function syncPublicLink() {
+      document.getElementById("deviceUrl").textContent = owner?.slug ? `/r/${owner.slug}` : "live preview";
+    }
+
+    function renderHeroThumbs() {
+      const heroes = owner?.hero_images || [];
+      document.getElementById("heroThumbs").innerHTML = heroes.map((url, i) => `
+        <div class="thumb">
+          <img src="${escapeHtml(url)}" alt="" />
+          <button type="button" title="Remove" onclick="removeHero(${i})">×</button>
+        </div>`).join("");
+    }
+
+    function toggleCustomCategory() {
+      const custom = document.getElementById("menuCategory").value === "__custom__";
+      document.getElementById("menuCategory").hidden = custom;
+      document.getElementById("customMenuCategory").hidden = !custom;
+      if (custom) document.getElementById("customMenuCategory").focus();
+    }
+
+    function commitCustomCategory() {
+      const input = document.getElementById("customMenuCategory");
+      if (input.hidden) return;
+      const select = document.getElementById("menuCategory");
+      const name = input.value.trim();
+      if (name) {
+        const existing = [...select.options].find(option => option.value !== "__custom__" && option.value.toLowerCase() === name.toLowerCase());
+        if (!existing) select.add(new Option(name, name), select.options.length - 1);
+        select.value = existing ? existing.value : name;
+      } else select.value = "";
+      input.hidden = true;
+      select.hidden = false;
+    }
+
+    function renderMenuCategories() {
+      const select = document.getElementById("menuCategory");
+      const selected = select.value;
+      const categories = [...new Set([...menu.map(item => item.category), "Mains", "Appetizers", "Rice Meals", "Burgers", "Pizza", "Pasta", "Sides", "Desserts", "Drinks"].filter(Boolean))];
+      select.replaceChildren(new Option("Select category", ""));
+      categories.forEach(category => select.add(new Option(category, category)));
+      select.add(new Option("+ Add new category", "__custom__"));
+      if (selected && selected !== "__custom__" && !categories.includes(selected)) {
+        select.add(new Option(selected, selected), select.options.length - 1);
+        categories.push(selected);
+      }
+      select.value = categories.includes(selected) || selected === "__custom__" ? selected : "";
+    }
+
+    function renderMenuList() {
+      renderMenuCategories();
+      const previewFrame = document.getElementById("menuCustomerPreview");
+      if (previewFrame.getAttribute("src")) previewFrame.src = previewFrame.getAttribute("src");
+      document.getElementById("menuList").innerHTML = menu.length
+        ? menu.map(item => `
+          <div class="menu-item">
+            <div class="menu-pic">${item.image_url
+              ? `<img src="${escapeHtml(item.image_url)}" alt="" />`
+              : "🍽"}</div>
+            <div>
+              <strong>${escapeHtml(item.name)}</strong>
+              <small>${escapeHtml(item.category)} · ${escapeHtml(item.description || "")}</small>
+            </div>
+            <div style="display:grid;gap:7px;justify-items:end">
+              <div class="price-tag">${money(item.price)}</div>
+              <div style="display:flex;gap:8px"><button class="btn" type="button" onclick="editMenuItem(${item.id})">Edit</button><button class="btn danger" type="button" onclick="deleteMenuItem(${item.id})">Delete</button></div>
+            </div>
+          </div>`).join("")
+        : `<p class="hint" style="margin-top:12px">No dishes yet — add your first signature item.</p>`;
+    }
+
+    function renderTables() {
+      document.getElementById("tableList").innerHTML = tables.length
+        ? tables.map(t => {
+            const url = t.order_url || `${location.origin}/order?table=${encodeURIComponent(t.access_code)}`;
+            const qrUrl = t.qr_url || `/api/qr?table=${encodeURIComponent(t.access_code)}`;
+            return `<div class="table-qr-card">
+              <img src="${escapeHtml(qrUrl)}" alt="QR code for ${escapeHtml(t.name)}" />
+              <div class="table-qr-meta">
+                <strong>${escapeHtml(t.name)}</strong>
+                <small style="color:#fdba74;overflow-wrap:anywhere">${escapeHtml(url)}</small>
+                <div class="table-qr-actions">
+                  <a class="btn solid" href="${escapeHtml(qrUrl)}" download="${escapeHtml(t.name)}-QR.png">Download QR</a>
+                  <button class="btn" type="button" onclick='navigator.clipboard.writeText(${JSON.stringify(url)}).then(()=>toast("Link copied.",true))'>Copy link</button>
+                </div>
+              </div>
+            </div>`;
+          }).join("")
+        : `<p class="hint" style="margin-top:12px">No tables yet.</p>`;
+    }
+
+    function renderPreview() {
+      const root = document.getElementById("livePreview");
+      const name = (document.getElementById("nameInput").value || owner?.restaurant_name || "Your Restaurant").trim();
+      const about = (document.getElementById("aboutInput").value || owner?.about_text || "Crafted plates. Warm nights. Made for sharing.").trim();
+      const logo = owner?.logo_url || "";
+      const heroes = owner?.hero_images?.length ? owner.hero_images : [];
+
+      const menuHtml = menu.length
+        ? `<div class="pv-grid">${menu.map(item => `
+            <article class="pv-card">
+              <div class="pv-thumb">${item.image_url
+                ? `<img src="${escapeHtml(item.image_url)}" alt="" />`
+                : "🍽"}</div>
+              <div class="pv-card-body">
+                <strong>${escapeHtml(item.name)}</strong>
+                <em>${money(item.price)}</em>
+              </div>
+            </article>`).join("")}</div>`
+        : `<p class="empty-preview">Your menu preview appears here after you add dishes.</p>`;
+
+      root.innerHTML = `
+        <div class="pv">
+          <div class="pv-head">
+            <div class="pv-logo">${logo ? `<img src="${escapeHtml(logo)}" alt="" />` : "🍔"}</div>
+            <div class="pv-brand">${escapeHtml(name)}</div>
+          </div>
+          <div class="pv-hero style-${selectedSlideshowStyle}" style="${heroes.length ? "" : "background:radial-gradient(circle at 70% 40%,#3a1a0a,#120c0a 70%)"}">
+            <div class="pv-slides" id="pvSlides">
+              ${heroes.map((url, i) =>
+                `<div class="pv-slide${i === 0 ? " on" : ""}" style="background-image:url('${escapeHtml(url)}')"></div>`
+              ).join("")}
+            </div>
+            <div class="pv-hero-inner">
+              <p class="pv-eyebrow">Taste the moment</p>
+              <h2>${escapeHtml(name.split(" ")[0] || "BITE")}<span>${escapeHtml(name.split(" ").slice(1).join(" ") || "& BREW")}</span></h2>
+              <p class="pv-copy">${escapeHtml(about)}</p>
+            </div>
+          </div>
+          <div class="pv-section">
+            <h3>On the menu</h3>
+            ${menuHtml}
+          </div>
+        </div>`;
+
+      startSlideshow();
+      document.querySelectorAll(".style-option").forEach(button => button.classList.toggle("active", button.dataset.style === selectedSlideshowStyle));
+    }
+
+    function selectSlideshowStyle(style) {
+      selectedSlideshowStyle = style;
+      renderPreview();
+    }
+
+    async function saveSlideshowStyle() {
+      try {
+        owner = await api("/api/owner/site", { method:"PATCH", body:JSON.stringify({slideshow_style:selectedSlideshowStyle}) });
+        toast("Slideshow style saved.", true);
+      } catch (e) { toast(e.message); }
+    }
+
+    function startSlideshow() {
+      clearInterval(slideTimer);
+      const slides = [...document.querySelectorAll("#pvSlides .pv-slide")];
+      if (slides.length < 2) return;
+      slideIndex = 0;
+      slideTimer = setInterval(() => {
+        slides[slideIndex].classList.remove("on");
+        slideIndex = (slideIndex + 1) % slides.length;
+        slides[slideIndex].classList.add("on");
+      }, 3200);
+    }
+
+    async function saveSite() {
+      try {
+        owner = await api("/api/owner/site", {
+          method: "PATCH",
+          body: JSON.stringify({
+            restaurant_name: document.getElementById("nameInput").value,
+            about_text: document.getElementById("aboutInput").value,
+          }),
+        });
+        syncPublicLink();
+        renderPreview();
+        toast("Brand saved. Public page updated.", true);
+      } catch (e) { toast(e.message); }
+    }
+
+    async function removeHero(index) {
+      const heroes = [...(owner.hero_images || [])];
+      heroes.splice(index, 1);
+      try {
+        owner = await api("/api/owner/site", {
+          method: "PATCH",
+          body: JSON.stringify({ hero_images: heroes }),
+        });
+        renderHeroThumbs();
+        renderPreview();
+        toast("Hero photo removed.", true);
+      } catch (e) { toast(e.message); }
+    }
+
+    async function uploadFile(kind, file) {
+      const fd = new FormData();
+      fd.append("kind", kind);
+      fd.append("file", file);
+      return api("/api/owner/upload", { method: "POST", body: fd });
+    }
+
+    async function handleFiles(kind, files) {
+      const list = [...files].filter(f => f.type.startsWith("image/"));
+      if (!list.length) { toast("Please drop an image file."); return; }
+      if (kind === "menu") {
+        const button = document.getElementById("addMenuButton");
+        if (button.disabled) return;
+        button.disabled = true;
+        document.getElementById("menuPhotoHint").textContent = "Uploading photo…";
+        const preview = document.getElementById("menuPhotoPreview");
+        preview.src = URL.createObjectURL(list[0]);
+        preview.hidden = false;
+      }
+      try {
+        if (kind === "menu") {
+          const data = await uploadFile("menu", list[0]);
+          pendingMenuImage = data.url;
+          const preview = document.getElementById("menuPhotoPreview");
+          URL.revokeObjectURL(preview.src);
+          preview.src = data.url;
+          document.getElementById("menuPhotoHint").textContent = "photo ready ✓";
+          toast("Dish photo ready — fill details & add.", true);
+          return;
+        }
+        for (const file of list) {
+          const data = await uploadFile(kind, file);
+          owner = data.owner;
+          if (kind === "logo") {
+            const img = document.getElementById("logoPreview");
+            img.src = data.url;
+            img.hidden = false;
+          }
+        }
+        renderHeroThumbs();
+        syncPublicLink();
+        renderPreview();
+        toast(kind === "logo" ? "Logo updated." : "Hero photo added.", true);
+      } catch (e) {
+        if (kind === "menu") {
+          const preview = document.getElementById("menuPhotoPreview");
+          URL.revokeObjectURL(preview.src);
+          if (pendingMenuImage) preview.src = pendingMenuImage;
+          else { preview.removeAttribute("src"); preview.hidden = true; }
+          document.getElementById("menuPhotoHint").textContent = "Upload failed. Please try again.";
+        }
+        toast(e.message);
+      } finally {
+        if (kind === "menu") document.getElementById("addMenuButton").disabled = false;
+      }
+    }
+
+    function wireDrop(el) {
+      const kind = el.dataset.kind;
+      const input = el.querySelector('input[type=file]');
+      el.addEventListener("dragover", e => { e.preventDefault(); el.classList.add("drag"); });
+      el.addEventListener("dragleave", () => el.classList.remove("drag"));
+      el.addEventListener("drop", e => {
+        e.preventDefault();
+        el.classList.remove("drag");
+        handleFiles(kind, e.dataTransfer.files);
+      });
+      input.addEventListener("change", () => {
+        handleFiles(kind, input.files);
+        input.value = "";
+      });
+    }
+
+    document.addEventListener("paste", e => {
+      const items = [...(e.clipboardData?.items || [])];
+      const file = items.map(i => i.getAsFile()).find(f => f && f.type.startsWith("image/"));
+      if (!file) return;
+      const overHero = document.getElementById("heroDrop").matches(":hover");
+      handleFiles(overHero ? "hero" : (document.activeElement?.closest?.("#menuDrop") ? "menu" : "logo"), [file]);
+    });
+
+    ["nameInput", "aboutInput"].forEach(id => {
+      document.getElementById(id).addEventListener("input", () => {
+        clearTimeout(renderPreview._t);
+        renderPreview._t = setTimeout(renderPreview, 120);
+      });
+    });
+
+    function openMenuForm() {
+      if (document.getElementById("addMenuButton").disabled) return;
+      cancelMenuEdit();
+      document.getElementById("menuDishForm").hidden = false;
+      document.getElementById("menuDishForm").scrollIntoView({block:"start",behavior:"smooth"});
+    }
+    function refreshMenuCustomerPage() {
+      const frame = document.getElementById("menuCustomerPreview");
+      frame.style.height = "520px";
+      if (tables.length) frame.src = `/order?table=${encodeURIComponent(tables[0].access_code)}#menu`;
+      else if (owner?.slug) frame.src = `/r/${encodeURIComponent(owner.slug)}?menuPreview=1#menu`;
+    }
+    let menuFrameObserver;
+    function setupMenuFrameSize() {
+      menuFrameObserver?.disconnect();
+      const frame = document.getElementById("menuCustomerPreview");
+      const doc = frame.contentDocument;
+      if (!doc?.body) return;
+      doc.documentElement.style.overflow = "hidden";
+      doc.body.style.setProperty("min-height","0","important");
+      const resize = () => {
+        const height = Math.max(520, Math.ceil(doc.body.getBoundingClientRect().height));
+        if (frame.style.height !== `${height}px`) frame.style.height = `${height}px`;
+      };
+      menuFrameObserver = new ResizeObserver(resize);
+      menuFrameObserver.observe(doc.body);
+      resize();
+    }
+
+    function editMenuItem(id) {
+      if (document.getElementById("addMenuButton").disabled) return;
+      const item = menu.find(item => item.id === id);
+      if (!item) return;
+      document.getElementById("menuDishForm").hidden = false;
+      editingMenuId = id;
+      document.getElementById("menuCategory").value = item.category;
+      toggleCustomCategory();
+      for (const [field, key] of [["menuName","name"],["menuDescription","description"],["menuPrice","price"]]) document.getElementById(field).value = item[key] || "";
+      pendingMenuImage = item.image_url || "";
+      const preview = document.getElementById("menuPhotoPreview");
+      preview.hidden = !pendingMenuImage;
+      if (pendingMenuImage) preview.src = pendingMenuImage;
+      else preview.removeAttribute("src");
+      document.getElementById("menuPhotoHint").textContent = pendingMenuImage ? "Choose a photo to replace" : "optional";
+      document.getElementById("menuFormTitle").textContent = "Edit menu item";
+      document.getElementById("addMenuButton").textContent = "Save changes";
+      document.getElementById("cancelMenuEdit").hidden = false;
+      document.getElementById("menuFeedback").textContent = "";
+      document.getElementById("menuFormTitle").scrollIntoView({block:"start",behavior:"smooth"});
+    }
+    function cancelMenuEdit() {
+      if (document.getElementById("addMenuButton").disabled) return;
+      editingMenuId = null; pendingMenuImage = "";
+      for (const id of ["menuCategory","customMenuCategory","menuName","menuDescription","menuPrice"]) document.getElementById(id).value = "";
+      toggleCustomCategory();
+      document.getElementById("menuPhotoPreview").hidden = true;
+      document.getElementById("menuPhotoPreview").removeAttribute("src");
+      document.getElementById("menuPhotoHint").textContent = "optional";
+      document.getElementById("menuFormTitle").textContent = "Menu dish";
+      document.getElementById("addMenuButton").textContent = "Add to menu";
+      document.getElementById("cancelMenuEdit").hidden = true;
+    }
+    function toggleMenuPhonePreview() {
+      const button = document.getElementById("menuPhonePreview");
+      const phone = button.getAttribute("aria-pressed") !== "true";
+      button.setAttribute("aria-pressed",String(phone));
+      previewMenuDesign(phone ? "phone" : "desktop");
+    }
+    function previewMenuDesign(device) {
+      const frame = document.getElementById("menuCustomerPreview");
+      if (device) frame.style.width = device === "phone" ? "375px" : "100%";
+      if (owner?.slug && !frame.getAttribute("src")) frame.src = `/r/${encodeURIComponent(owner.slug)}?menuPreview=1#menu`;
+
+    }
+    async function addMenuItem() {
+      const button = document.getElementById("addMenuButton");
+      const feedback = document.getElementById("menuFeedback");
+      if (button.disabled) return;
+      const categoryChoice = document.getElementById("menuCategory").value;
+      const category = (categoryChoice === "__custom__" ? document.getElementById("customMenuCategory").value : categoryChoice).trim();
+      let name = document.getElementById("menuName").value.trim();
+      const description = document.getElementById("menuDescription").value.trim();
+      const price = Number(document.getElementById("menuPrice").value);
+      if (!category || !(price > 0)) {
+        feedback.textContent = "Select a category and enter a price greater than zero.";
+        document.getElementById(!category ? "menuCategory" : "menuPrice").focus();
+        toast("Category and price are required.");
+        return;
+      }
+      if (!name) {
+        const existing = new Set(menu.map(item => item.name.toLowerCase()));
+        let number = 1;
+        do { name = `${category} ${number++}`; } while (existing.has(name.toLowerCase()));
+      }
+      button.disabled = true;
+      button.textContent = "Adding…";
+      feedback.textContent = "Saving menu item…";
+      try {
+        await api(editingMenuId ? `/api/owner/menu/${editingMenuId}` : "/api/owner/menu", {
+          method: editingMenuId ? "PATCH" : "POST",
+          body: JSON.stringify({
+            category, name, description, price,
+            image_url: pendingMenuImage || "",
+          }),
+        });
+        const savedMessage = editingMenuId ? "Menu item updated." : "Dish added to your menu.";
+        editingMenuId = null;
+        document.getElementById("cancelMenuEdit").hidden = true;
+        document.getElementById("menuFormTitle").textContent = "Menu dish";
+        pendingMenuImage = "";
+        document.getElementById("menuPhotoPreview").hidden = true;
+        document.getElementById("menuPhotoPreview").removeAttribute("src");
+        document.getElementById("menuPhotoHint").textContent = "optional";
+        document.getElementById("menuCategory").value = "";
+        document.getElementById("customMenuCategory").value = "";
+        toggleCustomCategory();
+        document.getElementById("menuName").value = "";
+        document.getElementById("menuDescription").value = "";
+        document.getElementById("menuPrice").value = "";
+        menu = await api("/api/owner/menu");
+        renderMenuList();
+        renderPreview();
+        toast(savedMessage, true);
+        feedback.textContent = savedMessage;
+        document.getElementById("menuDishForm").hidden = true;
+        refreshMenuCustomerPage();
+      } catch (e) {
+        feedback.textContent = e.message;
+        toast(e.message);
+      } finally {
+        button.disabled = false;
+        button.textContent = editingMenuId ? "Save changes" : "Add to menu";
+      }
+    }
+
+    async function addTable() {
+      const name = document.getElementById("tableNameInput").value.trim();
+      if (!name) { toast("Enter a table name."); return; }
+      try {
+        await api("/api/owner/tables", {
+          method: "POST",
+          body: JSON.stringify({ name }),
+        });
+        document.getElementById("tableNameInput").value = "";
+        tables = await api("/api/owner/tables");
+        renderTables();
+        toast("Table link created.", true);
+      } catch (e) { toast(e.message); }
+    }
+
+    async function deleteMenuItem(itemId) {
+      const item = menu.find(entry => entry.id === itemId);
+      if (!item) return;
+      if (!confirm(`Delete "${item.name}" from the menu? Existing order records will remain.`)) return;
+      try {
+        await api(`/api/owner/menu/${itemId}`, { method: "DELETE" });
+        if (editingMenuId === itemId) cancelMenuEdit();
+        menu = menu.filter(entry => entry.id !== itemId);
+        renderMenuList();
+        renderPreview();
+        toast("Menu item deleted.", true);
+      } catch (e) { toast(e.message); }
+    }
+
+    function renderPaymentMethods() {
+      document.getElementById("paymentMethodList").innerHTML = paymentMethods.length
+        ? paymentMethods.map(method => `
+          <div class="payment-item">
+            <img src="${escapeHtml(method.qr_image_url)}" alt="${escapeHtml(method.provider)} QR" />
+            <div class="payment-meta">
+              <strong>${escapeHtml(method.provider)} ${method.active ? "" : "· Disabled"}</strong>
+              <small>${escapeHtml(method.account_name || "No account name")}</small>
+              <small>${escapeHtml(method.account_number_masked || "")}</small>
+              <div class="payment-actions">
+                <button class="btn" type="button" onclick="togglePayment(${method.id}, ${!method.active})">${method.active ? "Disable" : "Enable"}</button>
+                <button class="btn" type="button" onclick="deletePayment(${method.id})">Delete</button>
+              </div>
+            </div>
+          </div>`).join("")
+        : `<p class="hint">No payment QR yet.</p>`;
+    }
+
+    async function preparePaymentQr(file) {
+      if (!file) return;
+      if (!file.type.startsWith("image/")) { toast("Choose an image file."); return; }
+      try {
+        document.getElementById("paymentQrLabel").textContent = "Uploading QR…";
+        const data = await uploadFile("payment", file);
+        pendingPaymentQr = data.url;
+        document.getElementById("paymentQrLabel").textContent = "Payment QR ready ✓";
+        toast("Payment QR uploaded. Fill the details.", true);
+      } catch (e) {
+        document.getElementById("paymentQrLabel").textContent = "Choose payment QR image";
+        toast(e.message);
+      }
+    }
+
+    async function addPaymentMethod() {
+      const provider = document.getElementById("paymentProvider").value.trim();
+      if (!provider || !pendingPaymentQr) { toast("Provider and QR image are required."); return; }
+      try {
+        await api("/api/owner/payment-methods", {
+          method: "POST",
+          body: JSON.stringify({
+            provider,
+            account_name: document.getElementById("paymentAccount").value,
+            account_number_masked: document.getElementById("paymentNumber").value,
+            instructions: document.getElementById("paymentInstructions").value,
+            qr_image_url: pendingPaymentQr,
+          }),
+        });
+        pendingPaymentQr = "";
+        ["paymentProvider","paymentAccount","paymentNumber","paymentInstructions"].forEach(id => document.getElementById(id).value = "");
+        document.getElementById("paymentQrFile").value = "";
+        document.getElementById("paymentQrLabel").textContent = "Choose payment QR image";
+        paymentMethods = await api("/api/owner/payment-methods");
+        renderPaymentMethods();
+        toast("Payment QR added.", true);
+      } catch (e) { toast(e.message); }
+    }
+
+    async function togglePayment(id, active) {
+      try {
+        await api(`/api/owner/payment-methods/${id}/active`, {method:"PATCH", body:JSON.stringify({active})});
+        paymentMethods = await api("/api/owner/payment-methods");
+        renderPaymentMethods();
+      } catch (e) { toast(e.message); }
+    }
+
+    async function deletePayment(id) {
+      if (!confirm("Delete this payment QR? Existing order records will remain.")) return;
+      try {
+        await api(`/api/owner/payment-methods/${id}`, {method:"DELETE"});
+        paymentMethods = await api("/api/owner/payment-methods");
+        renderPaymentMethods();
+        toast("Payment QR deleted.", true);
+      } catch (e) { toast(e.message); }
+    }
+
+    async function boot() {
+      if (!token()) { location.href = "/"; return; }
+      try {
+        owner = await api("/api/owner/me");
+        const theme = owner.custom_design?.menuTheme || {};
+        selectedSlideshowStyle = owner.slideshow_style || "fade";
+        menu = await api("/api/owner/menu");
+        tables = await api("/api/owner/tables");
+        paymentMethods = await api("/api/owner/payment-methods");
+        document.getElementById("nameInput").value = owner.restaurant_name || "";
+        document.getElementById("aboutInput").value = owner.about_text || "";
+        if (owner.logo_url) {
+          const img = document.getElementById("logoPreview");
+          img.src = owner.logo_url;
+          img.hidden = false;
+        }
+        syncPublicLink();
+        renderHeroThumbs();
+        renderMenuList();
+        renderTables();
+        renderPaymentMethods();
+        renderPreview();
+        ["logoDrop", "heroDrop", "menuDrop"].forEach(id => wireDrop(document.getElementById(id)));
+        setupStudioWorkspace();
+        openDesignRoom();
+      } catch (e) { toast(e.message); }
+    }
+
+    boot();
+  </script>
+<dialog id="bannerPreviewDialog" style="width:min(1000px,90vw);background:#151519;color:white;border:1px solid #555;border-radius:12px" oncancel="closeBannerPreview()">
+<button class="btn" onclick="closeBannerPreview()">Close preview</button><div id="bannerDraftPreview"></div></dialog>
+</body>
+</html>

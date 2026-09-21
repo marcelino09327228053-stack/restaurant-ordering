@@ -1,0 +1,74 @@
+INFO:     127.0.0.1:49650 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49651 - "GET /owner HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49652 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49661 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49661 - "GET /static/mb-bite-brew-logo.png?v=4 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49661 - "GET /account HTTP/1.1" 200 OK
+[DEV EMAIL] marcelino09327228053@gmail.com | My Restaurant confirmation number | Your confirmation number is: 074183
+
+Enter this code on the website to open your business account.
+It expires in 10 minutes.
+
+If you did not request this, you can ignore this email.
+INFO:     127.0.0.1:49661 - "POST /api/auth/email/start HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49662 - "POST /api/auth/email/verify HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49662 - "GET /api/owner/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49662 - "GET /api/owner/menu HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49662 - "GET /api/owner/tables HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49662 - "GET /api/owner/payment-methods HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49663 - "GET /static/uploads/1/menu-61d37d389e9041c4a39fd8ad432604c7.jpg HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49662 - "GET /static/uploads/1/menu-15a50066f1224d1faed913d298dbb1b3.jpg HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49671 - "GET /static/vendor/lucide/image.svg HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49672 - "GET /static/vendor/lucide/gallery-horizontal-end.svg HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49663 - "GET /static/vendor/lucide/video.svg HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49662 - "GET /static/vendor/lucide/layout-template.svg HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49672 - "GET /static/vendor/lucide/download.svg HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49671 - "GET /static/vendor/lucide/paint-bucket.svg HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49663 - "GET /static/vendor/lucide/shapes.svg HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49662 - "GET /static/vendor/lucide/type.svg HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49671 - "GET /static/vendor/lucide/undo-2.svg HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49672 - "GET /static/vendor/lucide/move.svg HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49662 - "GET /static/vendor/lucide/redo-2.svg HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49663 - "GET /static/vendor/lucide/eraser.svg HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49671 - "GET /static/vendor/lucide/save.svg HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49670 - "GET /api/qr?table=msC8XdgGjvc HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49669 - "GET /api/qr?table=ixumxReJAr4 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49672 - "GET /api/qr?table=SSo9mYWXTgI HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49699 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49702 - "GET /owner HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49705 - "GET /login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49707 - "GET /cashier HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49709 - "GET /order HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49711 - "GET /account HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49713 - "GET /qr-generator HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49715 - "GET /table-qrcodes HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49722 - "GET /owner?check=latest HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51021 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51023 - "GET /static/mb-bite-brew-logo.png?v=4 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51023 - "GET /api/owner/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51037 - "GET /static/mb-bite-brew-logo.png?v=4 HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:51037 - "GET /api/owner/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51039 - "GET /static/vendor/lucide/x.svg HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51038 - "GET /static/design-templates.js HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51038 - "GET /api/owner/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51038 - "GET /api/owner/menu HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51038 - "GET /api/owner/tables HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51038 - "GET /api/owner/payment-methods HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51038 - "GET /static/uploads/1/menu-15a50066f1224d1faed913d298dbb1b3.jpg HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51039 - "GET /static/uploads/1/menu-61d37d389e9041c4a39fd8ad432604c7.jpg HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51041 - "GET /api/qr?table=msC8XdgGjvc HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51040 - "GET /api/qr?table=ixumxReJAr4 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51043 - "GET /static/vendor/lucide/image.svg HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51042 - "GET /static/vendor/lucide/gallery-horizontal-end.svg HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51041 - "GET /static/vendor/lucide/paint-bucket.svg HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51040 - "GET /static/vendor/lucide/redo-2.svg HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51038 - "GET /static/vendor/lucide/shapes.svg HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51039 - "GET /static/vendor/lucide/type.svg HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51042 - "GET /static/vendor/lucide/download.svg HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51043 - "GET /static/vendor/lucide/eraser.svg HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51041 - "GET /static/vendor/lucide/move.svg HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51038 - "GET /static/vendor/lucide/video.svg HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51040 - "GET /static/vendor/lucide/layout-template.svg HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51039 - "GET /static/vendor/lucide/undo-2.svg HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51038 - "GET /static/vendor/lucide/save.svg HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51041 - "GET /api/qr?table=SSo9mYWXTgI HTTP/1.1" 200 OK
