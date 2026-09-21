@@ -681,9 +681,9 @@
       </div>
       <p class="hint">Connected via table QR · works on restaurant Wi‑Fi even without internet.</p>
       <div class="chat-log" id="chatLog"></div>
-      <div class="reply-preview" id="customerReplyPreview" hidden><span id="customerReplyText"></span><button type="button" onclick="cancelCustomerReply()" aria-label="Cancel reply">×</button></div>
+      <div class="reply-preview" id="customerReplyPreview" hidden style="display:none!important"><span id="customerReplyText"></span><button type="button" onclick="cancelCustomerReply()" aria-label="Cancel reply">×</button></div>
       <form class="chat-compose" onsubmit="sendCustomerChat(event)">
-        <input id="chatInput" maxlength="500" placeholder="Ask or tell the cashier…" autocomplete="off" />
+        <input id="chatInput" maxlength="500" placeholder="" autocomplete="off" />
         <button type="submit">Send</button>
       </form>
     </div>
