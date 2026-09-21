@@ -223,6 +223,16 @@ def create_app() -> FastAPI:
             },
         )
 
+    @application.get("/phone-order")
+    async def phone_order_page():
+        return FileResponse(
+            "phone-order.html",
+            headers={
+                "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0",
+                "Pragma": "no-cache",
+            },
+        )
+
     @application.get("/cashier")
     async def cashier_page():
         return FileResponse("cashier.html")
