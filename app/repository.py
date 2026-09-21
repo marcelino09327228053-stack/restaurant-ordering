@@ -1009,7 +1009,7 @@ def list_table_messages(table_id: int, after_id: int = 0) -> list[dict]:
     cursor = get_connection().cursor()
     cursor.execute(
         """
-        SELECT m.id, m.table_id, m.sender, m.body, m.created_at,
+        SELECT m.id, m.table_id, m.sender, m.body, m.image_url, m.created_at,
                m.reply_to_id, m.reaction, r.body AS reply_body, r.sender AS reply_sender
         FROM table_messages m
         LEFT JOIN table_messages r ON r.id = m.reply_to_id AND r.table_id = m.table_id
