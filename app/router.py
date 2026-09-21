@@ -526,6 +526,52 @@ def public_send_message(access_code: str, body: TableMessageCreate):
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
 
+@router.post("/public/{access_code}/messages/image", status_code=201)
+async def public_send_message_image(
+    access_code: str,
+    file: UploadFile = File(...),
+    body: str = Form(""),
+    reply_to_id: int | None = Form(None),
+):
+    table = repo.get_public_table(access_code)
+    if table is None:
+        raise HTTPException(status_code=404, detail="Invalid or inactive table QR code.")
+
+    content_type = (file.content_type or "").split(";")[0].strip().lower()
+    ext = ALLOWED_IMAGE_TYPES.get(content_type)
+    if not ext:
+        raise HTTPException(
+            status_code=400,
+            detail="Chat photo must be JPG, PNG, WEBP, or GIF.",
+        )
+
+    raw = await file.read()
+    if not raw:
+        raise HTTPException(status_code=400, detail="Empty image.")
+    if len(raw) > MAX_UPLOAD_BYTES:
+        raise HTTPException(status_code=400, detail="Chat photo is too large (max 8MB).")
+
+    folder = UPLOAD_ROOT / "chat" / str(table["id"])
+    folder.mkdir(parents=True, exist_ok=True)
+
+    filename = f"chat-{uuid4().hex}{ext}"
+    path = folder / filename
+    path.write_bytes(raw)
+
+    image_url = f"/static/uploads/chat/{table['id']}/{filename}"
+
+    try:
+        return repo.add_table_message(
+            table["id"],
+            "customer",
+            body,
+            reply_to_id,
+            image_url=image_url,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+
 @router.patch("/public/{access_code}/messages/{message_id}")
 def public_edit_message(access_code: str, message_id: int, body: TableMessageCreate):
     table = repo.get_public_table(access_code)
