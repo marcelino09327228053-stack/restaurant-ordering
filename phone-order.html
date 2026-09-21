@@ -1153,15 +1153,13 @@
       const categories = ["All", ...new Set(menuItems.map(item => item.category))];
       const select = document.getElementById("categorySelect");
       select.innerHTML = categories.map(category => `
-        <option value="${escapeHtml(category)}" ${category === activeCategory ? "selected" : ""}>${escapeHtml(category)}</option>
+        <option value="${escapeHtml(category)}" ${category === activeCategory ? "selected" : ""}>
+          ${category === "All" ? "Select All" : escapeHtml(category)}
+        </option>
       `).join("");
-      document.getElementById("chips").innerHTML = categories.map(category => `
-        <button type="button" class="chip ${category === activeCategory ? "active" : ""}"
-                data-category="${escapeHtml(category)}">${escapeHtml(category)}</button>
-      `).join("");
-      document.querySelectorAll("#chips .chip").forEach(button => {
-        button.addEventListener("click", () => selectCategory(button.dataset.category));
-      });
+
+      const chips = document.getElementById("chips");
+      if (chips) chips.innerHTML = "";
     }
 
     function selectCategory(category) {
