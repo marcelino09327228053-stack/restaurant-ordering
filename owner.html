@@ -1545,8 +1545,8 @@
         return;
       }
 
-      const previewUrl = `${location.origin}/order?table=${encodeURIComponent(table.access_code)}`;
-      const phoneUrl = `http://192.168.1.2:8010/order?table=${encodeURIComponent(table.access_code)}`;
+      const previewUrl = `${location.origin}/order?table=${encodeURIComponent(table.access_code)}&phoneView=1`;
+      const phoneUrl = `http://192.168.1.2:8010/order?table=${encodeURIComponent(table.access_code)}&phoneView=1`;
       const dialog = document.getElementById("tablePhonePreviewDialog");
 
       document.getElementById("tablePhonePreviewTitle").textContent = `${table.name || "Table"} · customer view`;
