@@ -683,7 +683,7 @@
       <div class="chat-log" id="chatLog"></div>
       <div class="reply-preview" id="customerReplyPreview" hidden style="display:none!important"><span id="customerReplyText"></span><button type="button" onclick="cancelCustomerReply()" aria-label="Cancel reply">×</button></div>
       <form class="chat-compose" onsubmit="sendCustomerChat(event)">
-        <input id="chatInput" maxlength="500" placeholder="" autocomplete="off" />
+        <input id="chatInput" maxlength="500" placeholder="" autocomplete="off" autocorrect="on" autocapitalize="sentences" spellcheck="true" inputmode="text" />
         <button type="submit">Send</button>
       </form>
     </div>
