@@ -937,7 +937,10 @@ OLD
       if (!accessCode) {
         demoMode = true;
         menuItems = DEMO_ITEMS;
-        document.getElementById("brandName").textContent = "Bite & Brew";
+        document.getElementById("brandName").textContent =
+          new URLSearchParams(location.search).get("phoneView") === "1"
+            ? "MB Business Hub"
+            : "Bite & Brew";
         document.getElementById("tableName").textContent = "Preview";
         document.getElementById("sheetTable").textContent = "Design preview · Scan a table QR to order";
         document.getElementById("message").hidden = true;
