@@ -959,7 +959,23 @@
       </div>
       <div class="chat-log" id="chatLog"></div>
       <div class="reply-preview" id="customerReplyPreview" hidden style="display:none!important"><span id="customerReplyText"></span><button type="button" onclick="cancelCustomerReply()" aria-label="Cancel reply">×</button></div>
+      <div id="chatImagePreview" hidden style="margin:8px 0;position:relative;width:max-content;max-width:100%">
+        <img id="chatImagePreviewImg" alt="Selected photo" style="display:block;max-width:180px;max-height:180px;border-radius:12px;object-fit:cover" />
+        <button type="button" onclick="clearChatImage()" aria-label="Remove selected photo" style="position:absolute;right:-8px;top:-8px;width:28px;height:28px;border:0;border-radius:50%;background:#27272a;color:#fff;cursor:pointer">×</button>
+      </div>
+
       <form class="chat-compose" onsubmit="sendCustomerChat(event)">
+        <input id="chatPhotoInput" type="file" accept="image/*" hidden onchange="selectChatImage(this)" />
+        <input id="chatCameraInput" type="file" accept="image/*" capture="environment" hidden onchange="selectChatImage(this)" />
+
+        <button class="chat-media-btn" type="button" onclick="document.getElementById('chatPhotoInput').click()" aria-label="Attach photo or file" title="Photo">
+          📎
+        </button>
+
+        <button class="chat-media-btn" type="button" onclick="document.getElementById('chatCameraInput').click()" aria-label="Take photo" title="Camera">
+          📷
+        </button>
+
         <input id="chatInput" maxlength="500" placeholder="" autocomplete="off" autocorrect="on" autocapitalize="sentences" spellcheck="true" inputmode="text" />
         <button type="submit">Send</button>
       </form>
