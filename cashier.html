@@ -221,6 +221,15 @@
     .bubble time { display: block; margin-top: 4px; font-size: .7rem; color: var(--muted); }
     .reply-quote { margin-bottom:7px; padding:6px 8px; border-left:3px solid var(--orange); border-radius:6px; background:#0003; color:var(--muted); font-size:.75rem; }
     .message-reaction { display:inline-block; margin:5px 0 -5px; padding:2px 6px; border-radius:999px; background:#27272a; font-size:.78rem; }
+    .chat-message-image {
+      display:block;
+      width:min(280px,70vw);
+      max-height:360px;
+      object-fit:cover;
+      border-radius:12px;
+      margin-bottom:7px;
+      cursor:pointer;
+    }
     .chat-compose {
       display: flex; gap: 8px; padding: 12px; border-top: 1px solid var(--line);
     }
