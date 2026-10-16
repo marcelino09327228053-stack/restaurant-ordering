@@ -52,8 +52,6 @@
       try{owner=await api('/api/owner/menu-appearance',{method:'PATCH',body:JSON.stringify(config)});dirty=JSON.stringify(draft)!==JSON.stringify(config);status(dirty?'Unsaved changes':'Saved');}
       catch{status('Could not save. Please try again.');}finally{lock(false);}
     };
-    $('menuCustomerPreview').addEventListener('load',preview);
-    window.addEventListener('message',e=>{if(e.origin===location.origin && e.source===$('menuCustomerPreview').contentWindow && e.data?.type==='menu-appearance-ready')preview();});
     window.addEventListener('beforeunload',e=>{if(dirty || busy){e.preventDefault();e.returnValue='';}});
     sync();
   }
