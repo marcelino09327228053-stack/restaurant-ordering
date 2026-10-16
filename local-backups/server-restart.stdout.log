@@ -459,3 +459,5 @@ INFO:     127.0.0.1:50918 - "GET /api/public/ixumxReJAr4/menu HTTP/1.1" 200 OK
 INFO:     127.0.0.1:50917 - "GET /api/public/ixumxReJAr4/messages?after_id=11 HTTP/1.1" 200 OK
 INFO:     127.0.0.1:51059 - "GET /api/public/ixumxReJAr4/menu HTTP/1.1" 500 Internal Server Error
 INFO:     127.0.0.1:51058 - "GET /api/public/ixumxReJAr4/messages?after_id=11 HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:51158 - "GET /api/public/ixumxReJAr4/menu HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51157 - "GET /api/public/ixumxReJAr4/messages?after_id=11 HTTP/1.1" 200 OK
