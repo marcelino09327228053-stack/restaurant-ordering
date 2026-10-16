@@ -18,7 +18,7 @@
       ? `<video src="${draft.media_url}" controls playsinline preload="metadata"></video>`
       : `<img src="${draft.media_url}" alt="Customer display media">`;
   }
-  function sync(){ $('me-background').value=draft.background;$('me-remove').disabled=busy || !draft.media_url;renderMedia(); }
+  function sync(){ $('me-remove').disabled=busy || !draft.media_url;renderMedia(); }
   function changed(){dirty=true;status('Unsaved changes');sync();}
   function lock(value){busy=value;for(const id of ['me-upload','me-save'])$(id).disabled=value;sync();}
   function color(value){draft.background=value;draft.gradient=false;draft.background_image='';changed();}
