@@ -46,17 +46,8 @@
       <button class="btn solid" type="button" id="me-save">Save</button>
       </div>
       <input hidden id="me-media-file" type="file" accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm">
-      <div id="menuAppearancePanel" hidden aria-label="Background color"><div id="me-swatches"></div><label title="Custom color">Custom<input id="me-background" type="color" aria-label="Custom background color"></label></div>
       <div id="me-media-preview" hidden></div>
       <p id="menuEditorStatus" role="status" aria-live="polite"></p>`;
-    const panel=open=>{$('menuAppearancePanel').hidden=!open;$('menuAppearanceButton').setAttribute('aria-expanded',String(open));};
-    $('menuAppearanceButton').onclick=()=>panel($('menuAppearancePanel').hidden);
-    document.addEventListener('pointerdown',e=>{if(!$('menuAppearancePanel').contains(e.target) && !$('menuAppearanceButton').contains(e.target))panel(false);});
-    document.addEventListener('keydown',e=>{if(e.key==='Escape')panel(false);});
-    for(const [name,value] of [['Green','#39ff14'],['Blue','#0066ff'],['Red','#ff2038'],['Pink','#ff1493'],['Purple','#a020f0'],['Orange','#ff7900'],['Cyan','#00e5ff']]){
-      const button=document.createElement('button');button.type='button';button.title=name;button.setAttribute('aria-label',name);button.style.background=value;button.onclick=()=>{color(value);};$('me-swatches').append(button);
-    }
-    $('me-background').oninput=e=>color(e.target.value);
     $('me-upload').onclick=()=>$('me-media-file').click();
     $('me-media-file').onchange=e=>{upload(e.target.files[0]);e.target.value='';};
     $('me-remove').onclick=()=>{draft.media_url='';draft.media_type='none';changed();};
