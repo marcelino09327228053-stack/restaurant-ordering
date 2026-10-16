@@ -491,11 +491,11 @@
       width:min(1120px,calc(100% - 32px));
       top:calc(var(--studio-header-height,64px) + 16px); bottom:16px;
     }
-    #menuPanel .menu-item {
+    #tablesPanel .menu-item {
       grid-template-columns:54px minmax(0,1fr) auto;
       align-items:center;
     }
-    #menuPanel .menu-item > div:last-child {
+    #tablesPanel .menu-item > div:last-child {
       display:flex!important;
       flex-direction:row;
       align-items:center;
@@ -503,12 +503,12 @@
       justify-items:unset!important;
       white-space:nowrap;
     }
-    #menuPanel .menu-item > div:last-child > div:last-child {
+    #tablesPanel .menu-item > div:last-child > div:last-child {
       display:flex!important;
       flex-wrap:nowrap;
       gap:6px!important;
     }
-    #menuPanel .menu-item .btn {
+    #tablesPanel .menu-item .btn {
       min-height:34px;
       padding:6px 9px;
       font-size:.75rem;
@@ -525,9 +525,13 @@
       max-height:calc(100% - var(--studio-header-height,68px) - 40px);
     }
     #tablePaymentSection .block {border:0;box-shadow:none;padding:0;margin:0;}
+    /* Show the complete owner interface at 90% of its previous size. */
+    html { zoom: 0.9; }
   </style>
   <script src="/static/vendor/fabric.min.js"></script>
   <script src="/static/design-templates.js?v=20260921c"></script>
+<link rel="stylesheet" href="/static/menu-editor.css?v=20261016b">
+<script defer src="/static/menu-editor.js?v=20261016b"></script>
 </head>
 <body>
   <header class="top">
@@ -535,7 +539,6 @@
     <h1>SITE <span>BUILDER</span></h1>
     <div class="grow"></div>
     <button class="btn solid" type="button" onclick="openDesignRoom()">Design Your Page</button>
-    <a class="btn" href="/">Home</a>
   </header>
 
   <div class="shell">
@@ -558,14 +561,17 @@
         <button class="btn solid" type="button" style="width:100%" onclick="saveSite()">Save brand</button>
       </section>
 
+      <section class="block" id="displayBuilder">
+        <div id="menuEditorControls"></div>
+        <div style="margin-bottom:12px"><iframe id="menuCustomerPreview" title="Customer menu page" style="display:block;border:1px solid var(--line);width:100%;height:520px;background:#fff" scrolling="no" onload="if (typeof setupMenuFrameSize === 'function') setupMenuFrameSize()"></iframe></div>
+      </section>
+
       <section class="block" id="menuBuilder">
         <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
           <button class="btn solid" id="openMenuButton" type="button" aria-haspopup="dialog" aria-controls="menuDishForm" aria-expanded="false" onclick="openMenuForm()">+ Add Menu</button>
           <button class="btn" id="editMenuButton" type="button" aria-haspopup="dialog" aria-controls="menuItemsPanel" aria-expanded="false" onclick="toggleMenuItemsPanel()">Edit / Delete</button>
-          <button class="btn" id="menuPhonePreview" type="button" aria-pressed="false" onclick="toggleMenuPhonePreview()">Phone preview</button>
         </div>
 
-        <div style="margin-bottom:12px"><iframe id="menuCustomerPreview" title="Customer menu page" style="display:block;border:1px solid var(--line);width:100%;height:520px;background:#fff" scrolling="no" onload="setupMenuFrameSize()"></iframe></div>
         <div class="menu-dish-popover" id="menuDishForm" role="dialog" aria-modal="false" aria-labelledby="menuFormTitle" hidden>
         <div class="menu-dish-popover-head">
           <h2 id="menuFormTitle">Menu dish</h2>
@@ -597,6 +603,8 @@
         <input id="menuName" maxlength="120" placeholder="Signature burger" />
         <label for="menuDescription">Description (optional)</label>
         <input id="menuDescription" maxlength="500" placeholder="Short tasty line" />
+        <label for="menuBackgroundColor">Background color</label>
+        <input id="menuBackgroundColor" type="color" value="#17171b" style="width:100%;height:42px;padding:4px" />
         <button id="addMenuButton" class="btn solid" type="button" style="width:100%" onclick="addMenuItem()">Add to menu</button>
         <button class="btn" id="cancelMenuEdit" hidden type="button" onclick="cancelMenuEdit()">Cancel edit</button>
         <p id="menuFeedback" class="hint" role="status" aria-live="polite"></p>
@@ -679,11 +687,10 @@
   <section class="design-room" id="designRoom" hidden>
     <div class="design-top">
       <button class="btn" id="designPageButton" type="button" aria-pressed="true" onclick="showDesignPage()">Design Your Page</button>
-      <button class="btn" type="button" data-studio-panel="menuPanel" aria-controls="menuPanel" aria-expanded="false" onclick="toggleStudioPanel('menuPanel')">Menu</button>
-      <button class="btn" type="button" data-studio-panel="tablesPanel" aria-controls="tablesPanel" aria-expanded="false" onclick="toggleStudioPanel('tablesPanel')">Tables & QR</button>
+      <button class="btn" type="button" data-studio-panel="menuPanel" aria-controls="menuPanel" aria-expanded="false" onclick="toggleStudioPanel('menuPanel')">Customer Display</button>
+      <button class="btn" type="button" data-studio-panel="tablesPanel" aria-controls="tablesPanel" aria-expanded="false" onclick="toggleStudioPanel('tablesPanel')">Menu &amp; QR</button>
+      <a class="btn" href="/cashier">POS</a>
       <div class="grow"></div>
-      <a class="btn" href="/">Home</a>
-      <button class="btn" type="button" onclick="openTablePhonePreview()">Preview on phone</button>
       </div>
     <section class="design-slideshow" id="slideshowPanel" hidden>
       <div class="slideshow-head"><h3>Hero Slideshow</h3><div class="grow"></div><button class="btn" type="button" onclick="toggleSlideshowPanel(false)">Close</button></div>
@@ -709,8 +716,8 @@
       <button class="btn solid" type="button" style="width:100%" onclick="saveSlideshowStyle()">Save slideshow</button>
     </section>
     <section class="studio-panel" id="brandPanel" hidden><div class="studio-panel-head"><h3>Brand</h3><div class="grow"></div><button class="btn" onclick="toggleStudioPanel('brandPanel',false)">Close</button></div><div class="studio-panel-body" id="brandPanelBody"></div></section>
-    <section class="studio-panel wide" id="menuPanel" hidden><div class="studio-panel-head"><h3>Menu</h3><div class="grow"></div><button class="btn" onclick="toggleStudioPanel('menuPanel',false)">Close</button></div><div class="studio-panel-body" id="menuPanelBody"></div></section>
-    <section class="studio-panel wide" id="tablesPanel" hidden><div class="studio-panel-head"><h3>Tables & QR Codes</h3><div class="grow"></div><button class="btn" onclick="toggleStudioPanel('tablesPanel',false)">Close</button></div><div class="studio-panel-body" id="tablesPanelBody"></div></section>
+    <section class="studio-panel wide" id="menuPanel" hidden><div class="studio-panel-head"><h3>Customer Display</h3><div class="grow"></div></div><div class="studio-panel-body" id="menuPanelBody"></div></section>
+    <section class="studio-panel wide" id="tablesPanel" hidden><div class="studio-panel-head"><h3>Menu &amp; QR</h3><div class="grow"></div><button class="btn" onclick="toggleStudioPanel('tablesPanel',false)">Close</button></div><div class="studio-panel-body" id="tablesPanelBody"></div></section>
     <section class="studio-panel" id="paymentsPanel" hidden><div class="studio-panel-head"><h3>Payment Methods</h3><div class="grow"></div><button class="btn" onclick="toggleStudioPanel('paymentsPanel',false)">Close</button></div><div class="studio-panel-body" id="paymentsPanelBody"></div></section>
     <section class="studio-panel wide" id="previewPanel" hidden><div class="studio-panel-head"><h3>Live Restaurant Preview</h3><div class="grow"></div><button class="btn" onclick="toggleStudioPanel('previewPanel',false)">Close</button></div><div class="studio-panel-body" id="previewPanelBody"></div></section>
     <div class="design-work">
@@ -958,9 +965,10 @@
       if (width <= 0 || height <= 0) return;
       const zoom = document.getElementById("designZoom").value;
       const fitScale = Math.min(width / 900, height / 500);
+      const displayScale = 1.30 * 0.80; // Reduce the editor canvas display by 20%.
       const scale = zoom === "fit"
-        ? fitScale * 1.30
-        : Math.min(Number(zoom) * 1.30, fitScale * 1.30);
+        ? fitScale * displayScale
+        : Math.min(Number(zoom) * displayScale, fitScale * displayScale);
       const board = document.querySelector(".design-board");
       board.style.width = `${900 * scale}px`;
       board.style.height = `${500 * scale}px`;
@@ -1046,7 +1054,6 @@
       if (id === "previewPanel" && shouldOpen) renderPreview();
       if (id === "menuPanel" && shouldOpen) {
         document.getElementById("menuCustomerPreview").style.width = "100%";
-        document.getElementById("menuPhonePreview").setAttribute("aria-pressed","false");
         refreshMenuCustomerPage();
       }
     }
@@ -1206,7 +1213,7 @@
       new ResizeObserver(updatePanelOffset).observe(header);
       updatePanelOffset();
       const moves = [
-        ["brandBuilder","brandPanelBody"], ["menuBuilder","menuPanelBody"],
+        ["brandBuilder","brandPanelBody"], ["displayBuilder","menuPanelBody"], ["menuBuilder","tablesPanelBody"],
         ["tablesBuilder","tablesPanelBody"], ["paymentsBuilder","paymentsPanelBody"]
       ];
       moves.forEach(([source,target]) => document.getElementById(target).appendChild(document.getElementById(source)));
@@ -1802,7 +1809,7 @@
       if (!panel || panel.hidden || !button) return;
 
       const rect = button.getBoundingClientRect();
-      const container = panel.closest("#menuPanel");
+      const container = panel.closest("#tablesPanel");
       const containerRect = container
         ? container.getBoundingClientRect()
         : { left: 0, top: 0 };
@@ -1852,8 +1859,8 @@
     function refreshMenuCustomerPage() {
       const frame = document.getElementById("menuCustomerPreview");
       frame.style.height = "520px";
-      if (tables.length) frame.src = `/order?table=${encodeURIComponent(tables[0].access_code)}#menu`;
-      else if (owner?.slug) frame.src = `/r/${encodeURIComponent(owner.slug)}?menuPreview=1#menu`;
+      if (tables.length) frame.src = `/order?table=${encodeURIComponent(tables[0].access_code)}&menuPreview=1`;
+      else if (owner?.slug) frame.src = `/r/${encodeURIComponent(owner.slug)}?menuPreview=1`;
     }
     let menuFrameObserver;
     function setupMenuFrameSize() {
@@ -1881,6 +1888,7 @@
       document.getElementById("menuCategory").value = item.category;
       toggleCustomCategory();
       for (const [field, key] of [["menuName","name"],["menuDescription","description"],["menuPrice","price"]]) document.getElementById(field).value = item[key] || "";
+      document.getElementById("menuBackgroundColor").value = item.background_color || "#17171b";
       pendingMenuImage = item.image_url || "";
       const preview = document.getElementById("menuPhotoPreview");
       preview.hidden = !pendingMenuImage;
@@ -1896,6 +1904,7 @@
     function cancelMenuEdit() {
       if (document.getElementById("addMenuButton").disabled) return;
       editingMenuId = null; pendingMenuImage = "";
+      document.getElementById("menuBackgroundColor").value = "#17171b";
       for (const id of ["menuCategory","customMenuCategory","menuName","menuDescription","menuPrice"]) document.getElementById(id).value = "";
       toggleCustomCategory();
       document.getElementById("menuPhotoPreview").hidden = true;
@@ -1905,16 +1914,10 @@
       document.getElementById("addMenuButton").textContent = "Add to menu";
       document.getElementById("cancelMenuEdit").hidden = true;
     }
-    function toggleMenuPhonePreview() {
-      const button = document.getElementById("menuPhonePreview");
-      const phone = button.getAttribute("aria-pressed") !== "true";
-      button.setAttribute("aria-pressed",String(phone));
-      previewMenuDesign(phone ? "phone" : "desktop");
-    }
     function previewMenuDesign(device) {
       const frame = document.getElementById("menuCustomerPreview");
       if (device) frame.style.width = device === "phone" ? "375px" : "100%";
-      if (owner?.slug && !frame.getAttribute("src")) frame.src = `/r/${encodeURIComponent(owner.slug)}?menuPreview=1#menu`;
+      if (owner?.slug && !frame.getAttribute("src")) frame.src = `/r/${encodeURIComponent(owner.slug)}?menuPreview=1`;
 
     }
     async function addMenuItem() {
@@ -1945,10 +1948,12 @@
           method: editingMenuId ? "PATCH" : "POST",
           body: JSON.stringify({
             category, name, description, price,
+            background_color: document.getElementById("menuBackgroundColor").value,
             image_url: pendingMenuImage || "",
           }),
         });
         const savedMessage = editingMenuId ? "Menu item updated." : "Dish added to your menu.";
+        document.getElementById("menuBackgroundColor").value = "#17171b";
         editingMenuId = null;
         document.getElementById("cancelMenuEdit").hidden = true;
         document.getElementById("menuFormTitle").textContent = "Menu dish";

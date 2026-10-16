@@ -8,6 +8,7 @@ import cloudinary.uploader
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 
 from app import repository as repo
+from app.menu_editor import validate_menu_upload
 from app.auth import require_owner
 
 router = APIRouter(prefix="/api", tags=["restaurant-media"])
@@ -20,7 +21,6 @@ ALLOWED_IMAGE_TYPES = {
 }
 VIDEO_TYPES = {"video/mp4": ".mp4", "video/webm": ".webm"}
 MAX_UPLOAD_BYTES = 8 * 1024 * 1024
-MAX_VIDEO_BYTES = 40 * 1024 * 1024
 
 
 def _cloudinary_configured() -> bool:
@@ -70,11 +70,11 @@ async def owner_upload_cloudinary(
     owner=Depends(require_owner),
 ):
     kind = (kind or "").strip().lower()
-    if kind not in {"logo", "hero", "menu", "payment", "design", "design_video"}:
+    if kind not in {"logo", "hero", "menu", "payment", "design", "design_video", "menu_display", "menu_video", "menu_background"}:
         raise HTTPException(status_code=400, detail="Invalid upload kind.")
 
     content_type = (file.content_type or "").split(";")[0].strip().lower()
-    is_video = kind == "design_video"
+    is_video = kind in {"design_video", "menu_video"}
     ext = VIDEO_TYPES.get(content_type) if is_video else ALLOWED_IMAGE_TYPES.get(content_type)
     if not ext:
         raise HTTPException(status_code=400, detail="Unsupported image or video format.")
@@ -82,9 +82,12 @@ async def owner_upload_cloudinary(
     raw = await file.read()
     if not raw:
         raise HTTPException(status_code=400, detail="Empty file.")
-    max_bytes = MAX_VIDEO_BYTES if is_video else MAX_UPLOAD_BYTES
-    if len(raw) > max_bytes:
+    max_bytes = None if is_video or kind in {"menu_display", "menu_background"} else MAX_UPLOAD_BYTES
+    if max_bytes is not None and len(raw) > max_bytes:
         raise HTTPException(status_code=400, detail="File is too large.")
+
+    if kind in {"menu_display", "menu_video", "menu_background"}:
+        validate_menu_upload(raw, content_type)
 
     owner_id = int(owner["owner_id"])
     site = repo.get_owner(owner_id)

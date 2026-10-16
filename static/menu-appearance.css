@@ -1,0 +1,19 @@
+/* Scope to customer menu pages; ordering controls retain their existing styles. */
+body.menu-appearance { background:var(--me-surface,#0b0b0d)!important;background-size:cover!important;background-attachment:scroll!important;color:var(--me-text,#f5f5f4); }
+.menu-appearance #hero,.menu-appearance #companyDesign {display:none!important;}
+.menu-appearance #menu {background:transparent!important;box-shadow:var(--me-glow);border-radius:16px;max-width:100%;box-sizing:border-box;}
+.menu-appearance #menu .card,.menu-appearance #menu .desc,.menu-appearance #menu h3 {color:var(--me-text,#f5f5f4)!important;}
+.menu-appearance .section-head,.menu-appearance .section-title {color:var(--me-text,#f5f5f4);}
+#menuMediaDisplay {position:relative;width:100%;max-width:100%;margin:0 0 24px;border-radius:16px;overflow:hidden;background:#101014;box-shadow:var(--me-glow);box-sizing:border-box;}
+#menuMediaDisplay[hidden] {display:none!important;}
+#menuMediaDisplay img,#menuMediaDisplay video {display:block;width:100%;height:auto;max-height:70vh;object-fit:contain;}
+.menu-media-sound {position:absolute;right:12px;top:12px;z-index:2;background:#111e;color:#fff;border:1px solid #fff9;border-radius:24px;padding:10px 16px;cursor:pointer;font:600 14px system-ui;}
+@media(max-width:480px){#menuMediaDisplay{border-radius:10px;margin-bottom:16px}.menu-media-sound{right:8px;top:8px;padding:8px 12px}}
+@media(max-width:600px){
+  .menu-appearance .bar{flex-wrap:wrap;gap:10px;}
+  .menu-appearance .bar .brand{min-width:0;max-width:calc(100% - 54px);}
+  .menu-appearance .bar .table-chip{flex:1 1 100%;min-width:0;flex-wrap:wrap;order:3;}
+  .menu-appearance .bar .connected-chip{max-width:100%;white-space:normal;}
+  .menu-appearance .header-order-tools{margin-left:auto;}
+}
+@media(max-width:600px){.menu-appearance .header-order-tools{margin-right:6px;}}

@@ -1,0 +1,72 @@
+const {chromium}=require('playwright');
+const path=require('path'); const artifacts=path.join(require('os').tmpdir(),'restaurant-menu-editor-check');
+const fs=require('fs'); const assert=require('assert/strict');
+(async()=>{
+ const browser=await chromium.launch({headless:true,channel:'chrome'});
+ const page=await browser.newPage({viewport:{width:1440,height:1000}});
+ const session=JSON.parse(fs.readFileSync(path.join(artifacts,'session.json')));
+ const base='http://127.0.0.1:8011';
+ const errors=[];page.on('pageerror',e=>errors.push(e.message));
+ const api=async(path,method='GET',body,auth=session.token)=>{const r=await page.request.fetch(base+path,{method,headers:auth?{Authorization:'Bearer '+auth}:{},...(body?{data:body}:{})});assert(r.ok(),await r.text());return r.status()===204 ? null : r.json();};
+ await api('/api/owner/menu-appearance','PATCH',{});
+ await page.addInitScript(token=>localStorage.setItem('owner_token',token),session.token);
+ await page.goto(base+'/owner');await page.locator('[data-studio-panel="menuPanel"]').click();await page.locator('#me-save').waitFor();
+ assert.equal(await page.locator('[data-studio-panel="menuPanel"]').innerText(),'Customer Display');
+ const png=await page.evaluate(()=>{const c=document.createElement('canvas');c.width=640;c.height=360;const x=c.getContext('2d');x.fillStyle='#f97316';x.fillRect(0,0,640,360);x.fillStyle='white';x.font='48px sans-serif';x.fillText('Restaurant test',80,180);return c.toDataURL().split(',')[1];});
+ const image={name:'test.png',mimeType:'image/png',buffer:Buffer.from(png,'base64')};
+ await page.locator('#me-media-file').setInputFiles(image);
+ await page.waitForFunction(()=>document.querySelector('#menuEditorStatus').textContent==='Unsaved changes');
+ const frame=page.frameLocator('#menuCustomerPreview');await frame.locator('#menuMediaDisplay img').waitFor();
+ assert.equal((await api('/api/owner/me')).custom_design.menuTheme?.media_url || '','');
+ await page.locator('#menuAppearanceButton').click();await page.locator('[aria-label="Cyan"]').click();
+ assert.deepEqual(await page.locator('#customerDisplayActions button').allTextContents(),['Upload Media','Remove','Background','Save']);
+ assert.equal(await page.locator('#menuPanel #openMenuButton').count(),0);
+ await page.locator('[data-studio-panel="tablesPanel"]').click();
+ await page.locator('#openMenuButton').click();await page.locator('#menuDishForm').waitFor();
+ await page.locator('#menuName').fill('UI meal '+Date.now());await page.locator('#menuPrice').fill('25');
+ await page.locator('#menuCategory').selectOption('Meals');
+ await page.locator('#addMenuButton').click();
+ await page.locator('#menuDishForm').waitFor({state:'hidden'});
+ assert.equal(await page.locator('#tablesPanel #openMenuButton').count(),1);
+ await page.locator('[data-studio-panel="menuPanel"]').click();
+ async function publish(){await page.locator('#me-save').click();await page.waitForFunction(()=>document.querySelector('#menuEditorStatus').textContent==='Saved');}
+ await publish();
+ let owner=await api('/api/owner/me');assert.equal(owner.custom_design.sentinel,'preserve');assert.deepEqual(owner.custom_design.editorDraft,{objects:[]});assert.equal(owner.custom_design.menuTheme.background,'#00e5ff');
+ await page.reload();await page.locator('[data-studio-panel="menuPanel"]').click();await page.locator('#me-save').waitFor();await page.locator('#menuAppearanceButton').click();assert.equal(await page.locator('#me-background').inputValue(),'#00e5ff');
+ // Generate a real WebM with an audio track, without external media or codecs.
+ const video=await page.evaluate(async()=>{
+  const c=document.createElement('canvas');c.width=320;c.height=180;const ctx=c.getContext('2d');ctx.fillStyle='purple';ctx.fillRect(0,0,320,180);
+  const audio=new AudioContext();await audio.resume();const osc=audio.createOscillator();const dest=audio.createMediaStreamDestination();osc.connect(dest);osc.start();
+  const stream=c.captureStream(10);stream.addTrack(dest.stream.getAudioTracks()[0]);const chunks=[];const rec=new MediaRecorder(stream,{mimeType:'video/webm'});
+  return await new Promise(resolve=>{rec.ondataavailable=e=>chunks.push(e.data);rec.onstop=async()=>{const blob=new Blob(chunks,{type:'video/webm'});const bytes=Array.from(new Uint8Array(await blob.arrayBuffer()));osc.stop();await audio.close();stream.getTracks().forEach(t=>t.stop());resolve(bytes);};rec.start();setTimeout(()=>rec.stop(),1200);});
+ });
+ await page.locator('#me-media-file').setInputFiles({name:'test.webm',mimeType:'video/webm',buffer:Buffer.from(video)});
+ await page.waitForFunction(()=>document.querySelector('#menuEditorStatus').textContent==='Unsaved changes' && !document.querySelector('#me-save').disabled);await publish();
+ const customer=await browser.newPage({viewport:{width:390,height:844}});customer.on('pageerror',e=>errors.push(e.message));
+ await customer.goto(base+'/order?table='+session.table);await customer.locator('#menuMediaDisplay video').waitFor();await customer.waitForFunction(()=>document.querySelector('#menuMediaDisplay video').readyState>=2);
+ assert(await customer.locator('video').evaluate(v=>v.muted && v.controls && v.playsInline));
+ await customer.locator('.menu-media-sound').click();assert(await customer.locator('video').evaluate(v=>!v.muted && !v.paused && v.volume===1));
+ await customer.locator('video').evaluate(v=>v.pause());assert(await customer.locator('video').evaluate(v=>v.paused));
+ for(const width of [320,390,768,1440]){await customer.setViewportSize({width,height:900});assert(await customer.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),`overflow at ${width}`);}
+ await customer.setViewportSize({width:390,height:844});await customer.screenshot({path:path.join(artifacts,'phone.png'),fullPage:true});
+ const data=await api('/api/public/'+session.table+'/menu');assert.equal(data.menu_theme.media_type,'video');
+ const ordered=await api('/api/public/'+session.table+'/orders','POST',{items:[{menu_item_id:data.items[0].id,quantity:1}]},'');assert(ordered.order_number || ordered.id);
+ const item=await api('/api/owner/menu','POST',{category:'Test',name:'CRUD test '+Date.now(),price:42,background_color:'#112233'});await api('/api/owner/menu/'+item.id,'PATCH',{category:'Test',name:'CRUD edited '+Date.now(),price:43,background_color:'#334455'});await api('/api/owner/menu/'+item.id,'DELETE');
+ assert.equal((await page.request.get(base+'/api/owner/me')).status(),401);
+ assert.equal((await page.request.patch(base+'/api/owner/menu-appearance',{headers:{Authorization:'Bearer '+session.token},data:{background:'javascript:no'}})).status(),422);
+ const invalid=await page.request.post(base+'/api/owner/upload',{headers:{Authorization:'Bearer '+session.token},multipart:{kind:'menu_display',file:{name:'bad.png',mimeType:'image/png',buffer:Buffer.from('not an image')}}});assert.equal(invalid.status(),400);
+ const cashier=await page.request.get(base+'/api/menu',{headers:{Authorization:'Bearer '+session.cashier}});assert(cashier.ok());
+ await customer.goto(base+'/phone-order?table='+session.table);await customer.locator('#menuMediaDisplay video').waitFor();assert(await customer.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
+ await page.locator('#me-remove').click();await publish();await customer.reload();await customer.locator('#menu .card').first().waitFor();assert(await customer.locator('#menuMediaDisplay').isHidden());
+
+ const large=await page.request.post(base+'/api/owner/upload',{headers:{Authorization:'Bearer '+session.token},multipart:{kind:'menu_video',file:{name:'large.webm',mimeType:'video/webm',buffer:Buffer.concat([Buffer.from(video),Buffer.alloc(41*1024*1024)])}}});
+ assert(large.ok(),'Upload larger than 40 MB should use server capacity');
+ await page.route('**/api/owner/upload',route=>route.fulfill({status:413,contentType:'text/html',body:'Too large'}));
+ await page.locator('#me-media-file').setInputFiles(image);
+ await page.waitForFunction(()=>document.querySelector('#menuEditorStatus').textContent.includes('too large for the server'));
+ await page.unroute('**/api/owner/upload');
+ await page.screenshot({path:path.join(artifacts,'customer-display.png'),fullPage:true});
+ assert.deepEqual(errors,[]);
+ console.log('PASS: rename, image/video upload, replace/remove, compact background, section separation, save/reload, original audio unmute, pause, QR + phone rendering, 4 widths, CRUD, ordering, auth, cashier API, invalid upload rejection, preserved design draft, >40 MB upload, friendly hosting limit error');
+ await browser.close();
+})().catch(e=>{console.error(e);process.exit(1)});

@@ -183,6 +183,8 @@
     #menu.custom-menu-theme .desc { color:inherit; }
   </style>
   <script src="/static/vendor/fabric.min.js"></script>
+<link rel="stylesheet" href="/static/menu-appearance.css?v=20261016">
+<script src="/static/menu-appearance.js?v=20261016"></script>
 </head>
 <body>
   <header>
@@ -318,7 +320,8 @@
         document.title = data.restaurant_name;
         document.getElementById("brand").textContent = data.restaurant_name;
         setLogo(data.logo_url, data.restaurant_name);
-        renderCompanyDesign(data.custom_design);
+        // Design Your Page is a standalone workspace; publish exported media in Menu Editor.
+        window.MenuAppearance.apply(data.custom_design?.menuTheme || {});
         if (!menuPreviewTheme) applyMenuTheme(data.custom_design?.menuTheme);
         document.getElementById("about").textContent =
           data.about_text || "Crafted plates. Warm nights. Made for sharing.";

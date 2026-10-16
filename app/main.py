@@ -33,6 +33,14 @@ def without_legacy_samples(items: list[dict]) -> list[dict]:
 
 def prepare_owner_menu_storage() -> None:
     """Allow repeated dish names while keeping owner scoping in application logic."""
+    conn = get_connection()
+    if using_postgres():
+        conn.execute("ALTER TABLE restaurant_menu_items ADD COLUMN IF NOT EXISTS background_color TEXT NOT NULL DEFAULT '#17171b'")
+    else:
+        columns = {row["name"] for row in conn.execute("PRAGMA table_info(restaurant_menu_items)")}
+        if "background_color" not in columns:
+            conn.execute("ALTER TABLE restaurant_menu_items ADD COLUMN background_color TEXT NOT NULL DEFAULT '#17171b'")
+    conn.commit()
     if not using_postgres():
         return
     conn = get_connection()
@@ -49,7 +57,7 @@ def install_owner_menu_fixes() -> None:
         cursor = get_connection().cursor()
         cursor.execute(
             """
-            SELECT id, category, name, description, price, image_url, available, owner_id
+            SELECT id, category, name, description, price, image_url, background_color, available, owner_id
             FROM restaurant_menu_items
             WHERE owner_id = ? AND available = 1
             ORDER BY category ASC, name ASC, id ASC
@@ -65,6 +73,7 @@ def install_owner_menu_fixes() -> None:
         description: str,
         price: float,
         image_url: str = "",
+        background_color: str = "#17171b",
     ) -> dict | None:
         conn = get_connection()
         cursor = conn.cursor()
@@ -72,12 +81,12 @@ def install_owner_menu_fixes() -> None:
         cursor.execute(
             """
             INSERT INTO restaurant_menu_items
-                (category, name, description, price, image_url, owner_id, available)
-            VALUES (?, ?, ?, ?, ?, ?, 1)
+                (category, name, description, price, image_url, background_color, owner_id, available)
+            VALUES (?, ?, ?, ?, ?, ?, ?, 1)
             """,
             (
                 category.strip(), clean_name, description.strip(), round(price, 2),
-                image_url.strip(), owner_id,
+                image_url.strip(), background_color, owner_id,
             ),
         )
         item_id = cursor.lastrowid
@@ -94,6 +103,7 @@ def install_owner_menu_fixes() -> None:
         description: str,
         price: float,
         image_url: str = "",
+        background_color: str = "#17171b",
     ) -> dict | None:
         conn = get_connection()
         cursor = conn.cursor()
@@ -101,12 +111,12 @@ def install_owner_menu_fixes() -> None:
         cursor.execute(
             """
             UPDATE restaurant_menu_items
-            SET category = ?, name = ?, description = ?, price = ?, image_url = ?, available = 1
+            SET category = ?, name = ?, description = ?, price = ?, image_url = ?, background_color = ?, available = 1
             WHERE id = ? AND owner_id = ?
             """,
             (
                 category.strip(), clean_name, description.strip(), round(price, 2),
-                image_url.strip(), item_id, owner_id,
+                image_url.strip(), background_color, item_id, owner_id,
             ),
         )
         if cursor.rowcount == 0:

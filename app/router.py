@@ -13,6 +13,7 @@ from fastapi.responses import Response
 from pydantic import BaseModel, Field
 
 from app import repository as repo
+from app.menu_editor import MenuAppearance, validate_menu_upload
 from app.auth import create_access_token, create_owner_token, require_cashier, require_owner
 from app.mail import smtp_configured
 from app.network import connection_info, room_join_url, table_order_url
@@ -107,6 +108,7 @@ class StatusUpdate(BaseModel):
 
 
 class MenuItemCreate(BaseModel):
+    background_color: str = Field(default="#17171b", pattern=r"^#[0-9a-fA-F]{6}$")
     category: str = Field(min_length=1, max_length=80)
     name: str = Field(min_length=1, max_length=120)
     description: str = Field(default="", max_length=500)
@@ -266,6 +268,16 @@ def owner_update_site(body: OwnerSiteUpdate, owner=Depends(require_owner)):
     return data
 
 
+@router.patch("/owner/menu-appearance")
+def save_menu_appearance(body: MenuAppearance, owner=Depends(require_owner)):
+    site = repo.get_owner(owner["owner_id"])
+    if site is None:
+        raise HTTPException(404, "Owner not found.")
+    design = dict(site.get("custom_design") or {})
+    design["menuTheme"] = body.model_dump()
+    return repo.update_owner_site(owner["owner_id"], custom_design=design)
+
+
 @router.post("/owner/upload")
 async def owner_upload(
     kind: str = Form(...),
@@ -273,21 +285,24 @@ async def owner_upload(
     owner=Depends(require_owner),
 ):
     kind = (kind or "").strip().lower()
-    if kind not in {"logo", "hero", "menu", "payment", "design", "design_video"}:
+    if kind not in {"logo", "hero", "menu", "payment", "design", "design_video", "menu_display", "menu_video", "menu_background"}:
         raise HTTPException(status_code=400, detail="Invalid upload kind.")
 
     content_type = (file.content_type or "").split(";")[0].strip().lower()
     video_types = {"video/mp4": ".mp4", "video/webm": ".webm"}
-    ext = video_types.get(content_type) if kind == "design_video" else ALLOWED_IMAGE_TYPES.get(content_type)
+    ext = video_types.get(content_type) if kind in {"design_video", "menu_video"} else ALLOWED_IMAGE_TYPES.get(content_type)
     if not ext:
         raise HTTPException(status_code=400, detail="Unsupported image or video format.")
 
     raw = await file.read()
     if not raw:
         raise HTTPException(status_code=400, detail="Empty file.")
-    max_bytes = 40 * 1024 * 1024 if kind == "design_video" else MAX_UPLOAD_BYTES
-    if len(raw) > max_bytes:
+    max_bytes = None if kind in {"design_video", "menu_video", "menu_display", "menu_background"} else MAX_UPLOAD_BYTES
+    if max_bytes is not None and len(raw) > max_bytes:
         raise HTTPException(status_code=400, detail="File is too large.")
+
+    if kind in {"menu_display", "menu_video", "menu_background"}:
+        validate_menu_upload(raw, content_type)
 
     owner_id = int(owner["owner_id"])
     folder = UPLOAD_ROOT / str(owner_id)
@@ -345,6 +360,7 @@ def owner_add_menu(body: MenuItemCreate, owner=Depends(require_owner)):
         body.description,
         body.price,
         body.image_url,
+        background_color=body.background_color,
     )
     if item is None:
         raise HTTPException(status_code=409, detail="A menu item with that name already exists.")

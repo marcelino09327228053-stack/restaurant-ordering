@@ -1,0 +1,17 @@
+#menuEditorControls{position:relative;max-width:100%;margin-bottom:12px;}
+.me-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+.me-actions .btn{min-height:44px;padding:10px 16px;}
+#menuEditorControls input[hidden]{display:none!important;}
+#menuAppearancePanel{display:flex;gap:12px;align-items:center;flex-wrap:wrap;width:fit-content;max-width:100%;padding:12px;margin-top:10px;border:1px solid #ffffff30;border-radius:12px;background:#1b1b20;box-sizing:border-box;}
+#menuAppearancePanel[hidden]{display:none;}
+#me-swatches{display:flex;gap:6px;flex-wrap:wrap;}
+#me-swatches button{width:36px;height:36px;border:2px solid #fff8;border-radius:50%;cursor:pointer;}
+#menuAppearancePanel label{display:flex;gap:6px;align-items:center;margin:0;font-size:13px;}
+#me-background{width:40px;height:36px;padding:2px;margin:0;}
+#menuEditorStatus{font-size:13px;color:#b8b8c3;margin:6px 0;min-height:0;}
+#menuEditorStatus:empty{display:none;}
+#displayBuilder{border:0;padding:0;}
+
+/* Keep menu forms inside the management panel so every field stays reachable. */
+#tablesPanel #menuDishForm,#tablesPanel #menuItemsPanel{position:static!important;width:100%;max-width:none;max-height:none;box-sizing:border-box;margin-top:12px;}
+#designRoom #tablesPanelBody{max-height:calc(100dvh - 220px);overflow:auto!important;}

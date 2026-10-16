@@ -555,8 +555,6 @@
     #menu.custom-menu-theme .desc { color:inherit; }
 
     .phone-view-mode .search,
-    .phone-view-mode #loginBtn,
-    .phone-view-mode #createAccountBtn,
     .phone-view-mode #cashierLoginBtn,
     .phone-view-mode .table-chip,
     .phone-view-mode .header-order-tools .category-select {
@@ -793,6 +791,8 @@
       bottom:88px;
     }
   </style>
+<link rel="stylesheet" href="/static/menu-appearance.css?v=20261016">
+<script src="/static/menu-appearance.js?v=20261016"></script>
 </head>
 <body>
   <script>
@@ -817,14 +817,6 @@
         <span aria-hidden="true">🔍</span>
         <input id="searchInput" type="search" placeholder="Search food, drinks, desserts..." oninput="renderMenu()" />
       </label>
-      <button type="button" class="dashboard-btn" id="loginBtn" onclick="handleLoginButton()" aria-label="Login">
-        <span class="dashboard-icon" aria-hidden="true">✉</span>
-        <span class="dashboard-label" id="loginLabel">Login</span>
-      </button>
-      <button type="button" class="dashboard-btn account-primary" id="createAccountBtn" onclick="openLogin()" aria-label="Create your account">
-        <span class="dashboard-icon" aria-hidden="true">＋</span>
-        <span class="dashboard-label" id="createAccountLabel">Create your account</span>
-      </button>
       <div class="table-chip">
         <span style="color:var(--orange)" aria-hidden="true">●</span>
         <div><small>Ordering for</small><strong id="tableName">…</strong></div>
@@ -1135,6 +1127,7 @@
         document.getElementById("sheetTable").textContent = `${data.table_name} · ${data.restaurant_name}`;
         menuItems = data.items;
         const menuTheme = data.menu_theme || {};
+        window.MenuAppearance.apply(menuTheme);
         const menuElement = document.getElementById("menu");
         for (const [key, variable] of [["background","--menu-bg"],["card","--menu-card"],["text","--menu-text"]]) {
           if (/^#[0-9a-f]{6}$/i.test(menuTheme[key] || "")) menuElement.style.setProperty(variable, menuTheme[key]);
@@ -1192,6 +1185,9 @@
     }
 
     function renderMenuCard(item) {
+        const background = /^#[0-9a-fA-F]{6}$/.test(item.background_color || '') ? item.background_color : null;
+        const rgb = background ? background.slice(1).match(/../g).map(value => parseInt(value, 16)) : null;
+        const textColor = rgb ? (rgb[0] * .299 + rgb[1] * .587 + rgb[2] * .114 > 150 ? '#17171b' : '#f5f5f4') : 'var(--menu-text,#f5f5f4)';
         const quantity = cart[item.id] || 0;
         const thumb = item.image_url
           ? `<img src="${escapeHtml(item.image_url)}" alt="${escapeHtml(item.name)}" loading="lazy"
@@ -1204,11 +1200,11 @@
                <button onclick="changeQuantity(${item.id}, 1)" aria-label="Add one">+</button>
              </div>`
           : `<button class="add" onclick="changeQuantity(${item.id}, 1)" aria-label="Add ${escapeHtml(item.name)}">🛒</button>`;
-        return `<article class="card">
+        return `<article class="card" style="background:${background || 'var(--menu-card,#17171b)'};color:${textColor}">
           <div class="thumb">${thumb}</div>
           <div class="card-body">
             <h3>${escapeHtml(item.name)}</h3>
-            <p class="desc">${escapeHtml(item.description)}</p>
+            <p class="desc" style="color:inherit">${escapeHtml(item.description)}</p>
             <div class="card-foot ${demoMode ? "card-foot-end" : ""}">${demoMode ? "" : `<span class="price">${money(item.price)}</span>`}${control}</div>
           </div>
         </article>`;
@@ -1596,23 +1592,9 @@
       openLogin();
     }
 
-    function refreshAccountHeader() {
-      const loggedIn = Boolean(localStorage.getItem("owner_token"));
-      const loginLabel = document.getElementById("loginLabel");
-      const accountButton = document.getElementById("createAccountBtn");
-      const accountLabel = document.getElementById("createAccountLabel");
-      loginLabel.textContent = loggedIn ? "My Account" : "Login";
-      accountLabel.textContent = loggedIn ? "✓ Logged in" : "Create your account";
-      accountButton.classList.toggle("logged-in", loggedIn);
-      accountButton.classList.toggle("account-primary", !loggedIn);
-      accountButton.disabled = loggedIn;
-    }
-
     function enableCustomerTableMode() {
       if (!accessCode) return;
-      document.getElementById("loginBtn").hidden = true;
-      document.getElementById("cashierLoginBtn").hidden = true;
-      document.getElementById("createAccountBtn").hidden = true;
+      document.getElementById("cashierLoginBtn")?.setAttribute("hidden", "");
       history.replaceState({ tableSession: true }, "", location.href);
       history.pushState({ tableSession: true }, "", location.href);
       addEventListener("popstate", () => {
@@ -1809,7 +1791,6 @@
 
     loadMenu();
     initHeroSlider();
-    refreshAccountHeader();
     setupGoogleLogin();
     enableCustomerTableMode();
   </script>
