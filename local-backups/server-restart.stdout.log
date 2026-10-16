@@ -465,3 +465,5 @@ INFO:     127.0.0.1:51265 - "GET /api/public/ixumxReJAr4/menu HTTP/1.1" 200 OK
 INFO:     127.0.0.1:51264 - "GET /api/public/ixumxReJAr4/messages?after_id=11 HTTP/1.1" 200 OK
 INFO:     127.0.0.1:51368 - "GET /api/public/ixumxReJAr4/menu HTTP/1.1" 200 OK
 INFO:     127.0.0.1:51367 - "GET /api/public/ixumxReJAr4/messages?after_id=11 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51486 - "GET /api/public/ixumxReJAr4/menu HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51485 - "GET /api/public/ixumxReJAr4/messages?after_id=11 HTTP/1.1" 200 OK
