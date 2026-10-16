@@ -4,7 +4,7 @@
   let draft,dirty=false,busy=false;
   const $=id=>document.getElementById(id);
   const status=text=>{$('menuEditorStatus').textContent=text;};
-  function sync(){ $('me-background').value=draft.background;$('me-remove').disabled=busy || !draft.media_url;preview(); }
+  function sync(){ $('me-background').value=draft.background;$('me-remove').disabled=busy || !draft.media_url; }
   function changed(){dirty=true;status('Unsaved changes');sync();}
   function lock(value){busy=value;for(const id of ['me-upload','me-save'])$(id).disabled=value;sync();}
   function color(value){draft.background=value;draft.gradient=false;draft.background_image='';changed();}

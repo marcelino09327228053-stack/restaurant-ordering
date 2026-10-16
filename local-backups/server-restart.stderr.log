@@ -161,3 +161,162 @@ Traceback (most recent call last):
     )
     ^
 sqlite3.IntegrityError: UNIQUE constraint failed: settings.id
+ERROR:    Exception in ASGI application
+Traceback (most recent call last):
+  File "I:\RESTURANT PROJECT\.venv\Lib\site-packages\uvicorn\protocols\http\h11_impl.py", line 416, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        self.scope, self.receive, self.send
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "I:\RESTURANT PROJECT\.venv\Lib\site-packages\uvicorn\middleware\proxy_headers.py", line 63, in __call__
+    return await self.app(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "I:\RESTURANT PROJECT\.venv\Lib\site-packages\fastapi\applications.py", line 1163, in __call__
+    await super().__call__(scope, receive, send)
+  File "I:\RESTURANT PROJECT\.venv\Lib\site-packages\starlette\applications.py", line 96, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "I:\RESTURANT PROJECT\.venv\Lib\site-packages\starlette\middleware\errors.py", line 186, in __call__
+    raise exc
+  File "I:\RESTURANT PROJECT\.venv\Lib\site-packages\starlette\middleware\errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "I:\RESTURANT PROJECT\.venv\Lib\site-packages\starlette\middleware\cors.py", line 88, in __call__
+    await self.app(scope, receive, send)
+  File "I:\RESTURANT PROJECT\.venv\Lib\site-packages\starlette\middleware\exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "I:\RESTURANT PROJECT\.venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "I:\RESTURANT PROJECT\.venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "I:\RESTURANT PROJECT\.venv\Lib\site-packages\fastapi\middleware\asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "I:\RESTURANT PROJECT\.venv\Lib\site-packages\starlette\routing.py", line 670, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "I:\RESTURANT PROJECT\.venv\Lib\site-packages\fastapi\routing.py", line 2734, in app
+    await route.handle(scope, receive, send)
+  File "I:\RESTURANT PROJECT\.venv\Lib\site-packages\fastapi\routing.py", line 1281, in handle
+    await super().handle(scope, receive, send)
+  File "I:\RESTURANT PROJECT\.venv\Lib\site-packages\starlette\routing.py", line 280, in handle
+    await self.app(scope, receive, send)
+  File "I:\RESTURANT PROJECT\.venv\Lib\site-packages\fastapi\routing.py", line 158, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "I:\RESTURANT PROJECT\.venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "I:\RESTURANT PROJECT\.venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "I:\RESTURANT PROJECT\.venv\Lib\site-packages\fastapi\routing.py", line 144, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "I:\RESTURANT PROJECT\.venv\Lib\site-packages\fastapi\routing.py", line 706, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "I:\RESTURANT PROJECT\.venv\Lib\site-packages\fastapi\routing.py", line 352, in run_endpoint_function
+    return await dependant.call(**values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "I:\RESTURANT PROJECT\app\main.py", line 471, in public_table_menu_without_samples
+    table = repo.get_public_table(access_code)
+  File "I:\RESTURANT PROJECT\app\repository.py", line 124, in get_public_table
+    ensure_defaults()
+    ~~~~~~~~~~~~~~~^^
+  File "I:\RESTURANT PROJECT\app\repository.py", line 53, in ensure_defaults
+    elif not verify_password(password, settings["cashier_password_hash"]):
+             ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "I:\RESTURANT PROJECT\app\auth.py", line 25, in verify_password
+    return bcrypt.checkpw(password.encode("utf-8"), password_hash.encode("utf-8"))
+                                                    ^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'encode'
+ERROR:    Exception in ASGI application
+Traceback (most recent call last):
+  File "I:\RESTURANT PROJECT\.venv\Lib\site-packages\uvicorn\protocols\http\h11_impl.py", line 416, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        self.scope, self.receive, self.send
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "I:\RESTURANT PROJECT\.venv\Lib\site-packages\uvicorn\middleware\proxy_headers.py", line 63, in __call__
+    return await self.app(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "I:\RESTURANT PROJECT\.venv\Lib\site-packages\fastapi\applications.py", line 1163, in __call__
+    await super().__call__(scope, receive, send)
+  File "I:\RESTURANT PROJECT\.venv\Lib\site-packages\starlette\applications.py", line 96, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "I:\RESTURANT PROJECT\.venv\Lib\site-packages\starlette\middleware\errors.py", line 186, in __call__
+    raise exc
+  File "I:\RESTURANT PROJECT\.venv\Lib\site-packages\starlette\middleware\errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "I:\RESTURANT PROJECT\.venv\Lib\site-packages\starlette\middleware\cors.py", line 88, in __call__
+    await self.app(scope, receive, send)
+  File "I:\RESTURANT PROJECT\.venv\Lib\site-packages\starlette\middleware\exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "I:\RESTURANT PROJECT\.venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "I:\RESTURANT PROJECT\.venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "I:\RESTURANT PROJECT\.venv\Lib\site-packages\fastapi\middleware\asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "I:\RESTURANT PROJECT\.venv\Lib\site-packages\starlette\routing.py", line 670, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "I:\RESTURANT PROJECT\.venv\Lib\site-packages\fastapi\routing.py", line 2734, in app
+    await route.handle(scope, receive, send)
+  File "I:\RESTURANT PROJECT\.venv\Lib\site-packages\fastapi\routing.py", line 1780, in handle
+    await self.original_router.handle(scope, receive, send)
+  File "I:\RESTURANT PROJECT\.venv\Lib\site-packages\fastapi\routing.py", line 2789, in handle
+    await included_router._handle_selected(scope, receive, send)
+  File "I:\RESTURANT PROJECT\.venv\Lib\site-packages\fastapi\routing.py", line 1800, in _handle_selected
+    await original_route.handle(scope, receive, send)
+  File "I:\RESTURANT PROJECT\.venv\Lib\site-packages\fastapi\routing.py", line 1279, in handle
+    await app(scope, receive, send)
+  File "I:\RESTURANT PROJECT\.venv\Lib\site-packages\fastapi\routing.py", line 158, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "I:\RESTURANT PROJECT\.venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "I:\RESTURANT PROJECT\.venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "I:\RESTURANT PROJECT\.venv\Lib\site-packages\fastapi\routing.py", line 144, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "I:\RESTURANT PROJECT\.venv\Lib\site-packages\fastapi\routing.py", line 706, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "I:\RESTURANT PROJECT\.venv\Lib\site-packages\fastapi\routing.py", line 354, in run_endpoint_function
+    return await run_in_threadpool(dependant.call, **values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "I:\RESTURANT PROJECT\.venv\Lib\site-packages\starlette\concurrency.py", line 34, in run_in_threadpool
+    return await anyio.to_thread.run_sync(func)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "I:\RESTURANT PROJECT\.venv\Lib\site-packages\anyio\to_thread.py", line 65, in run_sync
+    return await get_async_backend().run_sync_in_worker_thread(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        func, args, abandon_on_cancel=abandon_on_cancel, limiter=limiter
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "I:\RESTURANT PROJECT\.venv\Lib\site-packages\anyio\_backends\_asyncio.py", line 2706, in run_sync_in_worker_thread
+    return await future
+           ^^^^^^^^^^^^
+  File "I:\RESTURANT PROJECT\.venv\Lib\site-packages\anyio\_backends\_asyncio.py", line 1100, in run
+    result = context.run(func, *args)
+  File "I:\RESTURANT PROJECT\app\router.py", line 523, in public_list_messages
+    table = repo.get_public_table(access_code)
+  File "I:\RESTURANT PROJECT\app\repository.py", line 124, in get_public_table
+    ensure_defaults()
+    ~~~~~~~~~~~~~~~^^
+  File "I:\RESTURANT PROJECT\app\repository.py", line 46, in ensure_defaults
+    cursor.execute(
+    ~~~~~~~~~~~~~~^
+        """
+        ^^^
+    ...<3 lines>...
+        (restaurant_name, hash_password(password)),
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+sqlite3.IntegrityError: UNIQUE constraint failed: settings.id
