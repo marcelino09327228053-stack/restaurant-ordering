@@ -43,7 +43,6 @@
     $('menuEditorControls').innerHTML=`<div class="me-actions" id="customerDisplayActions">
       <button class="btn" type="button" id="me-upload">Upload Media</button>
       <button class="btn" type="button" id="me-remove">Remove</button>
-      <button class="btn" type="button" id="menuAppearanceButton" aria-controls="menuAppearancePanel" aria-expanded="false">Background</button>
       <button class="btn solid" type="button" id="me-save">Save</button>
       </div>
       <input hidden id="me-media-file" type="file" accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm">
