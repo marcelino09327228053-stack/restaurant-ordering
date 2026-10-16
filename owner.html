@@ -1851,29 +1851,6 @@
     document.addEventListener("keydown", event => {
       if (event.key === "Escape" && !document.getElementById("menuDishForm").hidden) closeMenuForm();
     });
-    function refreshMenuCustomerPage() {
-      const frame = document.getElementById("menuCustomerPreview");
-      frame.style.height = "520px";
-      if (tables.length) frame.src = `/order?table=${encodeURIComponent(tables[0].access_code)}&menuPreview=1`;
-      else if (owner?.slug) frame.src = `/r/${encodeURIComponent(owner.slug)}?menuPreview=1`;
-    }
-    let menuFrameObserver;
-    function setupMenuFrameSize() {
-      menuFrameObserver?.disconnect();
-      const frame = document.getElementById("menuCustomerPreview");
-      const doc = frame.contentDocument;
-      if (!doc?.body) return;
-      doc.documentElement.style.overflow = "hidden";
-      doc.body.style.setProperty("min-height","0","important");
-      const resize = () => {
-        const height = Math.max(520, Math.ceil(doc.body.getBoundingClientRect().height));
-        if (frame.style.height !== `${height}px`) frame.style.height = `${height}px`;
-      };
-      menuFrameObserver = new ResizeObserver(resize);
-      menuFrameObserver.observe(doc.body);
-      resize();
-    }
-
     function editMenuItem(id) {
       if (document.getElementById("addMenuButton").disabled) return;
       const item = menu.find(item => item.id === id);
