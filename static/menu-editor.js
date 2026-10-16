@@ -48,6 +48,7 @@
       </div>
       <input hidden id="me-media-file" type="file" accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm">
       <div id="menuAppearancePanel" hidden aria-label="Background color"><div id="me-swatches"></div><label title="Custom color">Custom<input id="me-background" type="color" aria-label="Custom background color"></label></div>
+      <div id="me-media-preview" hidden></div>
       <p id="menuEditorStatus" role="status" aria-live="polite"></p>`;
     const panel=open=>{$('menuAppearancePanel').hidden=!open;$('menuAppearanceButton').setAttribute('aria-expanded',String(open));};
     $('menuAppearanceButton').onclick=()=>panel($('menuAppearancePanel').hidden);

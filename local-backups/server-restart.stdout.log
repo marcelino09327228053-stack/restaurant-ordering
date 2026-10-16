@@ -547,3 +547,28 @@ INFO:     127.0.0.1:52442 - "GET /static/vendor/lucide/eraser.svg HTTP/1.1" 200 
 INFO:     127.0.0.1:52439 - "GET /static/vendor/lucide/save.svg HTTP/1.1" 200 OK
 INFO:     127.0.0.1:52456 - "POST /api/owner/upload HTTP/1.1" 200 OK
 INFO:     127.0.0.1:52549 - "POST /api/owner/upload HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54489 - "GET /owner HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54489 - "GET /static/menu-editor.css?v=20261016b HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:54490 - "GET /static/menu-editor.js?v=20261016b HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54490 - "GET /api/owner/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54490 - "GET /api/owner/menu HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54490 - "GET /api/owner/tables HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54490 - "GET /api/owner/payment-methods HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54490 - "GET /api/qr?table=ixumxReJAr4 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54489 - "GET /api/qr?table=msC8XdgGjvc HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54491 - "GET /api/qr?table=SSo9mYWXTgI HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57336 - "GET /owner HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57336 - "GET /static/menu-editor.css?v=20261016b HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57336 - "GET /static/menu-editor.js?v=20261016b HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:57336 - "GET /api/owner/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57336 - "GET /api/owner/menu HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57336 - "GET /api/owner/tables HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57336 - "GET /api/owner/payment-methods HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57336 - "GET /api/qr?table=ixumxReJAr4 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57337 - "GET /api/qr?table=msC8XdgGjvc HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57338 - "GET /api/qr?table=SSo9mYWXTgI HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57352 - "POST /api/owner/upload HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57352 - "GET /static/uploads/1/menu_display-a9177f07530e46d9a74a37efa66ec33d.jpg HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57376 - "POST /api/owner/upload HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57376 - "GET /static/uploads/1/menu_video-a6a7aac5cb6d495e9a41c6f473783433.webm HTTP/1.1" 206 Partial Content
+INFO:     127.0.0.1:57384 - "GET /static/uploads/1/menu_video-a6a7aac5cb6d495e9a41c6f473783433.webm HTTP/1.1" 206 Partial Content
