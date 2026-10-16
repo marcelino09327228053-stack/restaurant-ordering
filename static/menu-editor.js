@@ -4,7 +4,6 @@
   let draft,dirty=false,busy=false;
   const $=id=>document.getElementById(id);
   const status=text=>{$('menuEditorStatus').textContent=text;};
-  function preview(){ $('menuCustomerPreview')?.contentWindow?.postMessage({type:'menu-appearance-preview',config:draft},location.origin); }
   function sync(){ $('me-background').value=draft.background;$('me-remove').disabled=busy || !draft.media_url;preview(); }
   function changed(){dirty=true;status('Unsaved changes');sync();}
   function lock(value){busy=value;for(const id of ['me-upload','me-save'])$(id).disabled=value;sync();}
