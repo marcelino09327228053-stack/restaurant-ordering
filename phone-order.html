@@ -1192,8 +1192,10 @@
         document.getElementById("sheetTable").textContent = `${data.table_name} · ${data.restaurant_name}`;
         menuItems = data.items;
         const menuTheme = data.menu_theme || {};
+        menuCurrency = menuTheme.currency || "PHP";
         window.MenuAppearance.apply(menuTheme);
         const menuElement = document.getElementById("menu");
+        menuElement.style.fontFamily = `${menuTheme.font || "Arial"}, sans-serif`;
         for (const [key, variable] of [["background","--menu-bg"],["card","--menu-card"],["text","--menu-text"],["category","--menu-category"],["description","--menu-description"],["price","--menu-price"]]) {
           if (/^#[0-9a-f]{6}$/i.test(menuTheme[key] || "")) menuElement.style.setProperty(variable, menuTheme[key]);
         }
