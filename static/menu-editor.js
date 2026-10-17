@@ -8,20 +8,22 @@
     const box=$('me-media-preview');
     if(!box)return;
     box.style.background=draft.background;
-    if(!draft.media_url){
-      box.innerHTML='';
-      box.hidden=true;
-      return;
-    }
     box.hidden=false;
-    box.innerHTML=draft.media_type==='video'
-      ? `<video src="${draft.media_url}" controls playsinline preload="metadata"></video>`
-      : `<img src="${draft.media_url}" alt="Customer display media">`;
+    const key=draft.media_type+':'+draft.media_url;
+    if(box.dataset.media===key)return;
+    box.dataset.media=key;
+    box.replaceChildren();
+    if(!draft.media_url || draft.media_type==='none')return;
+    const media=document.createElement(draft.media_type==='video'?'video':'img');
+    media.src=draft.media_url;
+    if(draft.media_type==='video'){media.controls=true;media.playsInline=true;media.preload='metadata';}
+    else media.alt='Customer display media';
+    media.onerror=()=>{box.replaceChildren();};
+    box.append(media);
   }
-  function sync(){ $('me-remove').disabled=busy || !draft.media_url;renderMedia(); }
+  function sync(){ if($('me-background'))$('me-background').value=draft.background; $('me-remove').disabled=busy || !draft.media_url;renderMedia(); }
   function changed(){dirty=true;status('Unsaved changes');sync();}
   function lock(value){busy=value;for(const id of ['me-upload','me-save'])$(id).disabled=value;sync();}
-  function color(value){draft.background=value;draft.gradient=false;draft.background_image='';changed();}
   async function upload(file){
     if(!file || busy)return;
     const image=['image/jpeg','image/png','image/webp','image/gif'].includes(file.type),video=['video/mp4','video/webm'].includes(file.type);
@@ -43,11 +45,21 @@
     $('menuEditorControls').innerHTML=`<div class="me-actions" id="customerDisplayActions">
       <button class="btn" type="button" id="me-upload">Upload Media</button>
       <button class="btn" type="button" id="me-remove">Remove</button>
+      <button class="btn" type="button" id="menuAppearanceButton" aria-controls="menuAppearancePanel" aria-expanded="false">Background</button>
       <button class="btn solid" type="button" id="me-save">Save</button>
       </div>
       <input hidden id="me-media-file" type="file" accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm">
-      <div id="me-media-preview" hidden></div>
+      <div id="menuAppearancePanel" hidden aria-label="Background color"><div id="me-swatches"></div><label>Custom<input id="me-background" type="color" aria-label="Custom background color"></label></div>
+      <div id="me-media-preview" aria-label="Customer display media"></div>
       <p id="menuEditorStatus" role="status" aria-live="polite"></p>`;
+    const panel=open=>{$('menuAppearancePanel').hidden=!open;$('menuAppearanceButton').setAttribute('aria-expanded',String(open));};
+    $('menuAppearanceButton').onclick=()=>panel($('menuAppearancePanel').hidden);
+    const color=value=>{draft.background=value;draft.gradient=false;draft.background_image='';changed();};
+    for(const [name,value] of [['Green','#39ff14'],['Blue','#0066ff'],['Red','#ff2038'],['Pink','#ff1493'],['Purple','#a020f0'],['Orange','#ff7900'],['Cyan','#00e5ff']]){
+      const button=document.createElement('button');button.type='button';button.title=name;button.setAttribute('aria-label',name);button.style.background=value;button.onclick=()=>color(value);$('me-swatches').append(button);
+    }
+    $('me-background').oninput=e=>color(e.target.value);
+    document.addEventListener('keydown',e=>{if(e.key==='Escape')panel(false);});
     $('me-upload').onclick=()=>$('me-media-file').click();
     $('me-media-file').onchange=e=>{upload(e.target.files[0]);e.target.value='';};
     $('me-remove').onclick=()=>{draft.media_url='';draft.media_type='none';changed();};
