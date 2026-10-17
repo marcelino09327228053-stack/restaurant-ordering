@@ -59,7 +59,7 @@
       <button class="btn solid" type="button" id="me-save">Save</button>
       </div>
       <input hidden id="me-media-file" type="file" accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm">
-      <div id="customerDisplayBackgroundPanel" hidden aria-label="Background color"><div id="me-swatches"></div><label>Custom<input id="me-background" type="color" aria-label="Custom background color"></label></div>
+      <div id="customerDisplayBackgroundPanel" hidden aria-label="Background color"><div id="me-swatches"></div><label>Custom<input id="me-background" type="color" aria-label="Custom background color"></label><button class="btn" type="button" id="customerDisplayBackgroundClose">Close</button></div>
       <div id="me-media-preview" aria-label="Customer display media"></div>
       <p id="menuEditorStatus" role="status" aria-live="polite"></p>`;
     const panel=open=>{$('customerDisplayBackgroundPanel').hidden=!open;$('customerDisplayBackgroundButton').setAttribute('aria-expanded',String(open));};
