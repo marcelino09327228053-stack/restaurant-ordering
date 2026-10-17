@@ -1989,18 +1989,16 @@
 
     async function addTable() {
       const name = document.getElementById("tableNameInput").value.trim();
-      const qr_caption = document.getElementById("tableNotesInput").value.trim();
       if (!name) { toast("Enter a table name."); return; }
       try {
         await api("/api/owner/tables", {
           method: "POST",
-          body: JSON.stringify({ name, qr_caption }),
+          body: JSON.stringify({ name, qr_caption: "" }),
         });
         document.getElementById("tableNameInput").value = "";
-        document.getElementById("tableNotesInput").value = "";
         tables = await api("/api/owner/tables");
         renderTables();
-        toast("Table link created.", true);
+        toast("QR code generated.", true);
       } catch (e) { toast(e.message); }
     }
 
