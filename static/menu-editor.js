@@ -62,25 +62,40 @@
       <div id="customerDisplayBackgroundPanel" hidden aria-label="Background color"><div id="me-swatches"></div><label>Custom<input id="me-background" type="color" aria-label="Custom background color"></label><button class="btn" type="button" id="customerDisplayBackgroundClose">Close</button></div>
       <div id="me-media-preview" aria-label="Customer display media"></div>
       <p id="menuEditorStatus" role="status" aria-live="polite"></p>`;
-    const panel=open=>{$('customerDisplayBackgroundPanel').hidden=!open;$('customerDisplayBackgroundButton').setAttribute('aria-expanded',String(open));};
+    async function saveDraft(){
+      if(busy || !dirty)return;
+      const config=structuredClone(draft);lock(true);status('Saving…');
+      try{owner=await api('/api/owner/menu-appearance',{method:'PATCH',body:JSON.stringify(config)});dirty=JSON.stringify(draft)!==JSON.stringify(config);status(dirty?'Unsaved changes':'Saved');}
+      catch{status('Could not save. Please try again.');}finally{lock(false);}
+    }
+    const panel=async open=>{
+      const backgroundPanel=$('customerDisplayBackgroundPanel');
+      const wasOpen=!backgroundPanel.hidden;
+      backgroundPanel.hidden=!open;
+      $('customerDisplayBackgroundButton').setAttribute('aria-expanded',String(open));
+      if(wasOpen && !open && dirty)await saveDraft();
+    };
     $('customerDisplayBackgroundButton').onclick=()=>panel($('customerDisplayBackgroundPanel').hidden);
+    $('customerDisplayBackgroundClose').onclick=()=>panel(false);
     const color=value=>{draft.background=value;draft.gradient=false;draft.background_image='';changed();};
     for(const [name,value] of [['Green','#39ff14'],['Blue','#0066ff'],['Red','#ff2038'],['Pink','#ff1493'],['Purple','#a020f0'],['Orange','#ff7900'],['Cyan','#00e5ff']]){
       const button=document.createElement('button');button.type='button';button.title=name;button.setAttribute('aria-label',name);button.style.background=value;button.onclick=()=>color(value);$('me-swatches').append(button);
     }
     $('me-background').oninput=e=>color(e.target.value);
-    document.addEventListener('keydown',e=>{if(e.key==='Escape')panel(false);});
+    document.addEventListener('click',e=>{
+      const backgroundPanel=$('customerDisplayBackgroundPanel');
+      if(backgroundPanel.hidden)return;
+      if(backgroundPanel.contains(e.target) || $('customerDisplayBackgroundButton').contains(e.target))return;
+      panel(false);
+    });
+    document.addEventListener('keydown',e=>{if(e.key==='Escape' && !$('customerDisplayBackgroundPanel').hidden)panel(false);});
     $('me-preview-phone').onclick=()=>applyPreviewMode('phone');
     $('me-preview-pc').onclick=()=>applyPreviewMode('pc');
     applyPreviewMode('pc');
     $('me-upload').onclick=()=>$('me-media-file').click();
     $('me-media-file').onchange=e=>{upload(e.target.files[0]);e.target.value='';};
     $('me-remove').onclick=()=>{draft.media_url='';draft.media_type='none';changed();};
-    $('me-save').onclick=async()=>{
-      if(busy)return;const config=structuredClone(draft);lock(true);status('Saving…');
-      try{owner=await api('/api/owner/menu-appearance',{method:'PATCH',body:JSON.stringify(config)});dirty=JSON.stringify(draft)!==JSON.stringify(config);status(dirty?'Unsaved changes':'Saved');}
-      catch{status('Could not save. Please try again.');}finally{lock(false);}
-    };
+    $('me-save').onclick=saveDraft;
     window.addEventListener('beforeunload',e=>{if(dirty || busy){e.preventDefault();e.returnValue='';}});
     sync();
   }
