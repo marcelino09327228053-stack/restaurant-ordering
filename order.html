@@ -1129,7 +1129,7 @@
         const menuTheme = data.menu_theme || {};
         window.MenuAppearance.apply(menuTheme);
         const menuElement = document.getElementById("menu");
-        for (const [key, variable] of [["background","--menu-bg"],["card","--menu-card"],["text","--menu-text"]]) {
+        for (const [key, variable] of [["background","--menu-bg"],["card","--menu-card"],["text","--menu-text"],["price","--menu-price"]]) {
           if (/^#[0-9a-f]{6}$/i.test(menuTheme[key] || "")) menuElement.style.setProperty(variable, menuTheme[key]);
         }
         if (Object.keys(menuTheme).length) menuElement.classList.add("custom-menu-theme");
