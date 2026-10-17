@@ -6,7 +6,7 @@
   <title>Site Builder</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Lato:wght@400;700&family=Merriweather:wght@400;700&family=Montserrat:wght@400;500;600;700;800&family=Nunito:wght@400;500;600;700;800&family=Open+Sans:wght@400;500;600;700;800&family=Oswald:wght@400;500;600;700&family=Outfit:wght@400;500;600;700;800&family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@400;500;600;700;800&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Lato:wght@400;700&family=Merriweather:wght@400;700&family=Montserrat:wght@400;500;600;700;800&family=Nunito:wght@400;500;600;700;800&family=Open+Sans:wght@400;500;600;700;800&family=Oswald:wght@400;500;600;700&family=Outfit:wght@400;500;600;700;800&family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@400;500;600;700;800&family=Roboto:wght@400;500;700&family=Lora:wght@400;500;600;700&family=Anton&family=Pacifico&family=Lobster&family=Dancing+Script&family=Cinzel&family=Abril+Fatface&family=Righteous&family=Permanent+Marker&display=swap" rel="stylesheet" />
   <style>
     :root {
       --bg: #070809;
@@ -522,7 +522,7 @@
       position:absolute; inset:8px 12px 12px; width:auto; grid-column:1;
       border:1px solid #ffffff24; border-radius:16px; box-shadow:none;
     }
-    .design-room:not(.canvas-tools-visible) #menuPanel {
+    .design-room:not(.canvas-tools-visible) :is(#menuPanel, #tablesPanel) {
       left:50%; right:auto; transform:translateX(-50%);
       width:min(1120px,calc(100% - 32px));
       top:calc(var(--studio-header-height,64px) + 16px); bottom:16px;
@@ -553,20 +553,16 @@
     /* Section navigation must hide the complete editor, including injected modules. */
     #designRoom:not(.canvas-tools-visible) > .design-work,
     #designRoom:not(.canvas-tools-visible) #mbCapcutToolbar { display:none!important; }
-    #designRoom:not(.canvas-tools-visible) #tablesPanel {
-      left:50%;right:auto;transform:translateX(-50%);
-      width:min(860px,calc(100% - 32px));bottom:auto;
-      top:calc(var(--studio-header-height,68px) + 20px);
-      max-height:calc(100% - var(--studio-header-height,68px) - 40px);
-    }
     #tablePaymentSection .block {border:0;box-shadow:none;padding:0;margin:0;}
     /* Show the complete owner interface at 90% of its previous size. */
     html { zoom: 0.9; }
   </style>
   <script src="/static/vendor/fabric.min.js"></script>
   <script src="/static/design-templates.js?v=20260921c"></script>
-<link rel="stylesheet" href="/static/menu-editor.css?v=20261017b">
+<link rel="stylesheet" href="/static/menu-editor.css?v=20261017categories">
 <script defer src="/static/menu-editor.js?v=20261017b"></script>
+<script src="/static/menu-fonts.js?v=20261017type"></script>
+<link rel="stylesheet" href="/static/menu-typography.css?v=20261017">
 </head>
 <body>
   <header class="top">
@@ -604,12 +600,23 @@
         <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
           <button class="btn" id="openMenuButton" type="button" aria-haspopup="dialog" aria-controls="menuDishForm" aria-expanded="false" onclick="openMenuForm()">+ Add Menu</button>
           <button class="btn" id="editMenuButton" type="button" aria-haspopup="dialog" aria-controls="menuItemsPanel" aria-expanded="false" onclick="toggleMenuItemsPanel()">Edit / Delete</button>
+          <button class="btn" id="menuCategoryButton" type="button" aria-haspopup="dialog" aria-controls="menuCategoryPanel" aria-expanded="false" onclick="toggleMenuCategoryPanel()">Category</button>
           <button class="btn" id="menuAppearanceButton" type="button" aria-haspopup="dialog" aria-controls="menuAppearancePanel" aria-expanded="false" onclick="toggleMenuAppearancePanel()">Menu Appearance</button>
+        </div>
+        <div class="menu-dish-popover" id="menuCategoryPanel" role="dialog" aria-labelledby="menuCategoryTitle" hidden style="width:260px;padding:14px;box-sizing:border-box">
+          <div class="menu-dish-popover-head"><h2 id="menuCategoryTitle">Category</h2><button type="button" class="btn" onclick="toggleMenuCategoryPanel(false)">Close</button></div>
+          <div id="menuCategoryFilters" class="menu-category-filters"></div>
+          <button type="button" class="btn" onclick="document.getElementById('newCategoryForm').hidden=false;document.getElementById('newCategoryName').focus()">+ Add Category</button>
+          <form id="newCategoryForm" hidden onsubmit="event.preventDefault();saveMenuCategory()">
+            <label for="newCategoryName">Category Name</label><input id="newCategoryName" maxlength="80" required autocomplete="off">
+            <div style="display:flex;gap:8px"><button class="btn" type="button" onclick="document.getElementById('newCategoryForm').hidden=true">Cancel</button><button class="btn solid" id="saveCategoryButton" type="submit">Add Category</button></div>
+            <p id="categoryFeedback" role="status"></p>
+          </form>
         </div>
         <div class="menu-dish-popover" id="menuAppearancePanel" hidden style="width:230px;padding:14px;box-sizing:border-box">
           <div class="menu-dish-popover-head" style="margin-bottom:10px">
             <h2 style="font-size:1rem">Menu Appearance</h2>
-            <button class="btn" type="button" onclick="document.getElementById('menuAppearancePanel').hidden=true;document.getElementById('menuAppearanceButton').setAttribute('aria-expanded','false')">Close</button>
+            <button class="btn" type="button" onclick="toggleMenuAppearancePanel(false)">Close</button>
           </div>
           <div style="display:grid;gap:8px">
             <label class="menu-color-row"><span>Background</span><input class="menu-color-swatch" id="menuCardColor" type="color" value="#17171b" oninput="renderMenuList()" /></label>
@@ -617,7 +624,19 @@
             <label class="menu-color-row"><span>Category</span><input class="menu-color-swatch" id="menuCategoryColor" type="color" value="#a8a8ad" oninput="renderMenuList()" /></label>
             <label class="menu-color-row"><span>Description</span><input class="menu-color-swatch" id="menuDescriptionColor" type="color" value="#a8a8ad" oninput="renderMenuList()" /></label>
             <label class="menu-color-row"><span>Price</span><input class="menu-color-swatch" id="menuPriceColor" type="color" value="#f97316" oninput="renderMenuList()" /></label>
-            <label class="menu-color-row"><span>Font</span><select id="menuFont" onchange="renderMenuList()" style="width:120px"><option value="Arial">Arial</option><option value="Roboto">Roboto</option><option value="Poppins">Poppins</option><option value="Montserrat">Montserrat</option><option value="Open Sans">Open Sans</option><option value="Lato">Lato</option><option value="Nunito">Nunito</option><option value="Oswald">Oswald</option><option value="Merriweather">Merriweather</option><option value="Playfair Display">Playfair Display</option></select></label>
+            <div class="menu-font-picker" id="menuFontPicker">
+              <span id="menuFontLabel">Font</span>
+              <input type="hidden" id="menuFont" value="Arial">
+              <button type="button" id="menuFontButton" aria-labelledby="menuFontLabel menuFontButton" aria-haspopup="listbox" aria-controls="menuFontOptions" aria-expanded="false">Arial</button>
+              <div id="menuFontOptions" role="listbox" aria-labelledby="menuFontLabel" hidden></div>
+            </div>
+            <label for="menuFontSize">Font Size <output id="menuFontSizeValue" for="menuFontSize">18 px</output></label>
+            <input id="menuFontSize" type="range" min="12" max="32" step="1" value="18" oninput="renderMenuList()">
+            <div id="menuTextAlignment" role="group" aria-label="Text Alignment">
+              <button type="button" class="btn" data-align="left" aria-pressed="true" onclick="setMenuTextAlignment('left');renderMenuList()">Left</button>
+              <button type="button" class="btn" data-align="center" aria-pressed="false" onclick="setMenuTextAlignment('center');renderMenuList()">Center</button>
+              <button type="button" class="btn" data-align="right" aria-pressed="false" onclick="setMenuTextAlignment('right');renderMenuList()">Right</button>
+            </div>
             <label class="menu-color-row"><span>Currency</span><select id="menuCurrency" onchange="renderMenuList()" style="width:120px"><option value="PHP">PHP (₱)</option><option value="USD">USD ($)</option><option value="EUR">EUR (€)</option><option value="GBP">GBP (£)</option><option value="JPY">JPY (¥)</option><option value="AUD">AUD (A$)</option><option value="CAD">CAD (C$)</option><option value="SGD">SGD (S$)</option></select></label>
           </div>
           <button class="btn solid" type="button" style="width:100%;margin-top:12px" onclick="saveMenuColors()">Save Appearance</button>
@@ -823,7 +842,8 @@
     </div>
   </section>
 
-  <script>
+  <script src="/static/menu-font-picker.js?v=20261017b"></script>
+<script>
     const money = v => new Intl.NumberFormat("en-PH", { style: "currency", currency: "PHP" }).format(v);
     const escapeHtml = v => {
       const d = document.createElement("div");
@@ -833,6 +853,7 @@
 
     let owner = null;
     let menu = [];
+    let selectedMenuCategory = null; // null means All, never a persisted category
     let editingMenuId = null;
     let tables = [];
     let paymentMethods = [];
@@ -1094,6 +1115,7 @@
       else if(activeEditorTool === "slideshow") closeEditorTool();
     }
     function toggleStudioPanel(id, force) {
+      closeAllMenuPopovers();
       const target = document.getElementById(id);
       const shouldOpen = typeof force === "boolean" ? force : target.hidden;
       document.querySelectorAll(".studio-panel").forEach(item => item.hidden = true);
@@ -1300,6 +1322,7 @@
       menuQrBody.replaceChildren(tabBar, tablePane, paymentPane, menuPane);
 
       function showMenuQrTab(tab) {
+        closeAllMenuPopovers();
         tablePane.hidden = tab !== "table";
         paymentPane.hidden = tab !== "payment";
         menuPane.hidden = tab !== "menu";
@@ -1315,7 +1338,7 @@
       document.body.classList.add("studio-only");
       document.title = "Design Your Page";
     }
-    function closeDesignRoom() { toggleSlideshowPanel(false); document.getElementById("designRoom").hidden = true; }
+    function closeDesignRoom() { closeAllMenuPopovers(); toggleSlideshowPanel(false); document.getElementById("designRoom").hidden = true; }
     function addDesignText() {
       if (!designCanvas || designRestoring) return;
       const center = designCanvas.getCenter();
@@ -1592,10 +1615,52 @@
       select.hidden = false;
     }
 
+    function availableMenuCategories() {
+      const unique = new Map();
+      for (const value of [...menu.map(item => item.category), ...(owner?.custom_design?.menuCategories || [])]) {
+        const name = String(value || "").trim();
+        if (name && !unique.has(name.toLowerCase())) unique.set(name.toLowerCase(), name);
+      }
+      return [...unique.values()];
+    }
+    function renderCategoryFilters() {
+      const list = document.getElementById("menuCategoryFilters");
+      list.replaceChildren();
+      for (const name of [null, ...availableMenuCategories()]) {
+        const button = document.createElement("button");
+        button.type = "button"; button.className = "btn";
+        button.textContent = name === null ? "All" : name;
+        button.setAttribute("aria-pressed", String(selectedMenuCategory === name));
+        button.onclick = () => { selectedMenuCategory = name; renderMenuList(); };
+        list.append(button);
+      }
+    }
+    async function saveMenuCategory() {
+      const name = document.getElementById("newCategoryName").value.trim();
+      const feedback = document.getElementById("categoryFeedback");
+      if (!name || name.toLowerCase() === "all") { feedback.textContent = "Enter a category name other than All."; return; }
+      if (availableMenuCategories().some(value => value.toLowerCase() === name.toLowerCase())) { feedback.textContent = "This category already exists."; return; }
+      const button = document.getElementById("saveCategoryButton"); button.disabled = true;
+      try {
+        owner = await api("/api/owner/menu-categories", {method:"POST",body:JSON.stringify({name})});
+        document.getElementById("newCategoryName").value = "";
+        feedback.textContent = ""; document.getElementById("newCategoryForm").hidden = true;
+        renderMenuList();
+      } catch (error) { feedback.textContent = error.message; }
+      finally { button.disabled = false; }
+    }
+    function toggleMenuCategoryPanel(force) {
+      const panel = document.getElementById("menuCategoryPanel");
+      const button = document.getElementById("menuCategoryButton");
+      const open = typeof force === "boolean" ? force : panel.hidden;
+      if (open) { closeAllMenuPopovers("menuCategoryPanel"); renderCategoryFilters(); }
+      panel.hidden = !open; button.setAttribute("aria-expanded", String(open));
+      if (open) requestAnimationFrame(() => positionMenuPopover(panel, button));
+    }
     function renderMenuCategories() {
       const select = document.getElementById("menuCategory");
       const selected = select.value;
-      const categories = [...new Set([...menu.map(item => item.category), "Mains", "Appetizers", "Rice Meals", "Burgers", "Pizza", "Pasta", "Sides", "Desserts", "Drinks"].filter(Boolean))];
+      const categories = availableMenuCategories();
       select.replaceChildren(new Option("Select category", ""));
       categories.forEach(category => select.add(new Option(category, category)));
       select.add(new Option("+ Add new category", "__custom__"));
@@ -1606,11 +1671,20 @@
       select.value = categories.includes(selected) || selected === "__custom__" ? selected : "";
     }
 
+    function setMenuTextAlignment(value) {
+      const alignment = ['left','center','right'].includes(value) ? value : 'left';
+      document.getElementById('menuTextAlignment').dataset.value = alignment;
+      document.querySelectorAll('#menuTextAlignment button').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.align === alignment)));
+    }
     function renderMenuList() {
+      const categories = availableMenuCategories();
+      if (selectedMenuCategory !== null && !categories.includes(selectedMenuCategory)) selectedMenuCategory = null;
+      const visibleMenu = selectedMenuCategory === null ? menu : menu.filter(item => item.category.trim().toLowerCase() === selectedMenuCategory.toLowerCase());
       renderMenuCategories();
+      renderCategoryFilters();
 
-      document.getElementById("menuList").innerHTML = menu.length
-        ? menu.map(item => `
+      document.getElementById("menuList").innerHTML = visibleMenu.length
+        ? visibleMenu.map(item => `
           <div class="menu-item">
             <div class="menu-pic">${item.image_url
               ? `<img src="${escapeHtml(item.image_url)}" alt="" />`
@@ -1624,36 +1698,37 @@
               <div style="display:flex;gap:8px"><button class="btn" type="button" onclick="editMenuItem(${item.id})">Edit</button><button class="btn danger" type="button" onclick="deleteMenuItem(${item.id})">Delete</button></div>
             </div>
           </div>`).join("")
-        : `<p class="hint" style="margin-top:12px">No dishes yet — add your first signature item.</p>`;
+        : `<p class="hint" style="margin-top:12px">No items in this view.</p>`;
 
       const gallery = document.getElementById("menuGallery");
       if (gallery) {
         const cardColor = document.getElementById("menuCardColor")?.value || "#17171b";
         const nameColor = document.getElementById("menuNameColor")?.value || "#f5f5f4";
-        const categoryColor = document.getElementById("menuCategoryColor")?.value || "#a8a8ad";
         const descriptionColor = document.getElementById("menuDescriptionColor")?.value || "#a8a8ad";
         const priceColor = document.getElementById("menuPriceColor")?.value || "#f97316";
-        const menuFont = document.getElementById("menuFont")?.value || "Arial";
+        const menuFont = MenuFonts.normalize(document.getElementById("menuFont")?.value);
+        MenuFonts.apply(gallery, menuFont);
+        MenuFonts.typography(gallery, {text_align:document.getElementById('menuTextAlignment').dataset.value, font_size:Number(document.getElementById('menuFontSize').value)});
+        document.getElementById('menuFontSizeValue').textContent = document.getElementById('menuFontSize').value + ' px';
         const menuCurrency = document.getElementById("menuCurrency")?.value || "PHP";
         const menuMoney = value => new Intl.NumberFormat(undefined, {style:"currency", currency:menuCurrency}).format(value);
-        gallery.innerHTML = menu.length
+        gallery.innerHTML = visibleMenu.length
           ? `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px;margin-top:14px">
-              ${menu.map(item => `
+              ${visibleMenu.map(item => `
                 <div style="border:1px solid var(--line);border-radius:14px;overflow:hidden;background:${cardColor}">
                   <div style="aspect-ratio:4/3;background:#111;display:flex;align-items:center;justify-content:center;overflow:hidden">
                     ${item.image_url
                       ? `<img src="${escapeHtml(item.image_url)}" alt="${escapeHtml(item.name)}" style="width:100%;height:100%;object-fit:cover" />`
                       : `<span style="font-size:2rem">🍽</span>`}
                   </div>
-                  <div style="padding:10px;background:${cardColor};font-family:${JSON.stringify(menuFont)},sans-serif">
+                  <div class="menu-text-body" style="padding:10px;background:${cardColor}">
                     <strong style="display:block;color:${nameColor}">${escapeHtml(item.name)}</strong>
-                    <small style="display:block;color:${categoryColor};margin-top:3px">${escapeHtml(item.category || "")}</small>
                     <small style="display:block;color:${descriptionColor};margin-top:3px">${escapeHtml(item.description || "")}</small>
                     <div class="price-tag" style="margin-top:8px;color:${priceColor}">${menuMoney(item.price)}</div>
                   </div>
                 </div>`).join("")}
             </div>`
-          : `<p class="hint" style="margin-top:12px">No dishes yet — add your first menu item.</p>`;
+          : `<p class="hint" style="margin-top:12px">No items in this view.</p>`;
       }
     }
 
@@ -1800,6 +1875,8 @@
             description: document.getElementById("menuDescriptionColor").value,
             price: document.getElementById("menuPriceColor").value,
             font: document.getElementById("menuFont").value,
+            text_align: document.getElementById('menuTextAlignment').dataset.value || 'left',
+            font_size: Number(document.getElementById('menuFontSize').value),
             currency: document.getElementById("menuCurrency").value,
           }),
         });
@@ -1928,11 +2005,12 @@
 
     function openMenuForm() {
       if (document.getElementById("addMenuButton").disabled) return;
-      closeOtherMenuPopovers("menuDishForm");
+      if (!document.getElementById("menuDishForm").hidden) { closeAllMenuPopovers(); return; }
       cancelMenuEdit();
       showMenuForm();
     }
     function showMenuForm() {
+      closeAllMenuPopovers("menuDishForm");
       const form = document.getElementById("menuDishForm");
       form.hidden = false;
       document.getElementById("openMenuButton").setAttribute("aria-expanded", "true");
@@ -1946,16 +2024,13 @@
       document.getElementById("menuDishForm").hidden = true;
       document.getElementById("openMenuButton").setAttribute("aria-expanded", "false");
     }
-    function closeOtherMenuPopovers(exceptId = "") {
-      [
-        ["menuDishForm", "openMenuButton"],
-        ["menuItemsPanel", "editMenuButton"],
-        ["menuAppearancePanel", "menuAppearanceButton"]
-      ].forEach(([panelId, buttonId]) => {
+    function closeAllMenuPopovers(exceptId = "") {
+      if (exceptId !== "menuAppearancePanel") MenuFontPicker.close();
+      menuPopovers.forEach(([panelId, buttonId]) => {
         if (panelId === exceptId) return;
         const panel = document.getElementById(panelId);
         const button = document.getElementById(buttonId);
-        if (panel) panel.hidden = true;
+        if (panel && !panel.hidden) panel.hidden = true;
         if (button) button.setAttribute("aria-expanded", "false");
       });
     }
@@ -1989,6 +2064,17 @@
         viewportTop = Math.max(gap, viewportHeight - height - gap);
       }
 
+      // Keep sibling triggers reachable when a side-positioned panel overlaps the row.
+      const triggerRects = menuPopovers.map(([, id]) => document.getElementById(id).getBoundingClientRect());
+      if (triggerRects.some(rect =>
+        viewportLeft < rect.right / pageZoom && viewportLeft + width > rect.left / pageZoom &&
+        viewportTop < rect.bottom / pageZoom && viewportTop + height > rect.top / pageZoom)) {
+        viewportTop = (Math.max(...triggerRects.map(rect => rect.bottom)) + gap) / pageZoom;
+        panel.style.maxHeight = `${Math.max(120, viewportHeight - viewportTop - gap)}px`;
+      } else {
+        panel.style.maxHeight = "";
+      }
+
       panel.style.setProperty("left", `${viewportLeft}px`, "important");
       panel.style.setProperty("right", "auto", "important");
       panel.style.setProperty("top", `${viewportTop}px`, "important");
@@ -2003,7 +2089,7 @@
       const panel = document.getElementById("menuItemsPanel");
       const button = document.getElementById("editMenuButton");
       const shouldOpen = typeof force === "boolean" ? force : panel.hidden;
-      if (shouldOpen) closeOtherMenuPopovers("menuItemsPanel");
+      if (shouldOpen) closeAllMenuPopovers("menuItemsPanel");
       panel.hidden = !shouldOpen;
       button.setAttribute("aria-expanded", String(shouldOpen));
       if (shouldOpen) requestAnimationFrame(() => positionMenuPopover(panel, button));
@@ -2013,12 +2099,14 @@
       const panel = document.getElementById("menuAppearancePanel");
       const button = document.getElementById("menuAppearanceButton");
       const shouldOpen = typeof force === "boolean" ? force : panel.hidden;
-      if (shouldOpen) closeOtherMenuPopovers("menuAppearancePanel");
+      if (shouldOpen) closeAllMenuPopovers("menuAppearancePanel");
+      else MenuFontPicker.close();
       panel.hidden = !shouldOpen;
       button.setAttribute("aria-expanded", String(shouldOpen));
       if (shouldOpen) requestAnimationFrame(() => positionMenuPopover(panel, button));
     }
     window.addEventListener("resize", () => {
+      positionMenuPopover(document.getElementById("menuCategoryPanel"), document.getElementById("menuCategoryButton"));
       positionMenuForm();
       positionMenuPopover(
         document.getElementById("menuItemsPanel"),
@@ -2030,7 +2118,30 @@
       );
     });
     document.addEventListener("keydown", event => {
-      if (event.key === "Escape" && !document.getElementById("menuDishForm").hidden) closeMenuForm();
+      if (event.key !== "Escape" || event.defaultPrevented) return;
+      const active = menuPopovers.find(([panel]) => !document.getElementById(panel).hidden);
+      if (active) { closeAllMenuPopovers(); document.getElementById(active[1]).focus(); }
+
+    });
+    const menuPopovers = [
+      ["menuDishForm", "openMenuButton"],
+      ["menuItemsPanel", "editMenuButton"],
+      ["menuCategoryPanel", "menuCategoryButton"],
+      ["menuAppearancePanel", "menuAppearanceButton"]
+    ];
+    document.addEventListener("pointerdown", event => {
+      if (!document.getElementById("menuFontPicker").contains(event.target)) MenuFontPicker.close();
+      const active = menuPopovers.find(([panel]) => !document.getElementById(panel).hidden);
+      if (!active) return;
+      if (active.some(id => document.getElementById(id).contains(event.target))) return;
+      closeAllMenuPopovers();
+    });
+    // Panels are portaled to body: observe their workspace ancestors as well.
+    const menuWorkspaceObserver = new MutationObserver(() => {
+      if (!document.getElementById("openMenuButton").getClientRects().length) closeAllMenuPopovers();
+    });
+    menuWorkspaceObserver.observe(document.getElementById("designRoom"), {
+      attributes: true, subtree: true, attributeFilter: ["hidden", "class", "style"]
     });
     function editMenuItem(id) {
       if (document.getElementById("addMenuButton").disabled) return;
@@ -2038,7 +2149,12 @@
       if (!item) return;
       showMenuForm();
       editingMenuId = id;
-      document.getElementById("menuCategory").value = item.category;
+      const categorySelect = document.getElementById("menuCategory");
+      // Preserve exact legacy assignments even when categories differ only by case.
+      if (![...categorySelect.options].some(option => option.value === item.category)) {
+        categorySelect.add(new Option(item.category, item.category), categorySelect.options.length - 1);
+      }
+      categorySelect.value = item.category;
       toggleCustomCategory();
       for (const [field, key] of [["menuName","name"],["menuDescription","description"],["menuPrice","price"]]) document.getElementById(field).value = item[key] || "";
       pendingMenuImage = item.image_url || "";
@@ -2264,7 +2380,9 @@
         document.getElementById("menuCategoryColor").value = theme.category || "#a8a8ad";
         document.getElementById("menuDescriptionColor").value = theme.description || "#a8a8ad";
         document.getElementById("menuPriceColor").value = theme.price || "#f97316";
-        document.getElementById("menuFont").value = theme.font || "Arial";
+        MenuFontPicker.set(theme.font);
+        setMenuTextAlignment(theme.text_align);
+        document.getElementById('menuFontSize').value = MenuFonts.size(theme.font_size);
         document.getElementById("menuCurrency").value = theme.currency || "PHP";
         selectedSlideshowStyle = owner.slideshow_style || "fade";
         menu = await api("/api/owner/menu");

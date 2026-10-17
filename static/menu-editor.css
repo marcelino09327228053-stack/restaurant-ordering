@@ -14,7 +14,22 @@
 
 /* Keep menu forms inside the management panel so every field stays reachable. */
 #tablesPanel #menuDishForm,#tablesPanel #menuItemsPanel{position:static!important;width:100%;max-width:none;max-height:none;box-sizing:border-box;margin-top:12px;}
-#designRoom #tablesPanelBody{max-height:calc(100dvh - 220px);overflow:auto!important;}
 #me-media-preview{width:100%;min-height:220px;max-height:520px;margin-top:14px;border:1px solid #ffffff22;border-radius:14px;overflow:hidden;display:flex;align-items:center;justify-content:center;box-sizing:border-box;}
 #me-media-preview[hidden]{display:none!important;}
 #me-media-preview img,#me-media-preview video{display:block;max-width:100%;max-height:520px;width:auto;height:auto;object-fit:contain;}
+#menuGallery,#menuGallery strong,#menuGallery small,#menuGallery .price-tag{font-family:var(--menu-font,Arial,sans-serif)}
+.menu-font-picker{margin:10px 0}
+#menuFontButton{display:block;width:100%;text-align:left;margin-top:6px;min-height:44px;padding:8px 10px;border:1px solid #666;border-radius:8px;background:#17171b;color:#fff;cursor:pointer}
+#menuFontButton::after{content:'▾';float:right}
+#menuFontOptions{max-height:240px;overflow-y:auto;margin-top:4px;border:1px solid #666;border-radius:8px;background:#17171b}
+#menuFontOptions[hidden]{display:none}
+#menuFontOptions button{display:block;width:100%;min-height:44px;padding:10px;text-align:left;border:0;background:transparent;color:#fff;font-size:16px;cursor:pointer}
+#menuFontOptions button[aria-selected="true"]{background:#713900;box-shadow:inset 3px 0 #ff9b36}
+#menuFontOptions button:hover{background:#393939}
+#menuFontOptions button:focus-visible,#menuFontButton:focus-visible{outline:2px solid #ffb36b;outline-offset:-2px}
+
+.menu-category-filters{display:grid;gap:6px;margin:12px 0;max-height:240px;overflow:auto}
+.menu-category-filters .btn{text-align:left;white-space:normal;overflow-wrap:anywhere}
+.menu-category-filters .btn[aria-pressed="true"]{background:#f9731625;border-color:#f97316;color:#fff}
+.menu-category-filters .btn:hover{background:#ffffff12}
+#newCategoryForm[hidden]{display:none}

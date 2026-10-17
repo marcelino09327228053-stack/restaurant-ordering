@@ -329,7 +329,6 @@ def create_app() -> FastAPI:
         """
         tables_tabs_patch = """
         <style id="mb-native-table-tabs-style">
-          #tablesPanel { width:min(760px,calc(100% - 32px)) !important; max-width:760px !important; left:50% !important; right:auto !important; transform:translateX(-50%) !important; }
           #mbNativeTableTabs { display:grid; grid-template-columns:1fr 1fr; gap:8px; padding:4px; margin:0 0 16px; border:1px solid #ffffff1f; border-radius:12px; background:#0d1015; position:sticky; top:0; z-index:50; }
           #mbNativeTableTabs button { min-height:44px; border:1px solid transparent; border-radius:9px; background:transparent; color:#aeb4bd; font-weight:800; cursor:pointer; }
           #mbNativeTableTabs button.active { color:#fff; background:#f97316; border-color:#fb923c; box-shadow:0 6px 20px #f9731626; }

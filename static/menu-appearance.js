@@ -11,6 +11,8 @@
     for (const key of ['background','text','gradient_color']) if (!/^#[0-9a-f]{6}$/i.test(config[key])) config[key] = defaults[key];
     document.body.classList.add('menu-appearance');
     const root = document.documentElement;
+    MenuFonts.apply(document.getElementById('menu'), config.font);
+    MenuFonts.typography(document.getElementById('menu'), config);
     root.style.setProperty('--me-bg', config.background);
     root.style.setProperty('--me-text', config.text);
     const image = safeURL(config.background_image);

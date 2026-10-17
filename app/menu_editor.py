@@ -2,7 +2,7 @@
 import io
 from typing import Literal
 from urllib.parse import urlparse
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, Field, field_validator
 from fastapi import HTTPException
 from PIL import Image
 
@@ -13,7 +13,9 @@ class MenuAppearance(BaseModel):
     description: str = '#a8a8ad'
     card: str = '#17171b'
     price: str = '#f97316'
-    font: Literal['Arial', 'Roboto', 'Poppins', 'Montserrat', 'Open Sans', 'Lato', 'Nunito', 'Oswald', 'Merriweather', 'Playfair Display'] = 'Arial'
+    font: Literal['Poppins', 'Bebas Neue', 'Oswald', 'Playfair Display', 'Merriweather', 'Montserrat', 'Anton', 'Pacifico', 'Lobster', 'Dancing Script', 'Cinzel', 'Abril Fatface', 'Righteous', 'Permanent Marker'] = 'Poppins'
+    text_align: Literal['left', 'center', 'right'] = 'left'
+    font_size: int = Field(default=18, ge=12, le=32, strict=True)
     currency: Literal['PHP', 'USD', 'EUR', 'GBP', 'JPY', 'AUD', 'CAD', 'SGD'] = 'PHP'
     gradient: bool = False
     gradient_color: str = '#6d28ff'
@@ -22,6 +24,12 @@ class MenuAppearance(BaseModel):
     intensity: Literal['low', 'medium', 'high'] = 'medium'
     media_url: str = ''
     media_type: Literal['image', 'video', 'none'] = 'none'
+
+    @field_validator('font', mode='before')
+    @classmethod
+    def menu_font(cls, value):
+        from typing import get_args
+        return value if value in get_args(cls.model_fields['font'].annotation) else 'Poppins'
 
     @field_validator('background', 'text', 'category', 'description', 'card', 'price', 'gradient_color')
     @classmethod

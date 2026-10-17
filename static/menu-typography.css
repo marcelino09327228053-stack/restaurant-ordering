@@ -1,0 +1,44 @@
+/* The text area supplies its own width; images and card dimensions stay unchanged. */
+#menuGallery .menu-text-body, #menu .card-body {
+  container-type:inline-size;
+  min-width:0;
+  text-align:var(--menu-text-align,left);
+}
+#menuGallery .menu-text-body > strong, #menu .card-body h3,
+#menuGallery .menu-text-body > small, #menu .card-body .desc,
+#menuGallery .price-tag, #menu .card-body .price {
+  /* Narrow cards cap the requested size. Long names may wrap without clipping. */
+  --menu-effective-size:min(var(--menu-font-size,18px),clamp(12px,8cqi,32px));
+  min-width:0;
+  max-width:100%;
+  white-space:normal;
+  overflow-wrap:anywhere;
+  line-height:1.35;
+  text-align:var(--menu-text-align,left);
+}
+#menuGallery .menu-text-body > strong, #menu .card-body h3 {
+  font-size:var(--menu-effective-size);
+}
+#menuGallery .menu-text-body > small, #menu .card-body .desc {
+  font-size:max(12px,calc(var(--menu-effective-size) * .8));
+  display:block;
+  height:auto;
+  max-height:none;
+  overflow:visible;
+  -webkit-line-clamp:unset;
+}
+#menuGallery .price-tag, #menu .card-body .price {
+  font-size:max(12px,calc(var(--menu-effective-size) * .9));
+}
+#menu .card-body .card-foot {flex-wrap:wrap;}
+#menu .card-body .card-foot .price {flex:1 0 100%;}
+#menu .menu-category-heading {
+  text-align:var(--menu-text-align,left);
+  font-size:clamp(12px,var(--menu-font-size,18px),26px);
+  overflow-wrap:anywhere;
+}
+#menuFontSize {width:100%;padding:0;}
+#menuFontSizeValue {float:right;}
+#menuTextAlignment {display:flex;gap:4px;margin:10px 0;}
+#menuTextAlignment .btn {flex:1;min-width:0;padding:7px 4px;}
+#menuTextAlignment .btn[aria-pressed="true"] {border-color:#f97316;background:#f9731625;}

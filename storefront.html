@@ -6,7 +6,7 @@
   <title>Restaurant</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Lato:wght@400;700&family=Merriweather:wght@400;700&family=Montserrat:wght@400;500;600;700;800&family=Nunito:wght@400;500;600;700;800&family=Open+Sans:wght@400;500;600;700;800&family=Oswald:wght@400;500;600;700&family=Outfit:wght@400;500;600;700;800&family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@400;500;600;700;800&family=Roboto:wght@400;500;700&family=Lora:wght@400;500;600;700&family=Anton&family=Pacifico&family=Lobster&family=Dancing+Script&family=Cinzel&family=Abril+Fatface&family=Righteous&family=Permanent+Marker&display=swap" rel="stylesheet" />
   <style>
     :root {
       --bg: #090b0b;
@@ -186,8 +186,10 @@
     #menu.custom-menu-theme .price { color:var(--menu-price,#f97316); }
   </style>
   <script src="/static/vendor/fabric.min.js"></script>
-<link rel="stylesheet" href="/static/menu-appearance.css?v=20261017c">
-<script src="/static/menu-appearance.js?v=20261017c"></script>
+<link rel="stylesheet" href="/static/menu-appearance.css?v=20261017fonts">
+<script src="/static/menu-appearance.js?v=20261017type"></script>
+<script src="/static/menu-fonts.js?v=20261017type"></script>
+<link rel="stylesheet" href="/static/menu-typography.css?v=20261017">
 </head>
 <body>
   <header>
@@ -299,7 +301,8 @@
       if (!theme) return;
       const menu = document.getElementById("menu");
       menuCurrency = theme.currency || "PHP";
-      menu.style.fontFamily = `${theme.font || "Arial"}, sans-serif`;
+      MenuFonts.apply(menu, theme.font);
+      MenuFonts.typography(menu, theme);
       for (const [key, variable] of [["background","--menu-bg"],["card","--menu-card"],["text","--menu-text"],["category","--menu-category"],["description","--menu-description"],["price","--menu-price"]]) {
         if (/^#[0-9a-f]{6}$/i.test(theme[key] || "")) menu.style.setProperty(variable, theme[key]);
       }

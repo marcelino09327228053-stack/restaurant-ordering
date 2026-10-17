@@ -268,6 +268,27 @@ def owner_update_site(body: OwnerSiteUpdate, owner=Depends(require_owner)):
     return data
 
 
+class OwnerCategoryCreate(BaseModel):
+    name: str = Field(min_length=1, max_length=80)
+
+
+@router.post("/owner/menu-categories")
+def add_owner_category(body: OwnerCategoryCreate, owner=Depends(require_owner)):
+    name = body.name.strip()
+    if not name or name.casefold() in {"all", "__custom__"}:
+        raise HTTPException(400, "Enter a category name other than All.")
+    site = repo.get_owner(owner["owner_id"])
+    if site is None:
+        raise HTTPException(404, "Owner not found.")
+    design = dict(site.get("custom_design") or {})
+    saved = list(design.get("menuCategories") or [])
+    existing = saved + [item["category"] for item in repo.list_owner_menu(owner["owner_id"])]
+    if any(value.strip().casefold() == name.casefold() for value in existing):
+        raise HTTPException(409, "This category already exists.")
+    design["menuCategories"] = saved + [name]
+    return repo.update_owner_site(owner["owner_id"], custom_design=design)
+
+
 @router.patch("/owner/menu-appearance")
 def save_menu_appearance(body: MenuAppearance, owner=Depends(require_owner)):
     site = repo.get_owner(owner["owner_id"])

@@ -21,3 +21,4 @@ body.menu-appearance { background:var(--me-surface,#0b0b0d)!important;background
   .menu-appearance .header-order-tools{margin-left:auto;}
 }
 @media(max-width:600px){.menu-appearance .header-order-tools{margin-right:6px;}}
+.menu-appearance #menu,.menu-appearance #menu .card,.menu-appearance #menu h3,.menu-appearance #menu .category,.menu-appearance #menu .category-tag,.menu-appearance #menu .menu-category-heading,.menu-appearance #menu .desc,.menu-appearance #menu .price{font-family:var(--menu-font,Arial,sans-serif)}
