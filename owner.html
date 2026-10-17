@@ -1866,6 +1866,10 @@
     function positionMenuPopover(panel, button) {
       if (!panel || panel.hidden) return;
 
+      if (panel.parentElement !== document.body) {
+        document.body.appendChild(panel);
+      }
+
       const menuBuilder = document.getElementById("menuBuilder");
       if (!menuBuilder) return;
 
