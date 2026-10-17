@@ -64,4 +64,8 @@ try:
     with urllib.request.urlopen(req) as r: assert json.load(r)["amount_recorded"]==150
     print("PASS: local HTTP authentication, bill listing, payment route")
 finally:
-    server.should_exit=True;thread.join(5);sock.close();conn.close();_tmp.cleanup()
+    server.should_exit=True;thread.join(5);sock.close();conn.close()
+    # Collect connections released by terminated worker threads before Windows cleanup.
+    import gc
+    gc.collect()
+    _tmp.cleanup()

@@ -7,6 +7,7 @@ SQLite for local development.
 import os
 import re
 import sqlite3
+import threading
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -16,7 +17,7 @@ load_dotenv()
 DATABASE_URL = os.getenv("DATABASE_URL", "").strip()
 DB_PATH = Path(os.getenv("SQLITE_PATH", "restaurant.db"))
 
-_sqlite_conn: sqlite3.Connection | None = None
+_sqlite_local = threading.local()
 _pg_conn = None
 
 
@@ -137,7 +138,7 @@ def using_postgres() -> bool:
 
 
 def get_connection():
-    global _sqlite_conn, _pg_conn
+    global _pg_conn
 
     if using_postgres():
         if _pg_conn is None or _pg_conn.closed:
@@ -147,10 +148,19 @@ def get_connection():
             _pg_conn = PostgresConnectionCompat(raw)
         return _pg_conn
 
-    if _sqlite_conn is None:
-        _sqlite_conn = sqlite3.connect(DB_PATH, check_same_thread=False)
-        _sqlite_conn.row_factory = sqlite3.Row
-    return _sqlite_conn
+    conn = getattr(_sqlite_local, "connection", None)
+    if conn is None:
+        conn = sqlite3.connect(
+            DB_PATH,
+            timeout=30.0,
+            check_same_thread=False,
+        )
+        conn.row_factory = sqlite3.Row
+        conn.execute("PRAGMA journal_mode=WAL")
+        conn.execute("PRAGMA busy_timeout=30000")
+        conn.execute("PRAGMA foreign_keys=ON")
+        _sqlite_local.connection = conn
+    return conn
 
 
 def _init_postgres_db() -> None:

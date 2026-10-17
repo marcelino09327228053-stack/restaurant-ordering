@@ -360,7 +360,6 @@ def owner_add_menu(body: MenuItemCreate, owner=Depends(require_owner)):
         body.description,
         body.price,
         body.image_url,
-        background_color=body.background_color,
     )
     if item is None:
         raise HTTPException(status_code=409, detail="A menu item with that name already exists.")
@@ -370,7 +369,11 @@ def owner_add_menu(body: MenuItemCreate, owner=Depends(require_owner)):
 @router.patch("/owner/menu/{item_id}")
 def owner_edit_menu(item_id: int, body: MenuItemCreate, owner=Depends(require_owner)):
     try:
-        item = repo.update_owner_menu_item(owner["owner_id"], item_id, **body.model_dump())
+        item = repo.update_owner_menu_item(
+            owner["owner_id"],
+            item_id,
+            **body.model_dump(exclude={"background_color"}),
+        )
     except ValueError as exc:
         raise HTTPException(status_code=409, detail=str(exc)) from exc
     if item is None:
