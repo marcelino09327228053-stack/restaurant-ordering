@@ -2,11 +2,11 @@
 .me-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
 .me-actions .btn{min-height:44px;padding:10px 16px;}
 #menuEditorControls input[hidden]{display:none!important;}
-#menuAppearancePanel{display:flex;gap:12px;align-items:center;flex-wrap:wrap;width:fit-content;max-width:100%;padding:12px;margin-top:10px;border:1px solid #ffffff30;border-radius:12px;background:#1b1b20;box-sizing:border-box;}
-#menuAppearancePanel[hidden]{display:none;}
+#customerDisplayBackgroundPanel{display:flex;gap:12px;align-items:center;flex-wrap:wrap;width:fit-content;max-width:100%;padding:12px;margin-top:10px;border:1px solid #ffffff30;border-radius:12px;background:#1b1b20;box-sizing:border-box;}
+#customerDisplayBackgroundPanel[hidden]{display:none;}
 #me-swatches{display:flex;gap:6px;flex-wrap:wrap;}
 #me-swatches button{width:36px;height:36px;border:2px solid #fff8;border-radius:50%;cursor:pointer;}
-#menuAppearancePanel label{display:flex;gap:6px;align-items:center;margin:0;font-size:13px;}
+#customerDisplayBackgroundPanel label{display:flex;gap:6px;align-items:center;margin:0;font-size:13px;}
 #me-background{width:40px;height:36px;padding:2px;margin:0;}
 #menuEditorStatus{font-size:13px;color:#b8b8c3;margin:6px 0;min-height:0;}
 #menuEditorStatus:empty{display:none;}
