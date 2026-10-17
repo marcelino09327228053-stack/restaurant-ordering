@@ -1581,20 +1581,23 @@
 
       const gallery = document.getElementById("menuGallery");
       if (gallery) {
+        const cardColor = document.getElementById("menuCardColor")?.value || "#17171b";
+        const nameColor = document.getElementById("menuNameColor")?.value || "#f5f5f4";
+        const priceColor = document.getElementById("menuPriceColor")?.value || "#f97316";
         gallery.innerHTML = menu.length
           ? `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px;margin-top:14px">
               ${menu.map(item => `
-                <div style="border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--panel-2)">
+                <div style="border:1px solid var(--line);border-radius:14px;overflow:hidden;background:${cardColor}">
                   <div style="aspect-ratio:4/3;background:#111;display:flex;align-items:center;justify-content:center;overflow:hidden">
                     ${item.image_url
                       ? `<img src="${escapeHtml(item.image_url)}" alt="${escapeHtml(item.name)}" style="width:100%;height:100%;object-fit:cover" />`
                       : `<span style="font-size:2rem">🍽</span>`}
                   </div>
-                  <div style="padding:10px">
-                    <strong style="display:block">${escapeHtml(item.name)}</strong>
+                  <div style="padding:10px;background:${cardColor}">
+                    <strong style="display:block;color:${nameColor}">${escapeHtml(item.name)}</strong>
                     <small style="display:block;color:var(--muted);margin-top:3px">${escapeHtml(item.category || "")}</small>
                     <small style="display:block;color:var(--muted);margin-top:3px">${escapeHtml(item.description || "")}</small>
-                    <div class="price-tag" style="margin-top:8px">${money(item.price)}</div>
+                    <div class="price-tag" style="margin-top:8px;color:${priceColor}">${money(item.price)}</div>
                   </div>
                 </div>`).join("")}
             </div>`
