@@ -1735,6 +1735,24 @@
       }, 3200);
     }
 
+    async function saveMenuColors() {
+      try {
+        const currentTheme = owner?.custom_design?.menuTheme || {};
+        const savedOwner = await api("/api/owner/menu-appearance", {
+          method: "PATCH",
+          body: JSON.stringify({
+            ...currentTheme,
+            card: document.getElementById("menuCardColor").value,
+            text: document.getElementById("menuNameColor").value,
+            price: document.getElementById("menuPriceColor").value,
+          }),
+        });
+        owner = savedOwner;
+        renderMenuList();
+        toast("Menu colors saved.", true);
+      } catch (e) { toast(e.message); }
+    }
+
     async function saveSite() {
       try {
         owner = await api("/api/owner/site", {
