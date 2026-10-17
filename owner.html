@@ -1917,13 +1917,20 @@
 
       if (!button) return;
 
-      const rect = button.getBoundingClientRect();
-      const gap = 8;
+      const buttonRect = button.getBoundingClientRect();
+      const actionBar = document.getElementById("openMenuButton")?.parentElement;
+      const anchorRect = actionBar ? actionBar.getBoundingClientRect() : buttonRect;
+      const gap = 10;
       const width = panel.offsetWidth;
       const height = panel.offsetHeight;
 
-      const viewportLeft = rect.right + gap;
-      let viewportTop = Math.max(gap, rect.top);
+      let viewportLeft = anchorRect.right + gap;
+      let viewportTop = Math.max(gap, buttonRect.top);
+
+      if (viewportLeft + width > innerWidth - gap) {
+        viewportLeft = Math.max(gap, anchorRect.left);
+        viewportTop = anchorRect.bottom + gap;
+      }
 
       if (viewportTop + height > innerHeight - gap) {
         viewportTop = Math.max(gap, innerHeight - height - gap);
