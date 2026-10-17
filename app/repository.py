@@ -996,6 +996,28 @@ def create_owner_table(owner_id: int, name: str, qr_caption: str = "") -> dict |
     caption = (qr_caption or "").strip()[:120]
     cursor.execute(
         """
+        SELECT id FROM restaurant_tables
+        WHERE owner_id = ? AND LOWER(name) = LOWER(?) AND active = 0
+        ORDER BY id DESC LIMIT 1
+        """,
+        (owner_id, name.strip()),
+    )
+    archived = cursor.fetchone()
+    if archived:
+        table_id = archived["id"]
+        cursor.execute(
+            """
+            UPDATE restaurant_tables
+            SET active = 1, access_code = ?, qr_caption = ?
+            WHERE id = ? AND owner_id = ?
+            """,
+            (secrets.token_urlsafe(8), caption, table_id, owner_id),
+        )
+        conn.commit()
+        cursor.execute("SELECT * FROM restaurant_tables WHERE id = ?", (table_id,))
+        return dict(cursor.fetchone())
+    cursor.execute(
+        """
         INSERT INTO restaurant_tables (name, access_code, owner_id, qr_caption)
         VALUES (?, ?, ?, ?)
         """,
