@@ -14,9 +14,13 @@
 
 /* Keep menu forms inside the management panel so every field stays reachable. */
 #tablesPanel #menuDishForm,#tablesPanel #menuItemsPanel{position:static!important;width:100%;max-width:none;max-height:none;box-sizing:border-box;margin-top:12px;}
-#me-media-preview{width:100%;min-height:220px;max-height:520px;margin-top:14px;border:1px solid #ffffff22;border-radius:14px;overflow:hidden;display:flex;align-items:center;justify-content:center;box-sizing:border-box;}
+#me-media-preview{width:100%;min-height:220px;max-height:520px;margin:14px auto 0;border:1px solid #ffffff22;border-radius:14px;overflow:hidden;display:flex;align-items:center;justify-content:center;box-sizing:border-box;transition:width .2s ease,max-width .2s ease,min-height .2s ease,border-radius .2s ease;}
+#me-media-preview.pc-preview{width:100%;max-width:100%;min-height:320px;border-radius:14px;}
+#me-media-preview.phone-preview{width:min(390px,100%);max-width:390px;min-height:520px;border-radius:28px;border-width:2px;box-shadow:0 0 0 6px #111,0 16px 40px #0008;}
 #me-media-preview[hidden]{display:none!important;}
 #me-media-preview img,#me-media-preview video{display:block;max-width:100%;max-height:520px;width:auto;height:auto;object-fit:contain;}
+#me-media-preview.phone-preview img,#me-media-preview.phone-preview video{max-height:520px;max-width:100%;}
+@media(max-width:480px){#me-media-preview.phone-preview{width:min(340px,100%);min-height:460px;border-radius:24px;}}
 #menuGallery,#menuGallery strong,#menuGallery small,#menuGallery .price-tag{font-family:var(--menu-font,Arial,sans-serif)}
 .menu-font-picker{margin:10px 0}
 #menuFontButton{display:block;width:100%;text-align:left;margin-top:6px;min-height:44px;padding:8px 10px;border:1px solid #666;border-radius:8px;background:#17171b;color:#fff;cursor:pointer}
