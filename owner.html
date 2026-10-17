@@ -1209,18 +1209,56 @@
       new ResizeObserver(updatePanelOffset).observe(header);
       updatePanelOffset();
       const moves = [
-        ["brandBuilder","brandPanelBody"], ["displayBuilder","menuPanelBody"], ["menuBuilder","tablesPanelBody"],
+        ["brandBuilder","brandPanelBody"], ["displayBuilder","menuPanelBody"],
         ["tablesBuilder","tablesPanelBody"], ["paymentsBuilder","paymentsPanelBody"]
       ];
       moves.forEach(([source,target]) => document.getElementById(target).appendChild(document.getElementById(source)));
-      const paymentSection = document.createElement("details");
-      paymentSection.id = "tablePaymentSection";
-      paymentSection.style.cssText = "margin-top:20px;padding-top:16px;border-top:1px solid #ffffff24";
-      const paymentHeading = document.createElement("summary");
-      paymentHeading.textContent = "Payments — upload payment QR";
-      paymentHeading.style.cssText = "cursor:pointer;font-weight:700;padding:10px 0";
-      paymentSection.append(paymentHeading, document.getElementById("paymentsPanelBody"));
-      document.getElementById("tablesPanelBody").append(paymentSection);
+      const menuQrBody = document.getElementById("tablesPanelBody");
+      const tableBuilder = document.getElementById("tablesBuilder");
+      const paymentBody = document.getElementById("paymentsPanelBody");
+      const menuBuilder = document.getElementById("menuBuilder");
+
+      const tabBar = document.createElement("div");
+      tabBar.style.cssText = "display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px";
+
+      const tableTab = document.createElement("button");
+      const paymentTab = document.createElement("button");
+      const menuTab = document.createElement("button");
+
+      tableTab.type = paymentTab.type = menuTab.type = "button";
+      tableTab.className = "btn solid";
+      paymentTab.className = menuTab.className = "btn";
+
+      tableTab.textContent = "Table & QR";
+      paymentTab.textContent = "Payment";
+      menuTab.textContent = "Menu";
+
+      const tablePane = document.createElement("div");
+      const paymentPane = document.createElement("div");
+      const menuPane = document.createElement("div");
+
+      paymentPane.hidden = true;
+      menuPane.hidden = true;
+
+      tablePane.appendChild(tableBuilder);
+      paymentPane.appendChild(paymentBody);
+      menuPane.appendChild(menuBuilder);
+
+      tabBar.append(tableTab, paymentTab, menuTab);
+      menuQrBody.replaceChildren(tabBar, tablePane, paymentPane, menuPane);
+
+      function showMenuQrTab(tab) {
+        tablePane.hidden = tab !== "table";
+        paymentPane.hidden = tab !== "payment";
+        menuPane.hidden = tab !== "menu";
+        tableTab.className = tab === "table" ? "btn solid" : "btn";
+        paymentTab.className = tab === "payment" ? "btn solid" : "btn";
+        menuTab.className = tab === "menu" ? "btn solid" : "btn";
+      }
+
+      tableTab.onclick = () => showMenuQrTab("table");
+      paymentTab.onclick = () => showMenuQrTab("payment");
+      menuTab.onclick = () => showMenuQrTab("menu");
       document.getElementById("previewPanelBody").appendChild(document.querySelector(".preview-pane .device"));
       document.body.classList.add("studio-only");
       document.title = "Design Your Page";
