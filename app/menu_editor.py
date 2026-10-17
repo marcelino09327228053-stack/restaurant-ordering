@@ -21,7 +21,7 @@ class MenuAppearance(BaseModel):
     media_url: str = ''
     media_type: Literal['image', 'video', 'none'] = 'none'
 
-    @field_validator('background', 'text', 'description', 'card', 'price', 'gradient_color')
+    @field_validator('background', 'text', 'category', 'description', 'card', 'price', 'gradient_color')
     @classmethod
     def color(cls, value):
         import re
