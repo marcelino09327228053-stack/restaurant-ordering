@@ -1006,6 +1006,35 @@ def create_owner_table(owner_id: int, name: str, qr_caption: str = "") -> dict |
     return dict(cursor.fetchone())
 
 
+def update_owner_table_qr_caption(owner_id: int, table_id: int, qr_caption: str) -> dict | None:
+    text = (qr_caption or "").strip()
+    if len(text) > 120:
+        raise ValueError("QR text is too long (max 120 characters).")
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute(
+        """
+        UPDATE restaurant_tables
+        SET qr_caption = ?
+        WHERE id = ? AND owner_id = ? AND active = 1
+        """,
+        (text, table_id, owner_id),
+    )
+    if cursor.rowcount == 0:
+        return None
+    conn.commit()
+    cursor.execute(
+        """
+        SELECT id, name, access_code, active, created_at, owner_id, qr_caption
+        FROM restaurant_tables
+        WHERE id = ? AND owner_id = ?
+        """,
+        (table_id, owner_id),
+    )
+    row = cursor.fetchone()
+    return dict(row) if row else None
+
+
 def archive_owner_table(owner_id: int, table_id: int) -> bool:
     conn = get_connection()
     cursor = conn.cursor()
