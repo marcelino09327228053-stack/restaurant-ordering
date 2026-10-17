@@ -568,12 +568,16 @@
         <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
           <button class="btn solid" id="openMenuButton" type="button" aria-haspopup="dialog" aria-controls="menuDishForm" aria-expanded="false" onclick="openMenuForm()">+ Add Menu</button>
           <button class="btn" id="editMenuButton" type="button" aria-haspopup="dialog" aria-controls="menuItemsPanel" aria-expanded="false" onclick="toggleMenuItemsPanel()">Edit / Delete</button>
+          <button class="btn" id="menuAppearanceButton" type="button" aria-haspopup="dialog" aria-controls="menuAppearancePanel" aria-expanded="false" onclick="toggleMenuAppearancePanel()">Menu Appearance</button>
         </div>
-        <div style="display:flex;gap:10px;align-items:end;flex-wrap:wrap;margin-bottom:12px">
-          <label style="margin:0">Background<input id="menuCardColor" type="color" value="#17171b" style="display:block;width:54px;height:34px;margin-top:4px;padding:2px" /></label>
-          <label style="margin:0">Name<input id="menuNameColor" type="color" value="#f5f5f4" style="display:block;width:54px;height:34px;margin-top:4px;padding:2px" /></label>
-          <label style="margin:0">Price<input id="menuPriceColor" type="color" value="#f97316" style="display:block;width:54px;height:34px;margin-top:4px;padding:2px" /></label>
-          <button class="btn" type="button" onclick="saveMenuColors()">Save Colors</button>
+        <div id="menuAppearancePanel" hidden style="width:min(320px,100%);padding:12px;margin-bottom:12px;border:1px solid var(--line);border-radius:14px;background:var(--panel-2);box-sizing:border-box">
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;text-align:center">
+            <label style="margin:0;font-size:.78rem">Background<input id="menuCardColor" type="color" value="#17171b" style="display:block;width:30px;height:30px;margin:6px auto 0;padding:0;border:0;border-radius:50%;overflow:hidden;cursor:pointer" oninput="renderMenuList()" /></label>
+            <label style="margin:0;font-size:.78rem">Item Name<input id="menuNameColor" type="color" value="#f5f5f4" style="display:block;width:30px;height:30px;margin:6px auto 0;padding:0;border:0;border-radius:50%;overflow:hidden;cursor:pointer" oninput="renderMenuList()" /></label>
+            <label style="margin:0;font-size:.78rem">Description<input id="menuDescriptionColor" type="color" value="#a8a8ad" style="display:block;width:30px;height:30px;margin:6px auto 0;padding:0;border:0;border-radius:50%;overflow:hidden;cursor:pointer" oninput="renderMenuList()" /></label>
+            <label style="margin:0;font-size:.78rem">Price<input id="menuPriceColor" type="color" value="#f97316" style="display:block;width:30px;height:30px;margin:6px auto 0;padding:0;border:0;border-radius:50%;overflow:hidden;cursor:pointer" oninput="renderMenuList()" /></label>
+          </div>
+          <button class="btn" type="button" style="width:100%;margin-top:12px" onclick="saveMenuColors()">Save Appearance</button>
         </div>
         <div id="menuGallery"></div>
 
