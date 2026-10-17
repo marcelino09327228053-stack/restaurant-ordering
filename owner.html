@@ -2315,6 +2315,7 @@
               <strong>${escapeHtml(method.provider)} ${method.active ? "" : "· Disabled"}</strong>
               <small>${escapeHtml(method.account_name || "No account name")}</small>
               <small>${escapeHtml(method.account_number_masked || "")}</small>
+              ${method.instructions ? `<small>${escapeHtml(method.instructions)}</small>` : ""}
               <div class="payment-actions">
                 <button class="btn" type="button" onclick="togglePayment(${method.id}, ${!method.active})">${method.active ? "Disable" : "Enable"}</button>
                 <button class="btn" type="button" onclick="deletePayment(${method.id})">Delete</button>
