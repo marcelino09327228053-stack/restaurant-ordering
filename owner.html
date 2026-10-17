@@ -182,6 +182,32 @@
     .menu-color-swatch::-webkit-color-swatch-wrapper { padding:0; }
     .menu-color-swatch::-webkit-color-swatch { border:0;border-radius:50%; }
     .menu-color-swatch::-moz-color-swatch { border:0;border-radius:50%; }
+    #menuItemsPanel { width:min(390px,calc(100vw - 24px)); }
+    #menuItemsPanel .menu-item {
+      grid-template-columns:48px minmax(0,1fr) auto;
+      gap:10px;
+      padding:10px 0;
+      align-items:center;
+    }
+    #menuItemsPanel .menu-pic { width:48px;height:48px;border-radius:9px; }
+    #menuItemsPanel .menu-item > div:nth-child(2) { min-width:0; }
+    #menuItemsPanel .menu-item > div:nth-child(2) strong,
+    #menuItemsPanel .menu-item > div:nth-child(2) small {
+      overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+    }
+    #menuItemsPanel .menu-item > div:last-child {
+      display:grid!important;
+      gap:5px!important;
+      justify-items:end!important;
+      white-space:nowrap;
+    }
+    #menuItemsPanel .menu-item > div:last-child > div:last-child {
+      display:flex!important;gap:5px!important;flex-wrap:nowrap;
+    }
+    #menuItemsPanel .menu-item .btn {
+      min-height:30px;padding:5px 8px;font-size:.72rem;
+    }
+    #menuItemsPanel .price-tag { font-size:.82rem; }
     @media (max-width: 640px) {
       .menu-dish-popover { left: 12px !important; right: 12px; width: auto; }
     }
