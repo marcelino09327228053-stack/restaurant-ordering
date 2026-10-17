@@ -2005,6 +2005,16 @@
       } catch (e) { toast(e.message); }
     }
 
+    async function deleteTable(id) {
+      if (!confirm("Delete this table QR? Existing orders and messages will be kept.")) return;
+      try {
+        await api(`/api/owner/tables/${id}`, { method: "DELETE" });
+        tables = await api("/api/owner/tables");
+        renderTables();
+        toast("Table QR deleted.", true);
+      } catch (e) { toast(e.message); }
+    }
+
     async function deleteMenuItem(itemId) {
       const item = menu.find(entry => entry.id === itemId);
       if (!item) return;
