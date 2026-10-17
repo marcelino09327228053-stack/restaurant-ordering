@@ -1247,9 +1247,6 @@
     }
 
     function renderMenuCard(item) {
-        const background = /^#[0-9a-fA-F]{6}$/.test(item.background_color || '') ? item.background_color : null;
-        const rgb = background ? background.slice(1).match(/../g).map(value => parseInt(value, 16)) : null;
-        const textColor = rgb ? (rgb[0] * .299 + rgb[1] * .587 + rgb[2] * .114 > 150 ? '#17171b' : '#f5f5f4') : 'var(--menu-text,#f5f5f4)';
         const quantity = cart[item.id] || 0;
         const thumb = item.image_url
           ? `<img src="${escapeHtml(item.image_url)}" alt="${escapeHtml(item.name)}" loading="lazy"
