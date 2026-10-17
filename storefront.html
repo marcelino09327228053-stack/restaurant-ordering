@@ -298,6 +298,8 @@
     function applyMenuTheme(theme) {
       if (!theme) return;
       const menu = document.getElementById("menu");
+      menuCurrency = theme.currency || "PHP";
+      menu.style.fontFamily = `${theme.font || "Arial"}, sans-serif`;
       for (const [key, variable] of [["background","--menu-bg"],["card","--menu-card"],["text","--menu-text"],["category","--menu-category"],["description","--menu-description"],["price","--menu-price"]]) {
         if (/^#[0-9a-f]{6}$/i.test(theme[key] || "")) menu.style.setProperty(variable, theme[key]);
       }
