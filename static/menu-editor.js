@@ -45,15 +45,15 @@
     $('menuEditorControls').innerHTML=`<div class="me-actions" id="customerDisplayActions">
       <button class="btn" type="button" id="me-upload">Upload Media</button>
       <button class="btn" type="button" id="me-remove">Remove</button>
-      <button class="btn" type="button" id="menuAppearanceButton" aria-controls="menuAppearancePanel" aria-expanded="false">Background</button>
+      <button class="btn" type="button" id="customerDisplayBackgroundButton" aria-controls="customerDisplayBackgroundPanel" aria-expanded="false">Background</button>
       <button class="btn solid" type="button" id="me-save">Save</button>
       </div>
       <input hidden id="me-media-file" type="file" accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm">
-      <div id="menuAppearancePanel" hidden aria-label="Background color"><div id="me-swatches"></div><label>Custom<input id="me-background" type="color" aria-label="Custom background color"></label></div>
+      <div id="customerDisplayBackgroundPanel" hidden aria-label="Background color"><div id="me-swatches"></div><label>Custom<input id="me-background" type="color" aria-label="Custom background color"></label></div>
       <div id="me-media-preview" aria-label="Customer display media"></div>
       <p id="menuEditorStatus" role="status" aria-live="polite"></p>`;
-    const panel=open=>{$('menuAppearancePanel').hidden=!open;$('menuAppearanceButton').setAttribute('aria-expanded',String(open));};
-    $('menuAppearanceButton').onclick=()=>panel($('menuAppearancePanel').hidden);
+    const panel=open=>{$('customerDisplayBackgroundPanel').hidden=!open;$('customerDisplayBackgroundButton').setAttribute('aria-expanded',String(open));};
+    $('customerDisplayBackgroundButton').onclick=()=>panel($('customerDisplayBackgroundPanel').hidden);
     const color=value=>{draft.background=value;draft.gradient=false;draft.background_image='';changed();};
     for(const [name,value] of [['Green','#39ff14'],['Blue','#0066ff'],['Red','#ff2038'],['Pink','#ff1493'],['Purple','#a020f0'],['Orange','#ff7900'],['Cyan','#00e5ff']]){
       const button=document.createElement('button');button.type='button';button.title=name;button.setAttribute('aria-label',name);button.style.background=value;button.onclick=()=>color(value);$('me-swatches').append(button);
