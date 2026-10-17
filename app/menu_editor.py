@@ -9,6 +9,8 @@ from PIL import Image
 class MenuAppearance(BaseModel):
     background: str = '#0b0b0d'
     text: str = '#f5f5f4'
+    card: str = '#17171b'
+    price: str = '#f97316'
     gradient: bool = False
     gradient_color: str = '#6d28ff'
     background_image: str = ''
@@ -17,7 +19,7 @@ class MenuAppearance(BaseModel):
     media_url: str = ''
     media_type: Literal['image', 'video', 'none'] = 'none'
 
-    @field_validator('background', 'text', 'gradient_color')
+    @field_validator('background', 'text', 'card', 'price', 'gradient_color')
     @classmethod
     def color(cls, value):
         import re
