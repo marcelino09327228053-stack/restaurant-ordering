@@ -1918,8 +1918,7 @@
 
     function openMenuForm() {
       if (document.getElementById("addMenuButton").disabled) return;
-      toggleMenuItemsPanel(false);
-      toggleMenuAppearancePanel(false);
+      closeOtherMenuPopovers("menuDishForm");
       cancelMenuEdit();
       showMenuForm();
     }
