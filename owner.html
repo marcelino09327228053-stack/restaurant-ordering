@@ -1584,10 +1584,12 @@
               <img src="${escapeHtml(qrUrl)}" alt="QR code for ${escapeHtml(t.name)}" />
               <div class="table-qr-meta">
                 <strong>${escapeHtml(t.name)}</strong>
+                ${t.qr_caption ? `<small style="color:var(--muted);margin-top:6px">${escapeHtml(t.qr_caption)}</small>` : ""}
                 <small style="color:#fdba74;overflow-wrap:anywhere">${escapeHtml(url)}</small>
                 <div class="table-qr-actions">
                   <a class="btn solid" href="${escapeHtml(qrUrl)}" download="${escapeHtml(t.name)}-QR.png">Download QR</a>
                   <button class="btn" type="button" onclick='navigator.clipboard.writeText(${JSON.stringify(url)}).then(()=>toast("Link copied.",true))'>Copy link</button>
+                  <button class="btn danger" type="button" onclick="deleteTable(${t.id})">Delete</button>
                 </div>
               </div>
             </div>`;
