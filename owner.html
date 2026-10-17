@@ -1957,6 +1957,7 @@
       }
       panel.hidden = !shouldOpen;
       button.setAttribute("aria-expanded", String(shouldOpen));
+      if (shouldOpen) requestAnimationFrame(() => positionMenuPopover(panel, button));
     }
     window.addEventListener("resize", () => {
       positionMenuForm();
