@@ -971,9 +971,9 @@ def list_owner_tables(owner_id: int) -> list[dict]:
     cursor = get_connection().cursor()
     cursor.execute(
         """
-        SELECT id, name, access_code, active, created_at, owner_id
+        SELECT id, name, access_code, active, created_at, owner_id, qr_caption
         FROM restaurant_tables
-        WHERE owner_id = ?
+        WHERE owner_id = ? AND active = 1
         ORDER BY id ASC
         """,
         (owner_id,),
@@ -981,28 +981,46 @@ def list_owner_tables(owner_id: int) -> list[dict]:
     return [dict(row) for row in cursor.fetchall()]
 
 
-def create_owner_table(owner_id: int, name: str) -> dict | None:
+def create_owner_table(owner_id: int, name: str, qr_caption: str = "") -> dict | None:
     conn = get_connection()
     cursor = conn.cursor()
     cursor.execute(
         """
         SELECT id FROM restaurant_tables
-        WHERE owner_id = ? AND LOWER(name) = LOWER(?)
+        WHERE owner_id = ? AND LOWER(name) = LOWER(?) AND active = 1
         """,
         (owner_id, name.strip()),
     )
     if cursor.fetchone():
         return None
+    caption = (qr_caption or "").strip()[:120]
     cursor.execute(
         """
-        INSERT INTO restaurant_tables (name, access_code, owner_id)
-        VALUES (?, ?, ?)
+        INSERT INTO restaurant_tables (name, access_code, owner_id, qr_caption)
+        VALUES (?, ?, ?, ?)
         """,
-        (name.strip(), secrets.token_urlsafe(8), owner_id),
+        (name.strip(), secrets.token_urlsafe(8), owner_id, caption),
     )
     conn.commit()
     cursor.execute("SELECT * FROM restaurant_tables WHERE id = ?", (cursor.lastrowid,))
     return dict(cursor.fetchone())
+
+
+def archive_owner_table(owner_id: int, table_id: int) -> bool:
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute(
+        """
+        UPDATE restaurant_tables
+        SET active = 0
+        WHERE id = ? AND owner_id = ? AND active = 1
+        """,
+        (table_id, owner_id),
+    )
+    changed = cursor.rowcount > 0
+    if changed:
+        conn.commit()
+    return changed
 
 
 def list_table_messages(table_id: int, after_id: int = 0) -> list[dict]:
