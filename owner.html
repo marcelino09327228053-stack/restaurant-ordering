@@ -1864,19 +1864,23 @@
       document.getElementById("openMenuButton").setAttribute("aria-expanded", "false");
     }
     function positionMenuPopover(panel, button) {
-      if (!panel || panel.hidden || !button) return;
+      if (!panel || panel.hidden) return;
 
-      const rect = button.getBoundingClientRect();
-      const gap = 10;
+      const menuBuilder = document.getElementById("menuBuilder");
+      if (!menuBuilder) return;
+
+      const rect = menuBuilder.getBoundingClientRect();
+      const gap = 14;
       const width = panel.offsetWidth;
       const height = panel.offsetHeight;
 
       let viewportLeft = rect.right + gap;
+      let viewportTop = Math.max(gap, rect.top);
+
       if (viewportLeft + width > innerWidth - gap) {
-        viewportLeft = Math.max(gap, rect.left - width - gap);
+        viewportLeft = Math.max(gap, innerWidth - width - gap);
       }
 
-      let viewportTop = Math.max(gap, rect.top);
       if (viewportTop + height > innerHeight - gap) {
         viewportTop = Math.max(gap, innerHeight - height - gap);
       }
