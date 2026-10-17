@@ -363,7 +363,8 @@
                 : "🍽"}</div>
               <div class="card-body">
                 <h3>${escapeHtml(item.name)}</h3>
-                <p class="desc">${escapeHtml(item.description || item.category || "")}</p>
+                <p class="category">${escapeHtml(item.category || "")}</p>
+                <p class="desc">${escapeHtml(item.description || "")}</p>
                 <div class="price">${money(item.price)}</div>
               </div>
             </article>`).join("")
