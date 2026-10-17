@@ -1867,12 +1867,7 @@
       if (!panel || panel.hidden || !button) return;
 
       const rect = button.getBoundingClientRect();
-      const container = panel.closest("#tablesPanel");
-      const containerRect = container
-        ? container.getBoundingClientRect()
-        : { left: 0, top: 0 };
-
-      const gap = 6;
+      const gap = 10;
       const width = panel.offsetWidth;
       const height = panel.offsetHeight;
 
@@ -1881,13 +1876,13 @@
         viewportLeft = Math.max(gap, rect.left - width - gap);
       }
 
-      let viewportTop = rect.top;
+      let viewportTop = Math.max(gap, rect.top);
       if (viewportTop + height > innerHeight - gap) {
         viewportTop = Math.max(gap, innerHeight - height - gap);
       }
 
-      panel.style.left = `${viewportLeft - containerRect.left}px`;
-      panel.style.top = `${viewportTop - containerRect.top}px`;
+      panel.style.left = `${viewportLeft}px`;
+      panel.style.top = `${viewportTop}px`;
     }
     function positionMenuForm() {
       positionMenuPopover(
