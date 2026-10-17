@@ -54,6 +54,8 @@
       <button class="btn" type="button" id="me-upload">Upload Media</button>
       <button class="btn" type="button" id="me-remove">Remove</button>
       <button class="btn" type="button" id="customerDisplayBackgroundButton" aria-controls="customerDisplayBackgroundPanel" aria-expanded="false">Background</button>
+      <button class="btn" type="button" id="me-preview-phone" aria-pressed="false">Phone</button>
+      <button class="btn solid" type="button" id="me-preview-pc" aria-pressed="true">PC</button>
       <button class="btn solid" type="button" id="me-save">Save</button>
       </div>
       <input hidden id="me-media-file" type="file" accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm">
