@@ -1917,19 +1917,16 @@
       const width = panel.offsetWidth;
       const height = panel.offsetHeight;
 
-      let viewportLeft = rect.right + gap;
+      const viewportLeft = rect.right + gap;
       let viewportTop = Math.max(gap, rect.top);
-
-      if (viewportLeft + width > innerWidth - gap) {
-        viewportLeft = Math.max(gap, innerWidth - width - gap);
-      }
 
       if (viewportTop + height > innerHeight - gap) {
         viewportTop = Math.max(gap, innerHeight - height - gap);
       }
 
-      panel.style.left = `${viewportLeft}px`;
-      panel.style.top = `${viewportTop}px`;
+      panel.style.setProperty("left", `${viewportLeft}px`, "important");
+      panel.style.setProperty("right", "auto", "important");
+      panel.style.setProperty("top", `${viewportTop}px`, "important");
     }
     function positionMenuForm() {
       positionMenuPopover(
