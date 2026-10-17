@@ -1937,6 +1937,19 @@
       document.getElementById("menuDishForm").hidden = true;
       document.getElementById("openMenuButton").setAttribute("aria-expanded", "false");
     }
+    function closeOtherMenuPopovers(exceptId = "") {
+      [
+        ["menuDishForm", "openMenuButton"],
+        ["menuItemsPanel", "editMenuButton"],
+        ["menuAppearancePanel", "menuAppearanceButton"]
+      ].forEach(([panelId, buttonId]) => {
+        if (panelId === exceptId) return;
+        const panel = document.getElementById(panelId);
+        const button = document.getElementById(buttonId);
+        if (panel) panel.hidden = true;
+        if (button) button.setAttribute("aria-expanded", "false");
+      });
+    }
     function positionMenuPopover(panel, button) {
       if (!panel || panel.hidden) return;
 
