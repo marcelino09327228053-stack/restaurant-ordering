@@ -700,15 +700,19 @@
       <section class="block" id="paymentsBuilder">
         <h2>Payment QR codes</h2>
         <p class="hint">Add as many GCash, Maya, bank, or other payment QR codes as you need. Only active methods appear at checkout.</p>
-        <div class="drop" style="min-height:96px;margin-bottom:10px">
+        <div class="drop" id="paymentQrDrop" style="min-height:96px;margin-bottom:10px">
           <div>
             <strong id="paymentQrLabel">Choose payment QR image</strong>
-            <small>JPG/PNG/WEBP · up to 8MB</small>
+            <small>JPG/PNG/WEBP · up to 8MB · click, drag/drop, or paste</small>
           </div>
           <input id="paymentQrFile" type="file" accept="image/*" onchange="preparePaymentQr(this.files[0])" />
         </div>
+        <div id="paymentQrPreview" hidden style="margin:0 0 14px;padding:12px;border:1px solid var(--line);border-radius:14px;background:#101214;text-align:center">
+          <img id="paymentQrPreviewImage" alt="Payment QR preview" style="display:block;width:min(220px,100%);height:auto;max-height:260px;object-fit:contain;margin:auto;background:#fff;padding:8px;border-radius:12px" />
+          <small style="display:block;margin-top:8px;color:var(--muted)">Payment QR preview</small>
+        </div>
         <div class="row2">
-          <div><label for="paymentProvider">Provider</label><input id="paymentProvider" maxlength="80" placeholder="GCash" /></div>
+          <div><label for="paymentProvider">Provider</label><select id="paymentProvider" onchange="handlePaymentProviderChange()"><option value="">Select provider</option><option value="GCash">GCash</option><option value="Maya">Maya</option><option value="GoTyme Bank">GoTyme Bank</option><option value="BDO">BDO</option><option value="BPI">BPI</option><option value="UnionBank">UnionBank</option><option value="Metrobank">Metrobank</option><option value="RCBC">RCBC</option><option value="Security Bank">Security Bank</option><option value="LandBank">LandBank</option><option value="GrabPay">GrabPay</option><option value="__custom__">+ Add Provider</option></select><input id="paymentProviderCustom" maxlength="80" placeholder="Enter provider name" hidden style="margin-top:8px" /></div>
           <div><label for="paymentAccount">Account name</label><input id="paymentAccount" maxlength="120" placeholder="Juan Dela Cruz" /></div>
         </div>
         <label for="paymentNumber">Masked account number</label>
