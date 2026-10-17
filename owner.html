@@ -2439,7 +2439,7 @@
         renderTables();
         renderPaymentMethods();
         renderPreview();
-        ["logoDrop", "heroDrop", "menuDrop"].forEach(id => wireDrop(document.getElementById(id)));
+        ["logoDrop", "heroDrop", "menuDrop", "paymentQrDrop"].forEach(id => wireDrop(document.getElementById(id)));
         setupStudioWorkspace();
         openDesignRoom();
       } catch (e) { toast(e.message); }
