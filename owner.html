@@ -1991,10 +1991,7 @@
       const panel = document.getElementById("menuItemsPanel");
       const button = document.getElementById("editMenuButton");
       const shouldOpen = typeof force === "boolean" ? force : panel.hidden;
-      if (shouldOpen) {
-        closeMenuForm(true);
-        toggleMenuAppearancePanel(false);
-      }
+      if (shouldOpen) closeOtherMenuPopovers("menuItemsPanel");
       panel.hidden = !shouldOpen;
       button.setAttribute("aria-expanded", String(shouldOpen));
       if (shouldOpen) requestAnimationFrame(() => positionMenuPopover(panel, button));
