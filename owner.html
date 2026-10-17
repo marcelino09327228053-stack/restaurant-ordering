@@ -601,8 +601,6 @@
         <input id="menuName" maxlength="120" placeholder="Signature burger" />
         <label for="menuDescription">Description (optional)</label>
         <input id="menuDescription" maxlength="500" placeholder="Short tasty line" />
-        <label for="menuBackgroundColor">Background color</label>
-        <input id="menuBackgroundColor" type="color" value="#17171b" style="width:100%;height:42px;padding:4px" />
         <button id="addMenuButton" class="btn solid" type="button" style="width:100%" onclick="addMenuItem()">Add to menu</button>
         <button class="btn" id="cancelMenuEdit" hidden type="button" onclick="cancelMenuEdit()">Cancel edit</button>
         <p id="menuFeedback" class="hint" role="status" aria-live="polite"></p>
@@ -1901,7 +1899,6 @@
       document.getElementById("menuCategory").value = item.category;
       toggleCustomCategory();
       for (const [field, key] of [["menuName","name"],["menuDescription","description"],["menuPrice","price"]]) document.getElementById(field).value = item[key] || "";
-      document.getElementById("menuBackgroundColor").value = item.background_color || "#17171b";
       pendingMenuImage = item.image_url || "";
       const preview = document.getElementById("menuPhotoPreview");
       preview.hidden = !pendingMenuImage;
@@ -1917,7 +1914,6 @@
     function cancelMenuEdit() {
       if (document.getElementById("addMenuButton").disabled) return;
       editingMenuId = null; pendingMenuImage = "";
-      document.getElementById("menuBackgroundColor").value = "#17171b";
       for (const id of ["menuCategory","customMenuCategory","menuName","menuDescription","menuPrice"]) document.getElementById(id).value = "";
       toggleCustomCategory();
       document.getElementById("menuPhotoPreview").hidden = true;
@@ -1955,13 +1951,12 @@
           method: editingMenuId ? "PATCH" : "POST",
           body: JSON.stringify({
             category, name, description, price,
-            background_color: document.getElementById("menuBackgroundColor").value,
+            background_color: "#17171b",
             image_url: pendingMenuImage || "",
           }),
         });
         const savedMessage = editingMenuId ? "Menu item updated." : "Dish added to your menu.";
-        document.getElementById("menuBackgroundColor").value = "#17171b";
-        editingMenuId = null;
+          editingMenuId = null;
         document.getElementById("cancelMenuEdit").hidden = true;
         document.getElementById("menuFormTitle").textContent = "Menu dish";
         pendingMenuImage = "";
@@ -2001,6 +1996,20 @@
         tables = await api("/api/owner/tables");
         renderTables();
         toast("QR code generated.", true);
+      } catch (e) { toast(e.message); }
+    }
+
+    async function saveTableNote(id) {
+      const input = document.getElementById(`table-note-${id}`);
+      if (!input) return;
+      try {
+        await api(`/api/owner/tables/${id}/caption`, {
+          method: "PATCH",
+          body: JSON.stringify({ qr_caption: input.value.trim() }),
+        });
+        tables = await api("/api/owner/tables");
+        renderTables();
+        toast("Note saved.", true);
       } catch (e) { toast(e.message); }
     }
 
