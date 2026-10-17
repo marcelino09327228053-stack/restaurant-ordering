@@ -9,6 +9,7 @@ from PIL import Image
 class MenuAppearance(BaseModel):
     background: str = '#0b0b0d'
     text: str = '#f5f5f4'
+    description: str = '#a8a8ad'
     card: str = '#17171b'
     price: str = '#f97316'
     gradient: bool = False
