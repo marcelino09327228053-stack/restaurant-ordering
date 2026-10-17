@@ -404,12 +404,19 @@ def owner_tables(owner=Depends(require_owner)):
 
 @router.post("/owner/tables", status_code=201)
 def owner_add_table(body: TableCreate, owner=Depends(require_owner)):
-    table = repo.create_owner_table(owner["owner_id"], body.name)
+    table = repo.create_owner_table(owner["owner_id"], body.name, body.qr_caption)
     if table is None:
         raise HTTPException(status_code=409, detail="A table with that name already exists.")
     table["order_url"] = table_order_url(table["access_code"])
     table["qr_url"] = f"/api/qr?table={table['access_code']}"
     return table
+
+
+@router.delete("/owner/tables/{table_id}", status_code=204)
+def owner_delete_table(table_id: int, owner=Depends(require_owner)):
+    if not repo.archive_owner_table(owner["owner_id"], table_id):
+        raise HTTPException(status_code=404, detail="Table not found.")
+    return Response(status_code=204)
 
 
 @router.get("/owner/payment-methods")
