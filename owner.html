@@ -569,6 +569,12 @@
           <button class="btn solid" id="openMenuButton" type="button" aria-haspopup="dialog" aria-controls="menuDishForm" aria-expanded="false" onclick="openMenuForm()">+ Add Menu</button>
           <button class="btn" id="editMenuButton" type="button" aria-haspopup="dialog" aria-controls="menuItemsPanel" aria-expanded="false" onclick="toggleMenuItemsPanel()">Edit / Delete</button>
         </div>
+        <div style="display:flex;gap:10px;align-items:end;flex-wrap:wrap;margin-bottom:12px">
+          <label style="margin:0">Background<input id="menuCardColor" type="color" value="#17171b" style="display:block;width:54px;height:34px;margin-top:4px;padding:2px" /></label>
+          <label style="margin:0">Name<input id="menuNameColor" type="color" value="#f5f5f4" style="display:block;width:54px;height:34px;margin-top:4px;padding:2px" /></label>
+          <label style="margin:0">Price<input id="menuPriceColor" type="color" value="#f97316" style="display:block;width:54px;height:34px;margin-top:4px;padding:2px" /></label>
+          <button class="btn" type="button" onclick="saveMenuColors()">Save Colors</button>
+        </div>
         <div id="menuGallery"></div>
 
         <div class="menu-dish-popover" id="menuDishForm" role="dialog" aria-modal="false" aria-labelledby="menuFormTitle" hidden>
