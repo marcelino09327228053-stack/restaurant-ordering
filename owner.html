@@ -2357,7 +2357,9 @@
     }
 
     async function addPaymentMethod() {
-      const provider = document.getElementById("paymentProvider").value.trim();
+      const providerSelect = document.getElementById("paymentProvider");
+      const customProvider = document.getElementById("paymentProviderCustom").value.trim();
+      const provider = providerSelect.value === "__custom__" ? customProvider : providerSelect.value.trim();
       if (!provider || !pendingPaymentQr) { toast("Provider and QR image are required."); return; }
       try {
         await api("/api/owner/payment-methods", {
@@ -2371,9 +2373,13 @@
           }),
         });
         pendingPaymentQr = "";
-        ["paymentProvider","paymentAccount","paymentNumber","paymentInstructions"].forEach(id => document.getElementById(id).value = "");
+        providerSelect.value = "";
+        document.getElementById("paymentProviderCustom").value = "";
+        document.getElementById("paymentProviderCustom").hidden = true;
+        ["paymentAccount","paymentNumber","paymentInstructions"].forEach(id => document.getElementById(id).value = "");
         document.getElementById("paymentQrFile").value = "";
         document.getElementById("paymentQrLabel").textContent = "Choose payment QR image";
+        showPaymentQrPreview("");
         paymentMethods = await api("/api/owner/payment-methods");
         renderPaymentMethods();
         toast("Payment QR added.", true);
