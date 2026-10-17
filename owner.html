@@ -619,10 +619,9 @@
       <section class="block" id="tablesBuilder">
         <h2>Table order links</h2>
         <p class="hint">QR / share links for dine-in tables.</p>
-        <div style="display:grid;grid-template-columns:minmax(160px,1fr) minmax(220px,2fr) auto;gap:8px;align-items:center">
-          <input id="tableNameInput" maxlength="80" placeholder="Table 1" style="margin:0" />
-          <input id="tableNotesInput" maxlength="120" placeholder="Notes (optional)" style="margin:0" />
-          <button class="btn solid" type="button" onclick="addTable()">Add</button>
+        <div style="display:flex;gap:8px;align-items:center">
+          <input id="tableNameInput" maxlength="80" placeholder="Table name" style="margin:0;flex:1" />
+          <button class="btn solid" type="button" onclick="addTable()">Generate QR</button>
         </div>
         <div id="tableList"></div>
       </section>
