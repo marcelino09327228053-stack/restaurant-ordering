@@ -1588,6 +1588,8 @@
                 <div class="table-qr-actions">
                   <a class="btn solid" href="${escapeHtml(qrUrl)}" download="${escapeHtml(t.name)}-QR.png">Download QR</a>
                   <button class="btn" type="button" onclick='navigator.clipboard.writeText(${JSON.stringify(url)}).then(()=>toast("Link copied.",true))'>Copy link</button>
+                  <input id="table-note-${t.id}" maxlength="120" placeholder="Notes (optional)" value="${escapeHtml(t.qr_caption || "")}" style="margin:0;min-width:180px;flex:1" />
+                  <button class="btn" type="button" onclick="saveTableNote(${t.id})">Save note</button>
                   <button class="btn danger" type="button" onclick="deleteTable(${t.id})">Delete</button>
                 </div>
               </div>
