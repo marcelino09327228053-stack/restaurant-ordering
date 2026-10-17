@@ -1197,12 +1197,12 @@
                <button onclick="changeQuantity(${item.id}, 1)" aria-label="Add one">+</button>
              </div>`
           : `<button class="add" onclick="changeQuantity(${item.id}, 1)" aria-label="Add ${escapeHtml(item.name)}">🛒</button>`;
-        return `<article class="card" style="background:${background || 'var(--menu-card,#17171b)'};color:${textColor}">
+        return `<article class="card" style="background:var(--menu-card,#17171b)">
           <div class="thumb">${thumb}</div>
           <div class="card-body">
-            <h3>${escapeHtml(item.name)}</h3>
-            <p class="desc" style="color:inherit">${escapeHtml(item.description)}</p>
-            <div class="card-foot ${demoMode ? "card-foot-end" : ""}">${demoMode ? "" : `<span class="price">${money(item.price)}</span>`}${control}</div>
+            <h3 style="color:var(--menu-text,#f5f5f4)">${escapeHtml(item.name)}</h3>
+            <p class="desc" style="color:var(--menu-text,#f5f5f4)">${escapeHtml(item.description)}</p>
+            <div class="card-foot ${demoMode ? "card-foot-end" : ""}">${demoMode ? "" : `<span class="price" style="color:var(--menu-price,#f97316)">${money(item.price)}</span>`}${control}</div>
           </div>
         </article>`;
     }
