@@ -2,7 +2,11 @@
 body.menu-appearance { background:var(--me-surface,#0b0b0d)!important;background-size:cover!important;background-attachment:scroll!important;color:var(--me-text,#f5f5f4); }
 .menu-appearance #hero,.menu-appearance #companyDesign {display:none!important;}
 .menu-appearance #menu {background:transparent!important;box-shadow:var(--me-glow);border-radius:16px;max-width:100%;box-sizing:border-box;}
-.menu-appearance #menu .card,.menu-appearance #menu .desc,.menu-appearance #menu h3 {color:var(--me-text,#f5f5f4)!important;}
+.menu-appearance #menu .card {color:var(--menu-text,var(--me-text,#f5f5f4))!important;}
+.menu-appearance #menu h3 {color:var(--menu-text,var(--me-text,#f5f5f4))!important;}
+.menu-appearance #menu .category,.menu-appearance #menu .category-tag,.menu-appearance #menu .menu-category-heading {color:var(--menu-category,#a8a8ad)!important;}
+.menu-appearance #menu .desc {color:var(--menu-description,#a8a8ad)!important;}
+.menu-appearance #menu .price {color:var(--menu-price,#f97316)!important;}
 .menu-appearance .section-head,.menu-appearance .section-title {color:var(--me-text,#f5f5f4);}
 #menuMediaDisplay {position:relative;width:100%;max-width:100%;margin:0 0 24px;border-radius:16px;overflow:hidden;background:#101014;box-shadow:var(--me-glow);box-sizing:border-box;}
 #menuMediaDisplay[hidden] {display:none!important;}
