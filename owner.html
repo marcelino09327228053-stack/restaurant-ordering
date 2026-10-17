@@ -2001,13 +2001,7 @@
       const panel = document.getElementById("menuAppearancePanel");
       const button = document.getElementById("menuAppearanceButton");
       const shouldOpen = typeof force === "boolean" ? force : panel.hidden;
-      if (shouldOpen) {
-        closeMenuForm(true);
-        const itemsPanel = document.getElementById("menuItemsPanel");
-        if (itemsPanel) itemsPanel.hidden = true;
-        const editButton = document.getElementById("editMenuButton");
-        if (editButton) editButton.setAttribute("aria-expanded", "false");
-      }
+      if (shouldOpen) closeOtherMenuPopovers("menuAppearancePanel");
       panel.hidden = !shouldOpen;
       button.setAttribute("aria-expanded", String(shouldOpen));
       if (shouldOpen) requestAnimationFrame(() => positionMenuPopover(panel, button));
