@@ -1959,20 +1959,24 @@
       if (!button) return;
 
       const buttonRect = button.getBoundingClientRect();
+      const pageZoom = parseFloat(getComputedStyle(document.documentElement).zoom) || 1;
       const gap = 10;
       const width = panel.offsetWidth;
       const height = panel.offsetHeight;
 
-      let viewportLeft = buttonRect.right + gap;
-      let viewportTop = Math.max(gap, buttonRect.top);
+      let viewportLeft = (buttonRect.right + gap) / pageZoom;
+      let viewportTop = Math.max(gap, buttonRect.top) / pageZoom;
 
-      if (viewportLeft + width > innerWidth - gap) {
-        viewportLeft = Math.max(gap, Math.min(buttonRect.left, innerWidth - width - gap));
-        viewportTop = buttonRect.bottom + gap;
+      const viewportWidth = innerWidth / pageZoom;
+      const viewportHeight = innerHeight / pageZoom;
+
+      if (viewportLeft + width > viewportWidth - gap) {
+        viewportLeft = Math.max(gap, Math.min(buttonRect.left / pageZoom, viewportWidth - width - gap));
+        viewportTop = (buttonRect.bottom + gap) / pageZoom;
       }
 
-      if (viewportTop + height > innerHeight - gap) {
-        viewportTop = Math.max(gap, innerHeight - height - gap);
+      if (viewportTop + height > viewportHeight - gap) {
+        viewportTop = Math.max(gap, viewportHeight - height - gap);
       }
 
       panel.style.setProperty("left", `${viewportLeft}px`, "important");
