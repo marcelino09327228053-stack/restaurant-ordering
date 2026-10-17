@@ -13,6 +13,8 @@ class MenuAppearance(BaseModel):
     description: str = '#a8a8ad'
     card: str = '#17171b'
     price: str = '#f97316'
+    font: str = 'Arial'
+    currency: str = 'PHP'
     gradient: bool = False
     gradient_color: str = '#6d28ff'
     background_image: str = ''
