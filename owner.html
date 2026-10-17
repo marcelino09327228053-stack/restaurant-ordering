@@ -2001,7 +2001,10 @@
       const file = items.map(i => i.getAsFile()).find(f => f && f.type.startsWith("image/"));
       if (!file) return;
       const overHero = document.getElementById("heroDrop").matches(":hover");
-      handleFiles(overHero ? "hero" : (document.activeElement?.closest?.("#menuDrop") ? "menu" : "logo"), [file]);
+      const overPayment = document.getElementById("paymentQrDrop").matches(":hover");
+      const inPayment = document.activeElement?.closest?.("#paymentsBuilder");
+      const inMenu = document.activeElement?.closest?.("#menuDrop");
+      handleFiles(overPayment || inPayment ? "payment" : (overHero ? "hero" : (inMenu ? "menu" : "logo")), [file]);
     });
 
     ["nameInput", "aboutInput"].forEach(id => {
