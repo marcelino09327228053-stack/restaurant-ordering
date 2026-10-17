@@ -1642,7 +1642,7 @@
                   </div>
                   <div style="padding:10px;background:${cardColor}">
                     <strong style="display:block;color:${nameColor}">${escapeHtml(item.name)}</strong>
-                    <small style="display:block;color:var(--muted);margin-top:3px">${escapeHtml(item.category || "")}</small>
+                    <small style="display:block;color:${categoryColor};margin-top:3px">${escapeHtml(item.category || "")}</small>
                     <small style="display:block;color:${descriptionColor};margin-top:3px">${escapeHtml(item.description || "")}</small>
                     <div class="price-tag" style="margin-top:8px;color:${priceColor}">${money(item.price)}</div>
                   </div>
