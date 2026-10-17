@@ -1910,11 +1910,10 @@
         document.body.appendChild(panel);
       }
 
-      const menuBuilder = document.getElementById("menuBuilder");
-      if (!menuBuilder) return;
+      if (!button) return;
 
-      const rect = menuBuilder.getBoundingClientRect();
-      const gap = 14;
+      const rect = button.getBoundingClientRect();
+      const gap = 8;
       const width = panel.offsetWidth;
       const height = panel.offsetHeight;
 
