@@ -2261,6 +2261,8 @@
         document.getElementById("menuCategoryColor").value = theme.category || "#a8a8ad";
         document.getElementById("menuDescriptionColor").value = theme.description || "#a8a8ad";
         document.getElementById("menuPriceColor").value = theme.price || "#f97316";
+        document.getElementById("menuFont").value = theme.font || "Arial";
+        document.getElementById("menuCurrency").value = theme.currency || "PHP";
         selectedSlideshowStyle = owner.slideshow_style || "fade";
         menu = await api("/api/owner/menu");
         tables = await api("/api/owner/tables");
