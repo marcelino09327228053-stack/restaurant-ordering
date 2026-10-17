@@ -70,6 +70,9 @@
     }
     $('me-background').oninput=e=>color(e.target.value);
     document.addEventListener('keydown',e=>{if(e.key==='Escape')panel(false);});
+    $('me-preview-phone').onclick=()=>applyPreviewMode('phone');
+    $('me-preview-pc').onclick=()=>applyPreviewMode('pc');
+    applyPreviewMode('pc');
     $('me-upload').onclick=()=>$('me-media-file').click();
     $('me-media-file').onchange=e=>{upload(e.target.files[0]);e.target.value='';};
     $('me-remove').onclick=()=>{draft.media_url='';draft.media_type='none';changed();};
