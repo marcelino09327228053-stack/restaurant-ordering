@@ -1,9 +1,17 @@
 /* Customer Display: one upload, one background selector, one save. */
 (() => {
   const defaults={background:'#0b0b0d',text:'#f5f5f4',gradient:false,gradient_color:'#6d28ff',background_image:'',glow:false,intensity:'medium',media_url:'',media_type:'none'};
-  let draft,dirty=false,busy=false;
+  let draft,dirty=false,busy=false,previewMode='pc';
   const $=id=>document.getElementById(id);
   const status=text=>{$('menuEditorStatus').textContent=text;};
+  function applyPreviewMode(mode){
+    previewMode=mode==='phone'?'phone':'pc';
+    const box=$('me-media-preview');
+    if(box){box.classList.toggle('phone-preview',previewMode==='phone');box.classList.toggle('pc-preview',previewMode==='pc');box.dataset.previewMode=previewMode;}
+    const phone=$('me-preview-phone'),pc=$('me-preview-pc');
+    if(phone){phone.classList.toggle('solid',previewMode==='phone');phone.setAttribute('aria-pressed',String(previewMode==='phone'));}
+    if(pc){pc.classList.toggle('solid',previewMode==='pc');pc.setAttribute('aria-pressed',String(previewMode==='pc'));}
+  }
   function renderMedia(){
     const box=$('me-media-preview');
     if(!box)return;
