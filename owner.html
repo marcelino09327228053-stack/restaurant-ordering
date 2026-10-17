@@ -2171,6 +2171,9 @@
       try {
         owner = await api("/api/owner/me");
         const theme = owner.custom_design?.menuTheme || {};
+        document.getElementById("menuCardColor").value = theme.card || "#17171b";
+        document.getElementById("menuNameColor").value = theme.text || "#f5f5f4";
+        document.getElementById("menuPriceColor").value = theme.price || "#f97316";
         selectedSlideshowStyle = owner.slideshow_style || "fade";
         menu = await api("/api/owner/menu");
         tables = await api("/api/owner/tables");
