@@ -2317,6 +2317,27 @@
         : `<p class="hint">No payment QR yet.</p>`;
     }
 
+    function handlePaymentProviderChange() {
+      const select = document.getElementById("paymentProvider");
+      const custom = document.getElementById("paymentProviderCustom");
+      const isCustom = select.value === "__custom__";
+      custom.hidden = !isCustom;
+      if (isCustom) custom.focus();
+      else custom.value = "";
+    }
+
+    function showPaymentQrPreview(url) {
+      const wrap = document.getElementById("paymentQrPreview");
+      const image = document.getElementById("paymentQrPreviewImage");
+      if (!url) {
+        image.removeAttribute("src");
+        wrap.hidden = true;
+        return;
+      }
+      image.src = url;
+      wrap.hidden = false;
+    }
+
     async function preparePaymentQr(file) {
       if (!file) return;
       if (!file.type.startsWith("image/")) { toast("Choose an image file."); return; }
@@ -2324,9 +2345,12 @@
         document.getElementById("paymentQrLabel").textContent = "Uploading QR…";
         const data = await uploadFile("payment", file);
         pendingPaymentQr = data.url;
+        showPaymentQrPreview(pendingPaymentQr);
         document.getElementById("paymentQrLabel").textContent = "Payment QR ready ✓";
         toast("Payment QR uploaded. Fill the details.", true);
       } catch (e) {
+        pendingPaymentQr = "";
+        showPaymentQrPreview("");
         document.getElementById("paymentQrLabel").textContent = "Choose payment QR image";
         toast(e.message);
       }
