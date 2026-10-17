@@ -78,18 +78,46 @@ def install_owner_menu_fixes() -> None:
         conn = get_connection()
         cursor = conn.cursor()
         clean_name = name.strip()
-        cursor.execute(
+
+        existing = cursor.execute(
             """
-            INSERT INTO restaurant_menu_items
-                (category, name, description, price, image_url, background_color, owner_id, available)
-            VALUES (?, ?, ?, ?, ?, ?, ?, 1)
+            SELECT id
+            FROM restaurant_menu_items
+            WHERE owner_id = ? AND LOWER(name) = LOWER(?)
+            ORDER BY id DESC
+            LIMIT 1
             """,
-            (
-                category.strip(), clean_name, description.strip(), round(price, 2),
-                image_url.strip(), background_color, owner_id,
-            ),
-        )
-        item_id = cursor.lastrowid
+            (owner_id, clean_name),
+        ).fetchone()
+
+        if existing:
+            item_id = existing["id"]
+            cursor.execute(
+                """
+                UPDATE restaurant_menu_items
+                SET category = ?, name = ?, description = ?, price = ?,
+                    image_url = ?, background_color = ?, available = 1
+                WHERE id = ? AND owner_id = ?
+                """,
+                (
+                    category.strip(), clean_name, description.strip(), round(price, 2),
+                    image_url.strip(), background_color, item_id, owner_id,
+                ),
+            )
+        else:
+            cursor.execute(
+                """
+                INSERT INTO restaurant_menu_items
+                    (category, name, description, price, image_url, background_color, owner_id, available)
+                VALUES (?, ?, ?, ?, ?, ?, ?, 1)
+                """,
+                (
+                    category.strip(), clean_name, description.strip(), round(price, 2),
+                    image_url.strip(), background_color, owner_id,
+                ),
+            )
+            item_id = cursor.lastrowid
+
         conn.commit()
         cursor.execute("SELECT * FROM restaurant_menu_items WHERE id = ?", (item_id,))
         return dict(cursor.fetchone())
