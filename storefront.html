@@ -226,7 +226,8 @@
   </main>
 
   <script>
-    const money = v => new Intl.NumberFormat("en-PH", { style: "currency", currency: "PHP" }).format(v);
+    let menuCurrency = "PHP";
+    const money = v => new Intl.NumberFormat(undefined, { style: "currency", currency: menuCurrency }).format(v);
     const escapeHtml = v => {
       const d = document.createElement("div");
       d.textContent = v == null ? "" : String(v);
