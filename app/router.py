@@ -390,7 +390,13 @@ def owner_set_menu_image(item_id: int, body: ImageUpdate, owner=Depends(require_
 
 
 @router.delete("/owner/menu/{item_id}", status_code=204)
-def owner_delete_menu_item(item_id: int, owner=Depends(require_owner)):
+def owner_delete_menu_item(
+    item_id: int,
+    confirm_delete: bool = False,
+    owner=Depends(require_owner),
+):
+    if not confirm_delete:
+        raise HTTPException(status_code=400, detail="Explicit delete confirmation is required.")
     if not repo.delete_owner_menu_item(owner["owner_id"], item_id):
         raise HTTPException(status_code=404, detail="Menu item not found.")
     return Response(status_code=204)
