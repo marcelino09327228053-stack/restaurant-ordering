@@ -609,7 +609,7 @@
         <div class="menu-dish-popover" id="menuAppearancePanel" hidden style="width:230px;padding:14px;box-sizing:border-box">
           <div class="menu-dish-popover-head" style="margin-bottom:10px">
             <h2 style="font-size:1rem">Menu Appearance</h2>
-            <button class="btn" type="button" onclick="toggleMenuAppearancePanel(false)">Close</button>
+            <button class="btn" type="button" onclick="document.getElementById('menuAppearancePanel').hidden=true;document.getElementById('menuAppearanceButton').setAttribute('aria-expanded','false')">Close</button>
           </div>
           <div style="display:grid;gap:8px">
             <label class="menu-color-row"><span>Background</span><input class="menu-color-swatch" id="menuCardColor" type="color" value="#17171b" oninput="renderMenuList()" /></label>
