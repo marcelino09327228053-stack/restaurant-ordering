@@ -2047,7 +2047,7 @@
       if (!item) return;
       if (!confirm(`Delete "${item.name}" from the menu? Existing order records will remain.`)) return;
       try {
-        await api(`/api/owner/menu/${itemId}`, { method: "DELETE" });
+        await api(`/api/owner/menu/${itemId}?confirm_delete=true`, { method: "DELETE" });
         if (editingMenuId === itemId) cancelMenuEdit();
         menu = menu.filter(entry => entry.id !== itemId);
         renderMenuList();
