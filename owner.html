@@ -1973,6 +1973,10 @@
         document.getElementById("menuItemsPanel"),
         document.getElementById("editMenuButton")
       );
+      positionMenuPopover(
+        document.getElementById("menuAppearancePanel"),
+        document.getElementById("menuAppearanceButton")
+      );
     });
     document.addEventListener("keydown", event => {
       if (event.key === "Escape" && !document.getElementById("menuDishForm").hidden) closeMenuForm();
