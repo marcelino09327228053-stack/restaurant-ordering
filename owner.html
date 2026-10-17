@@ -1929,6 +1929,10 @@
     async function handleFiles(kind, files) {
       const list = [...files].filter(f => f.type.startsWith("image/"));
       if (!list.length) { toast("Please drop an image file."); return; }
+      if (kind === "payment") {
+        await preparePaymentQr(list[0]);
+        return;
+      }
       if (kind === "menu") {
         const button = document.getElementById("addMenuButton");
         if (button.disabled) return;
