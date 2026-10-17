@@ -279,14 +279,28 @@
     .phone-preview-shell::before { content:""; display:block; width:88px; height:5px; margin:0 auto 8px; border-radius:999px; background:#303640; }
     .phone-preview-shell iframe { display:block; width:100%; height:calc(100% - 13px); border:0; border-radius:20px; background:#fff; }
     @media (max-width: 480px) { .table-qr-card { grid-template-columns: 1fr; } .table-qr-card img { width: 150px; height: 150px; margin: auto; } }
-    .payment-item {
-      display: grid; grid-template-columns: 62px 1fr; gap: 10px;
-      padding: 11px 0; border-top: 1px solid #ffffff10; align-items: center;
+    #paymentProvider {
+      width: 100%; min-height: 42px; padding: 11px 38px 11px 12px; margin-bottom: 10px;
+      border-radius: 11px; border: 1px solid var(--line);
+      background: var(--panel-2); color: var(--text); outline: 0;
+      font: inherit; cursor: pointer;
     }
-    .payment-item img { width: 62px; height: 62px; object-fit: contain; border-radius: 10px; background: white; padding: 3px; }
+    #paymentProvider:focus { border-color: #ff6a1a88; box-shadow: 0 0 0 3px #ff6a1a22; }
+    #paymentProvider option { background: #17191d; color: #f5f5f4; }
+    #paymentProviderCustom { width: 100%; }
+    .payment-item {
+      display: grid; grid-template-columns: 100px 1fr; gap: 16px;
+      padding: 16px 0; border-top: 1px solid #ffffff10; align-items: center;
+    }
+    .payment-item img { width: 100px; height: 100px; object-fit: contain; border-radius: 12px; background: white; padding: 5px; }
     .payment-meta strong, .payment-meta small { display: block; }
-    .payment-meta small { color: var(--muted); margin-top: 2px; }
-    .payment-actions { display: flex; gap: 6px; margin-top: 7px; flex-wrap: wrap; }
+    .payment-meta strong { font-size: 1rem; margin-bottom: 4px; }
+    .payment-meta small { color: var(--muted); margin-top: 3px; line-height: 1.35; }
+    .payment-actions { display: flex; gap: 7px; margin-top: 10px; flex-wrap: wrap; }
+    @media (max-width: 480px) {
+      .payment-item { grid-template-columns: 92px 1fr; gap: 12px; }
+      .payment-item img { width: 92px; height: 92px; }
+    }
 
     .toast {
       position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%) translateY(20px);
