@@ -13,8 +13,8 @@ class MenuAppearance(BaseModel):
     description: str = '#a8a8ad'
     card: str = '#17171b'
     price: str = '#f97316'
-    font: str = 'Arial'
-    currency: str = 'PHP'
+    font: Literal['Arial', 'Roboto', 'Poppins', 'Montserrat', 'Open Sans', 'Lato', 'Nunito', 'Oswald', 'Merriweather', 'Playfair Display'] = 'Arial'
+    currency: Literal['PHP', 'USD', 'EUR', 'GBP', 'JPY', 'AUD', 'CAD', 'SGD'] = 'PHP'
     gradient: bool = False
     gradient_color: str = '#6d28ff'
     background_image: str = ''
