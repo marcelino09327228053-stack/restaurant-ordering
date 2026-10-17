@@ -412,6 +412,23 @@ def owner_add_table(body: TableCreate, owner=Depends(require_owner)):
     return table
 
 
+@router.patch("/owner/tables/{table_id}/caption")
+def owner_update_table_caption(
+    table_id: int, body: TableCaptionUpdate, owner=Depends(require_owner)
+):
+    try:
+        table = repo.update_owner_table_qr_caption(
+            owner["owner_id"], table_id, body.qr_caption
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    if table is None:
+        raise HTTPException(status_code=404, detail="Table not found.")
+    table["order_url"] = table_order_url(table["access_code"])
+    table["qr_url"] = f"/api/qr?table={table['access_code']}"
+    return table
+
+
 @router.delete("/owner/tables/{table_id}", status_code=204)
 def owner_delete_table(table_id: int, owner=Depends(require_owner)):
     if not repo.archive_owner_table(owner["owner_id"], table_id):
