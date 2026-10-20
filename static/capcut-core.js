@@ -12,7 +12,10 @@
   body.${ROOT}{--rail:76px;--panel:286px;--inspect:0px;--timeline:0px;background:#0b0d10}
   body.${ROOT} .design-room{background:#0b0d10;grid-template-rows:91px minmax(0,1fr)}
   body.${ROOT} .design-top{min-height:91px;padding:14px 22px;gap:12px;flex-wrap:nowrap;background:#101216;border-bottom:1px solid #262a31;overflow-x:auto}
-  body.${ROOT} .design-top::before{content:"MB BUSINESS HUB";flex:0 0 auto;margin-right:12px;color:#f4f4f5;font-weight:900;font-size:22px}
+  body.${ROOT} .design-top::before{content:none;display:none}
+  body.${ROOT} .design-top .mb-home-logo{display:flex;align-items:center;gap:10px;flex:0 0 auto;margin-right:12px;color:#f4f4f5;font-weight:900;font-size:20px;text-decoration:none;white-space:nowrap}
+  body.${ROOT} .design-top .mb-home-logo img{width:54px;height:54px;object-fit:contain;border-radius:12px}
+  body.${ROOT} .design-top .mb-home-logo:hover{opacity:.85}
   body.${ROOT} .design-top .btn{min-height:56px;padding:12px 19px;border-radius:10px;background:#15181d;border-color:#2c313a;font-size:1.37rem;font-weight:700;white-space:nowrap}
   body.${ROOT} .design-work{position:relative;grid-template-columns:var(--rail) 0 minmax(0,1fr) var(--inspect);grid-template-rows:minmax(0,1fr) var(--timeline);background:#0b0d10}
   body.${ROOT} .design-work.tool-panel-open{grid-template-columns:var(--rail) var(--panel) minmax(0,1fr) var(--inspect)}
