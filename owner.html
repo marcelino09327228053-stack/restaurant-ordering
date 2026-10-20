@@ -444,6 +444,8 @@
     .studio-panel { position:absolute; z-index:9; top:calc(var(--studio-header-height,64px) + 8px); left:calc(var(--tool-rail-width,0px) + 12px); width:min(430px,calc(100% - var(--tool-rail-width,0px) - 24px)); max-height:calc(100% - var(--studio-header-height,64px) - 20px); overflow:auto; padding:14px; border:1px solid #ffffff24; border-radius:16px; background:#151519; box-shadow:0 22px 60px #000c; }
     .studio-panel[hidden] { display:none; }
     .studio-panel.wide { width:min(980px,calc(100% - var(--tool-rail-width,0px) - 24px)); }
+    #designRoom #posPanel { left:12px;width:calc(100% - 24px);max-height:none;height:calc(100% - var(--studio-header-height,64px) - 20px);padding:0;overflow:hidden;background:#0b0b0d; }
+    #ownerPosFrame { display:block;width:100%;height:100%;border:0;background:#0b0b0d; }
     .studio-panel-head { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
     .studio-panel-head h3 { margin:0; color:#fdba74; }
     .studio-panel-body > .block { margin:0; border:0; padding:0; box-shadow:none; }
@@ -509,9 +511,11 @@
     .object-color-editor { border:0;padding:0;margin:0 0 12px;min-width:0; }
     .object-color-editor:disabled { opacity:.45; }
     .object-color-editor input[type=range], #backgroundColorEditor input[type=range] { width:100%;margin-bottom:6px; }
-    .design-top .btn[aria-expanded="true"], .design-top .btn[aria-pressed="true"] {
-      color:#fff3e8;background:#ff6a1a30;border-color:#ff8a45;
-      box-shadow:0 0 0 1px #ff6a1a35,0 0 16px #ff6a1a35;
+    #designRoom .design-top .btn[aria-expanded="true"], #designRoom .design-top .btn[aria-pressed="true"] {
+      color:#ffffff !important;
+      background:#F97316 !important;
+      border-color:#F97316 !important;
+      box-shadow:0 0 0 1px #fb923c,0 0 16px #f9731655 !important;
     }
     #menuBuilder > div:first-child .btn[aria-expanded="true"] {
       color:#fff;background:#ff6a1a;border-color:#ff9a5c;
@@ -783,7 +787,7 @@
       <button class="btn" id="designPageButton" type="button" aria-pressed="true" onclick="showDesignPage()">Design Your Page</button>
       <button class="btn" type="button" data-studio-panel="menuPanel" aria-controls="menuPanel" aria-expanded="false" onclick="toggleStudioPanel('menuPanel')">Customer Display</button>
       <button class="btn" type="button" data-studio-panel="tablesPanel" aria-controls="tablesPanel" aria-expanded="false" onclick="toggleStudioPanel('tablesPanel')">Menu &amp; QR</button>
-      <a class="btn" href="/cashier?source=owner">POS</a>
+      <button class="btn" type="button" data-studio-panel="posPanel" aria-controls="posPanel" aria-expanded="false" onclick="toggleStudioPanel('posPanel')">POS</button>
       <div class="grow"></div>
       </div>
     <section class="design-slideshow" id="slideshowPanel" hidden>
@@ -814,6 +818,7 @@
     <section class="studio-panel wide" id="tablesPanel" hidden><div class="studio-panel-head"><h3>Menu &amp; QR</h3><div class="grow"></div><button class="btn" onclick="toggleStudioPanel('tablesPanel',false)">Close</button></div><div class="studio-panel-body" id="tablesPanelBody"></div></section>
     <section class="studio-panel" id="paymentsPanel" hidden><div class="studio-panel-head"><h3>Payment Methods</h3><div class="grow"></div><button class="btn" onclick="toggleStudioPanel('paymentsPanel',false)">Close</button></div><div class="studio-panel-body" id="paymentsPanelBody"></div></section>
     <section class="studio-panel wide" id="previewPanel" hidden><div class="studio-panel-head"><h3>Live Restaurant Preview</h3><div class="grow"></div><button class="btn" onclick="toggleStudioPanel('previewPanel',false)">Close</button></div><div class="studio-panel-body" id="previewPanelBody"></div></section>
+    <section class="studio-panel wide pos-studio-panel" id="posPanel" hidden><iframe id="ownerPosFrame" title="Owner Cashier Board" loading="lazy" allow="autoplay"></iframe></section>
     <div class="design-work">
       <nav class="tool-rail" aria-label="Editor tools" id="editorToolRail"></nav>
       <aside class="tool-panel" id="editorToolPanel" hidden aria-labelledby="editorToolTitle">
@@ -1146,6 +1151,10 @@
       document.querySelectorAll(".studio-panel").forEach(item => item.hidden = true);
       closeEditorTool();
       target.hidden = !shouldOpen;
+      if (id === "posPanel" && shouldOpen) {
+        const frame = document.getElementById("ownerPosFrame");
+        if (frame && !frame.getAttribute("src")) frame.setAttribute("src", "/cashier?source=owner&embedded=1");
+      }
       setCanvasToolsVisible(!shouldOpen);
       syncTopToolbar();
       if (id === "previewPanel" && shouldOpen) renderPreview();

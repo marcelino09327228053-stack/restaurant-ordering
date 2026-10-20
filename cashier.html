@@ -307,17 +307,15 @@
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Lato:wght@400;700&family=Merriweather:wght@400;700&family=Montserrat:wght@400;500;600;700;800&family=Nunito:wght@400;500;600;700;800&family=Open+Sans:wght@400;500;600;700;800&family=Oswald:wght@400;500;600;700&family=Outfit:wght@400;500;600;700;800&family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@400;500;600;700;800&family=Roboto:wght@400;500;700&family=Lora:wght@400;500;600;700&family=Anton&family=Pacifico&family=Lobster&family=Dancing+Script&family=Cinzel&family=Abril+Fatface&family=Righteous&family=Permanent+Marker&display=swap" rel="stylesheet" />
   <style>body:not(.pos-ready){visibility:hidden}</style>
   <style>body:not(.pos-ready){visibility:hidden}</style>
+  <style>
+    html.pos-embedded .header-actions { display:none!important; }
+  </style>
+  <script>if(new URLSearchParams(location.search).get("embedded")==="1" && new URLSearchParams(location.search).get("source")==="owner")document.documentElement.classList.add("pos-embedded");</script>
 </head>
 <body>
   <header>
     <div class="bar">
-      <div class="brand">
-        <div class="logo">🍔</div>
-        <div class="brand-copy">
-          <strong>Cashier Board</strong>
-          <small>Orders, payments & table chat</small>
-        </div>
-      </div>
+
       <div class="header-actions">
         <a class="home-button" href="/owner" title="Design Your Page, Customer Display, Menu &amp; QR">← Owner Workspace</a>
         <a class="home-button" href="/">← Home</a>
@@ -333,6 +331,8 @@
     <button class="tab" onclick="showTab('messages', this)">Table Chat <span id="chatBadge" class="badge-unread" hidden>0</span></button>
     <button class="tab" onclick="showTab('menu', this)">Menu</button>
     <button class="tab" onclick="showTab('tables', this)">Table QR</button>
+    <button class="tab" onclick="showTab('inventory', this)">Inventory</button>
+    <button class="tab" onclick="showTab('expenses', this)">Expenses</button>
   </nav>
 
   <main>
@@ -416,6 +416,12 @@
         <h2>Table QR</h2>
         <div class="qr-grid" id="tableList"></div>
       </div>
+    </section>
+    <section id="inventoryPanel" class="panel">
+      <div class="card"><h2>Inventory Management</h2><div id="inventoryWorkspace">Manage items, stock in, stock out, and materials used.</div></div>
+    </section>
+    <section id="expensesPanel" class="panel">
+      <div class="card"><h2>Expense Management</h2><div id="expensesWorkspace">Record purchases, bills, and business expenses.</div></div>
     </section>
   </main>
 
@@ -610,6 +616,8 @@
       if (name === "tables") loadTables();
       if (name === "messages") loadThreads();
       if (name === "rooms") { loadOpsRooms(); loadOpsThreads(); }
+      if (name === "inventory" && typeof window.loadBusinessInventory === "function") window.loadBusinessInventory();
+      if (name === "expenses" && typeof window.loadBusinessExpenses === "function") window.loadBusinessExpenses();
     }
 
     async function loadOpsRooms() {
@@ -1030,5 +1038,6 @@
       if (!document.hidden) tickPolling();
     });
   </script>
+  <script src="/static/business-tracking-ui.js?v=1"></script>
 </body>
 </html>

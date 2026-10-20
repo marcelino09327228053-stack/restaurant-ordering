@@ -15,6 +15,7 @@ from app.db import get_connection, init_db, using_postgres
 from app.mail import send_security_email
 from app.repository import ensure_defaults, LEGACY_SAMPLE_NAMES, without_legacy_samples
 from app.router import router
+from app.business_tracking import router as business_tracking_router
 
 
 def prepare_owner_menu_storage() -> None:
@@ -620,6 +621,7 @@ A full logout was requested from a signed-in device.",
     if _cloudinary_configured():
         application.include_router(cloudinary_router)
     application.include_router(router)
+    application.include_router(business_tracking_router)
     init_db()
     prepare_owner_menu_storage()
     install_owner_menu_fixes()

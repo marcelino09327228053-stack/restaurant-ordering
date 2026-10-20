@@ -527,11 +527,57 @@ def _init_sqlite_db() -> None:
     conn.commit()
 
 
+def init_business_tracking_db() -> None:
+    """Create owner-scoped inventory and expense tables without modifying existing data."""
+    conn = get_connection()
+    cursor = conn.cursor()
+    if using_postgres():
+        pk = "SERIAL PRIMARY KEY"
+        amount_type = "NUMERIC(14,2)"
+        quantity_type = "NUMERIC(14,3)"
+    else:
+        pk = "INTEGER PRIMARY KEY AUTOINCREMENT"
+        amount_type = "NUMERIC"
+        quantity_type = "NUMERIC"
+    cursor.execute(f"""CREATE TABLE IF NOT EXISTS inventory_items (
+        id {pk}, owner_id INTEGER NOT NULL REFERENCES owners(id),
+        name TEXT NOT NULL, sku TEXT NOT NULL DEFAULT '',
+        unit TEXT NOT NULL DEFAULT 'pcs',
+        quantity {quantity_type} NOT NULL DEFAULT 0,
+        minimum_stock {quantity_type} NOT NULL DEFAULT 0,
+        created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        active INTEGER NOT NULL DEFAULT 1
+    )""")
+    cursor.execute(f"""CREATE TABLE IF NOT EXISTS inventory_movements (
+        id {pk}, owner_id INTEGER NOT NULL REFERENCES owners(id),
+        item_id INTEGER NOT NULL REFERENCES inventory_items(id),
+        movement_type TEXT NOT NULL,
+        quantity {quantity_type} NOT NULL,
+        note TEXT NOT NULL DEFAULT '',
+        recorded_by TEXT NOT NULL,
+        created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    )""")
+    cursor.execute(f"""CREATE TABLE IF NOT EXISTS business_expenses (
+        id {pk}, owner_id INTEGER NOT NULL REFERENCES owners(id),
+        category TEXT NOT NULL,
+        description TEXT NOT NULL DEFAULT '',
+        amount {amount_type} NOT NULL,
+        expense_date TEXT NOT NULL,
+        recorded_by TEXT NOT NULL,
+        created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    )""")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_inventory_owner ON inventory_items(owner_id, active)")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_movements_owner_date ON inventory_movements(owner_id, created_at)")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_expenses_owner_date ON business_expenses(owner_id, expense_date)")
+    conn.commit()
+
+
 def init_db() -> None:
     if using_postgres():
         _init_postgres_db()
     else:
         _init_sqlite_db()
+    init_business_tracking_db()
 
     # Keep closed bills out of the next party's balance without deleting orders.
     conn = get_connection()
