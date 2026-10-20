@@ -1264,7 +1264,7 @@ def get_table_by_id(table_id: int) -> dict | None:
     cursor = get_connection().cursor()
     cursor.execute(
         """
-        SELECT id, name, access_code, active
+        SELECT id, name, access_code, active, owner_id
         FROM restaurant_tables
         WHERE id = ?
         """,
