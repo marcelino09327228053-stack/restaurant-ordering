@@ -737,6 +737,14 @@
     async function loadThreads() {
       try {
         const threads = await api("/api/messages/threads");
+        const activeStillExists = activeTableId && threads.some(t => t.table_id === activeTableId);
+        if (activeTableId && !activeStillExists) {
+          delete lastMsgIds[activeTableId];
+          activeTableId = null;
+          document.getElementById("chatTitle").textContent = "Select a table";
+          document.getElementById("chatForm").hidden = true;
+          document.getElementById("chatLog").innerHTML = `<div class="chat-empty">Pick a table on the left to reply.</div>`;
+        }
         const autoSelected = !activeTableId && threads.length > 0;
         if (autoSelected) {
           activeTableId = threads[0].table_id;
