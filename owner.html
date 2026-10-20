@@ -772,8 +772,14 @@
   </dialog>
 
   <section class="design-room" id="designRoom" hidden>
+    <style>
+      #designRoom .design-top::before{content:none !important;display:none !important}
+      #designRoom .design-top #mbHomeLogo{display:flex !important;align-items:center !important;gap:10px !important;margin-right:18px !important;color:#f4f4f5 !important;font-weight:900 !important;font-size:22px !important;line-height:1 !important;text-decoration:none !important;white-space:nowrap !important;flex:0 0 auto !important}
+      #designRoom .design-top #mbHomeLogo img{width:54px !important;height:54px !important;object-fit:contain !important;border-radius:12px !important;flex:0 0 auto !important}
+      #designRoom .design-top #mbHomeLogo span{display:inline-block !important}
+    </style>
     <div class="design-top">
-      <a class="mb-home-logo" id="mbHomeLogo" href="/" aria-label="MB Business Hub - Back to Home" style="display:flex;align-items:center;gap:8px;margin-right:12px;color:#f4f4f5;font-weight:900;text-decoration:none;white-space:nowrap;flex:0 0 auto"><img src="/static/mb-bite-brew-logo.png?v=4" alt="MBH burger logo" style="width:44px;height:44px;object-fit:contain;border-radius:10px"><span>MB BUSINESS HUB</span></a>
+      <a class="mb-home-logo" id="mbHomeLogo" href="/" aria-label="MB Business Hub - Back to Home"><img src="/static/mb-bite-brew-logo.png?v=4" alt="MBH burger logo"><span>MB BUSINESS HUB</span></a>
       <button class="btn" id="designPageButton" type="button" aria-pressed="true" onclick="showDesignPage()">Design Your Page</button>
       <button class="btn" type="button" data-studio-panel="menuPanel" aria-controls="menuPanel" aria-expanded="false" onclick="toggleStudioPanel('menuPanel')">Customer Display</button>
       <button class="btn" type="button" data-studio-panel="tablesPanel" aria-controls="tablesPanel" aria-expanded="false" onclick="toggleStudioPanel('tablesPanel')">Menu &amp; QR</button>
