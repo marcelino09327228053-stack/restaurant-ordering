@@ -776,7 +776,7 @@
       <button class="btn" id="designPageButton" type="button" aria-pressed="true" onclick="showDesignPage()">Design Your Page</button>
       <button class="btn" type="button" data-studio-panel="menuPanel" aria-controls="menuPanel" aria-expanded="false" onclick="toggleStudioPanel('menuPanel')">Customer Display</button>
       <button class="btn" type="button" data-studio-panel="tablesPanel" aria-controls="tablesPanel" aria-expanded="false" onclick="toggleStudioPanel('tablesPanel')">Menu &amp; QR</button>
-      <a class="btn" href="/cashier">POS</a>
+      <a class="btn" href="/cashier?source=owner">POS</a>
       <div class="grow"></div>
       </div>
     <section class="design-slideshow" id="slideshowPanel" hidden>
@@ -2463,6 +2463,28 @@
       } catch (e) { toast(e.message); }
     }
 
+    window.addEventListener("storage", event => {
+      if (event.key === "owner_token" || event.key === "owner_locked" || event.key === null) {
+        if (!token() || localStorage.getItem("owner_locked") === "1") {
+          document.body.style.visibility = "hidden";
+          location.replace("/account");
+        }
+      }
+    });
+    window.addEventListener("pageshow", event => {
+      if (event.persisted) api("/api/owner/me").catch(() => {});
+    });
+    window.addEventListener("storage", event => {
+      if (event.key === "owner_token" || event.key === "owner_locked" || event.key === null) {
+        if (!token() || localStorage.getItem("owner_locked") === "1") {
+          document.body.style.visibility = "hidden";
+          location.replace("/account");
+        }
+      }
+    });
+    window.addEventListener("pageshow", event => {
+      if (event.persisted) api("/api/owner/me").catch(() => {});
+    });
     boot();
   </script>
 </body>

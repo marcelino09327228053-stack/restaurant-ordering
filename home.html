@@ -4,458 +4,17 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>MB Business Hub</title>
-  <style>
-    :root{
-      --bg:#07080a;
-      --panel:#111318;
-      --panel2:#171a20;
-      --line:#2a2e36;
-      --text:#f8f8f6;
-      --muted:#979da8;
-      --accent:#f97316;
-      --accent2:#ea580c;
-      --green:#22c55e;
-    }
-    *{box-sizing:border-box}
-    html{scroll-behavior:smooth;font-size:80%}
-    [hidden]{display:none!important}
-    body{
-      margin:0;
-      min-height:100vh;
-      overflow-x:hidden;
-      font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;
-      color:var(--text);
-      background:
-        radial-gradient(circle at 13% 18%,#7c2d1238,transparent 28%),
-        radial-gradient(circle at 87% 30%,#f973161c,transparent 26%),
-        linear-gradient(180deg,#08090b 0%,#0a0b0e 55%,#07080a 100%);
-    }
-    body:before{
-      content:"";
-      position:fixed;
-      inset:0;
-      pointer-events:none;
-      opacity:.22;
-      background-image:linear-gradient(#ffffff05 1px,transparent 1px),linear-gradient(90deg,#ffffff05 1px,transparent 1px);
-      background-size:44px 44px;
-      mask-image:linear-gradient(to bottom,#000,transparent 70%);
-    }
-    .wrap{width:min(1240px,calc(100% - 36px));margin:auto}
-    header{
-      min-height:84px;
-      display:flex;
-      align-items:center;
-      gap:18px;
-      border-bottom:1px solid #ffffff10;
-      position:relative;
-      z-index:5;
-    }
-    .brand{display:flex;align-items:center;gap:12px;text-decoration:none;color:inherit}
-    .logo{
-      width:56px;
-      height:56px;
-      border-radius:50%;
-      object-fit:contain;
-      display:block;
-      box-shadow:0 0 0 1px #ffffff12,0 14px 38px #f9731638;
-      flex:none;
-    }
-    .brand strong{display:block;font-size:1.08rem;letter-spacing:.01em}
-    .brand small{display:block;color:var(--muted);font-size:.78rem;margin-top:2px}
-    .grow{flex:1}
-    nav{display:flex;gap:9px;flex-wrap:wrap;justify-content:flex-end}
-    .btn{
-      border:1px solid var(--line);
-      background:#14171c;
-      color:var(--text);
-      text-decoration:none;
-      padding:11px 16px;
-      border-radius:12px;
-      font-weight:750;
-      cursor:pointer;
-      font:inherit;
-      transition:.2s ease;
-    }
-    .btn:hover{border-color:#555b66;transform:translateY(-1px)}
-    .btn.primary{
-      border:0;
-      background:linear-gradient(135deg,var(--accent),var(--accent2));
-      box-shadow:0 12px 30px #f9731638;
-    }
-    .btn.primary:hover{box-shadow:0 16px 38px #f9731650}
-    .btn.danger{border-color:#6f2424;color:#fecaca;background:#2a1214}
-    main{padding:72px 0 34px}
-    .hero{
-      min-height:590px;
-      display:grid;
-      grid-template-columns:1fr 1.06fr;
-      gap:56px;
-      align-items:center;
-    }
-    .eyebrow{
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      padding:8px 12px;
-      border:1px solid #f9731642;
-      border-radius:999px;
-      background:#f973160d;
-      color:#fdba74;
-      font-size:.76rem;
-      font-weight:800;
-      letter-spacing:.12em;
-      text-transform:uppercase;
-    }
-    .eyebrow:before{
-      content:"";
-      width:7px;
-      height:7px;
-      border-radius:50%;
-      background:var(--accent);
-      box-shadow:0 0 14px var(--accent);
-    }
-    h1{
-      font-size:clamp(3.2rem,6.8vw,6.5rem);
-      line-height:.88;
-      margin:22px 0 16px;
-      letter-spacing:-.06em;
-    }
-    h1 span{
-      display:block;
-      color:var(--accent);
-      text-shadow:0 8px 32px #f9731630;
-    }
-    .hero-sub{
-      font-size:clamp(1.3rem,2.5vw,2rem);
-      font-weight:750;
-      margin:0 0 12px;
-      color:#f1f1ef;
-      letter-spacing:-.025em;
-    }
-    .lead{
-      color:#b7bbc3;
-      font-size:clamp(1rem,1.6vw,1.12rem);
-      line-height:1.72;
-      max-width:660px;
-      margin:0;
-    }
-    .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:28px}
-    .trust-row{display:flex;gap:18px;flex-wrap:wrap;margin-top:22px;color:#9da3ad;font-size:.84rem}
-    .trust-row span:before{content:"✓";color:var(--green);font-weight:900;margin-right:7px}
-    .showcase{
-      position:relative;
-      min-height:480px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-    }
-    .showcase:before{
-      content:"";
-      position:absolute;
-      width:78%;
-      aspect-ratio:1;
-      border-radius:50%;
-      background:radial-gradient(circle,#f9731628,transparent 65%);
-      filter:blur(8px);
-    }
-    .dashboard-card{
-      position:relative;
-      width:100%;
-      max-width:600px;
-      border:1px solid #ffffff17;
-      border-radius:28px;
-      background:linear-gradient(160deg,#181b21ee,#0d0f13f2);
-      box-shadow:0 38px 100px #000a,0 0 60px #f9731612;
-      padding:22px;
-      overflow:hidden;
-    }
-    .home-slider-card{
-      width:min(760px,100%);
-      max-width:760px;
-      min-height:500px;
-      padding:0;
-      background:#0d0f13;
-    }
-    .home-slides{
-      position:absolute;
-      inset:0;
-    }
-    .home-slide{
-      position:absolute;
-      inset:0;
-      background-position:center;
-      background-size:cover;
-      background-repeat:no-repeat;
-      opacity:0;
-      transform:scale(1.04);
-      transition:opacity .9s ease,transform 1.2s ease;
-    }
-    .home-slide.is-active{
-      opacity:1;
-      transform:scale(1);
-      z-index:1;
-    }
-    .home-slide.is-leaving{
-      opacity:0;
-      transform:scale(1.02);
-      z-index:0;
-    }
-    .home-slider-card:before{
-      content:"";
-      position:absolute;
-      inset:0;
-      z-index:2;
-      pointer-events:none;
-      background:
-        linear-gradient(90deg,#090a0d22 0%,#090a0d12 42%,transparent 78%),
-        linear-gradient(0deg,#090a0d33 0%,transparent 38%);
-    }
-    .home-slider-overlay{
-      position:absolute;
-      left:28px;
-      right:28px;
-      bottom:74px;
-      z-index:3;
-      max-width:420px;
-    }
-    .home-slider-overlay span{
-      display:block;
-      color:#fdba74;
-      font-size:.74rem;
-      font-weight:850;
-      text-transform:uppercase;
-      letter-spacing:.12em;
-      margin-bottom:8px;
-    }
-    .home-slider-overlay strong{
-      display:block;
-      color:#fff;
-      font-size:clamp(1.4rem,2.4vw,2rem);
-      line-height:1.1;
-      letter-spacing:-.03em;
-      text-shadow:0 3px 20px #000;
-    }
-    .home-slider-count{
-      position:absolute;
-      right:20px;
-      top:18px;
-      z-index:4;
-      padding:6px 10px;
-      border-radius:999px;
-      background:#0008;
-      border:1px solid #ffffff22;
-      color:#fff;
-      font-size:.76rem;
-      font-weight:800;
-    }
-    .home-slider-dots{
-      position:absolute;
-      left:22px;
-      right:22px;
-      bottom:48px;
-      z-index:4;
-      display:flex;
-      flex-wrap:wrap;
-      gap:6px;
-      justify-content:flex-end;
-    }
-    .home-slider-dot{
-      width:7px;
-      height:7px;
-      border:0;
-      padding:0;
-      border-radius:50%;
-      background:#ffffff44;
-      cursor:pointer;
-    }
-    .home-slider-dot.active{
-      background:var(--accent);
-      box-shadow:0 0 0 3px #f9731633;
-    }
-    .home-slider-card .status{
-      position:absolute;
-      left:20px;
-      right:20px;
-      bottom:14px;
-      z-index:4;
-      margin:0;
-      background:#090a0dcc;
-      backdrop-filter:blur(8px);
-    }
-    .dashboard-card:after{
-      content:"";
-      position:absolute;
-      width:240px;
-      height:240px;
-      right:-70px;
-      top:-100px;
-      border-radius:50%;
-      background:#f973161a;
-      filter:blur(10px);
-    }
-    .dash-top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px;position:relative;z-index:1}
-    .dash-title strong{display:block;font-size:1rem}
-    .dash-title small{color:var(--muted)}
-    .live-badge{
-      padding:7px 10px;
-      border-radius:999px;
-      background:#22c55e14;
-      border:1px solid #22c55e38;
-      color:#86efac;
-      font-size:.72rem;
-      font-weight:800;
-    }
-    .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;position:relative;z-index:1}
-    .stat{
-      padding:15px;
-      border:1px solid #ffffff10;
-      border-radius:16px;
-      background:#0b0d11cc;
-    }
-    .stat small{display:block;color:#8e949e;margin-bottom:7px}
-    .stat strong{font-size:1.35rem}
-    .stat b{display:block;color:#86efac;font-size:.7rem;margin-top:6px}
-    .chart{
-      height:170px;
-      margin-top:12px;
-      border:1px solid #ffffff10;
-      border-radius:18px;
-      background:
-        linear-gradient(180deg,#f973160b,transparent),
-        repeating-linear-gradient(to bottom,transparent 0,transparent 41px,#ffffff08 42px);
-      position:relative;
-      overflow:hidden;
-    }
-    .chart:before{
-      content:"";
-      position:absolute;
-      left:5%;
-      right:4%;
-      bottom:28px;
-      height:82px;
-      border-bottom:3px solid var(--accent);
-      border-radius:50% 50% 0 0;
-      transform:skewY(-7deg);
-      box-shadow:0 10px 24px #f9731640;
-    }
-    .chart-label{
-      position:absolute;
-      left:16px;
-      top:14px;
-      color:#d7d9dd;
-      font-size:.82rem;
-      font-weight:800;
-    }
-    .floating{
-      position:absolute;
-      z-index:3;
-      border:1px solid #ffffff16;
-      background:#12151be8;
-      box-shadow:0 18px 50px #0009;
-      backdrop-filter:blur(12px);
-      border-radius:16px;
-      padding:13px 15px;
-      font-size:.79rem;
-    }
-    .floating strong{display:block;color:#fff;margin-bottom:3px}
-    .floating span{color:#9197a1}
-    .float-one{top:8px;right:-12px}
-    .float-two{bottom:26px;left:-18px}
-    .features{padding:54px 0 26px}
-    .section-head{text-align:center;max-width:720px;margin:0 auto 28px}
-    .section-head small{color:var(--accent);font-weight:850;letter-spacing:.12em;text-transform:uppercase}
-    .section-head h2{font-size:clamp(2rem,4vw,3rem);margin:9px 0 8px;letter-spacing:-.04em}
-    .section-head p{color:var(--muted);margin:0}
-    .feature-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
-    .feature-card{
-      min-height:260px;
-      padding:0;
-      overflow:hidden;
-      border:1px solid #ffffff12;
-      border-radius:18px;
-      background:linear-gradient(180deg,#14171c,#0e1014);
-      transition:.2s ease;
-    }
-    .feature-card:hover{
-      transform:translateY(-4px);
-      border-color:#f9731640;
-      box-shadow:0 18px 40px #0006;
-    }
-    .feature-image{
-      width:100%;
-      height:150px;
-      object-fit:cover;
-      object-position:center;
-      display:block;
-      border-bottom:1px solid #ffffff0d;
-      background:#111;
-    }
-    .feature-body{
-      padding:16px 18px 18px;
-    }
-    .feature-card strong{
-      display:block;
-      margin-bottom:8px;
-      font-size:1.08rem;
-      font-weight:850;
-      color:#ffffff;
-      letter-spacing:-.01em;
-    }
-    .feature-card p{
-      margin:0;
-      color:#c3c7ce;
-      font-size:.92rem;
-      font-weight:600;
-      line-height:1.55;
-    }
-    .status{
-      margin-top:14px;
-      padding:12px 14px;
-      border-radius:12px;
-      border:1px solid var(--line);
-      background:#0b0d11;
-      color:var(--muted);
-      text-align:center;
-      font-size:.8rem;
-      position:relative;
-      z-index:1;
-    }
-    footer{
-      color:#777d88;
-      font-size:.84rem;
-      padding:34px 0 42px;
-      border-top:1px solid #ffffff0d;
-      margin-top:28px;
-    }
-    @media(max-width:980px){
-      .hero{grid-template-columns:1fr;gap:38px}
-      .showcase{min-height:auto}
-      .feature-grid{grid-template-columns:repeat(2,1fr)}
-      .float-one{right:8px}
-      .float-two{left:8px}
-    }
-    @media(max-width:620px){
-      .wrap{width:min(100% - 24px,1240px)}
-      header{align-items:flex-start;padding:14px 0}
-      .brand small{display:none}
-      nav{max-width:62%}
-      main{padding-top:44px}
-      .hero{min-height:auto}
-      h1{font-size:clamp(3rem,16vw,4.6rem)}
-      .stats{grid-template-columns:1fr}
-      .feature-grid{grid-template-columns:1fr}
-      .floating{display:none}
-    }
-  </style>
+  <link rel="stylesheet" href="/static/home.css?v=20261020larger">
+  <link rel="stylesheet" href="/static/home-workflow.css?v=20261020restoredframe">
 </head>
 <body>
-  <header class="wrap">
+  <div id="homeBackground" aria-hidden="true"></div>
+  <header class="wrap" id="home">
     <a class="brand" href="/">
       <img class="logo" src="/static/mb-bite-brew-logo.png?v=4" alt="MB Bite & Brew logo" />
       <div><strong>MB Business Hub</strong><small>Business Management Platform</small></div>
     </a>
-    <div class="grow"></div>
-    <nav>
+    <nav class="account-nav" aria-label="Account">
       <button class="btn" type="button" id="lockButton" hidden onclick="toggleOwnerLock()">Lock Account</button>
       <a class="btn primary" href="/account" id="authButton">Log In / Create Account</a>
       <a class="btn" href="/login" id="cashierLoginButton">Cashier Login</a>
@@ -472,17 +31,15 @@
         <p class="hero-sub">No Waiting. Just Scan.</p>
 
         <p class="lead">
-          Scan the QR code to order, pay, and track your order in real time.
+          Modern tools to help you manage your restaurant, accept orders, track payments, and grow your business — all in one place.
         </p>
 
         <div class="actions" id="guestActions">
-          <a class="btn primary" href="/account">Log In / Create Account</a>
-          <a class="btn" href="#features">Explore Features</a>
+          <a class="btn primary design-link" href="/account">♧ &nbsp; Design Your Page <span>→</span></a>
         </div>
 
         <div class="actions" id="ownerActions" hidden>
-          <a class="btn primary" href="/owner">Design Your Page</a>
-          <a class="btn" href="#features">Explore Features</a>
+          <a class="btn primary design-link" href="/owner">♧ &nbsp; Design Your Page <span>→</span></a>
         </div>
 
         <div class="trust-row">
@@ -495,59 +52,97 @@
       <div class="showcase">
         <div class="dashboard-card home-slider-card">
           <div class="home-slides" id="homeSlides"></div>
+          <div class="slide-copy"><small>DELICIOUS FOOD</small><h2>GREAT<br><span>EXPERIENCE</span></h2><p>Showcase your menu, accept orders,<br>and make every meal unforgettable.</p></div>
           <div id="sessionStatus" hidden></div>
         </div>
       </div>
     </section>
 
-    <section class="features" id="features">
-      <div class="section-head">
-        <small>Powerful Features</small>
-        <h2>Everything You Need in One Place</h2>
-        <p>Tools built to help you manage daily operations and grow your business.</p>
-      </div>
+    <section class="workflow" id="features" aria-labelledby="workflowTitle">
+      <!-- The supplied composition stays static; only the system overlays animate. -->
+      <svg class="workflow-panorama" viewBox="0 410 1672 412" aria-hidden="true" focusable="false">
+        <defs>
+          <linearGradient id="workflowRestingShade" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#160d06" stop-opacity="0"/><stop offset=".35" stop-color="#160d06" stop-opacity=".58"/><stop offset=".7" stop-color="#160d06" stop-opacity=".58"/><stop offset="1" stop-color="#160d06" stop-opacity="0"/></linearGradient>
+          <clipPath id="workflowQrClip"><polygon points="135,674 177,683 162,728 118,718"/></clipPath>
+        </defs>
+        <image href="/static/workflow-reference.png" width="1672" height="941"/>
+        <rect x="205" y="487" width="1265" height="65" fill="url(#workflowRestingShade)"/>
 
-      <div class="feature-grid">
-        <div class="feature-card">
-          <img class="feature-image" src="/static/features/online-ordering.png" alt="Online Ordering" />
-          <div class="feature-body">
-            <strong>Online Ordering</strong>
-            <p>Accept customer orders through a clean and modern digital experience.</p>
-          </div>
-        </div>
+        <path class="workflow-travel workflow-travel-0" d="M275 524 C330 514 344 510 384 519 S457 531 500 524" pathLength="100"/>
+        <path class="workflow-travel workflow-travel-1" d="M553 522 C602 502 622 510 666 518 S745 531 792 522" pathLength="100"/>
+        <path class="workflow-travel workflow-travel-2" d="M846 521 C904 501 918 507 960 516 S1039 529 1080 524" pathLength="100"/>
+        <path class="workflow-travel workflow-travel-3" d="M1134 524 C1186 517 1215 539 1260 537 S1361 505 1411 512" pathLength="100"/>
+        <g class="workflow-stage-0">
+          <circle class="workflow-halo workflow-screen" cx="248" cy="525" r="25"/>
+          <polygon class="workflow-screen workflow-device-light" points="145,646 205,658 174,758 112,741"/>
+        </g>
+        <g class="workflow-stage-1">
+          <circle class="workflow-halo workflow-screen" cx="526" cy="525" r="25"/>
+          <polygon class="workflow-screen workflow-device-light" points="489,647 591,660 568,783 455,764"/>
+        </g>
+        <g class="workflow-stage-2">
+          <circle class="workflow-halo workflow-screen" cx="819" cy="524" r="25"/>
+          <polygon class="workflow-screen workflow-device-light" points="713,638 902,652 890,770 693,753"/>
+        </g>
+        <g class="workflow-stage-3">
+          <circle class="workflow-halo workflow-screen" cx="1107" cy="525" r="25"/>
+          <polygon class="workflow-screen workflow-device-light" points="1109,650 1192,663 1170,799 1080,783"/>
+        </g>
+        <g class="workflow-stage-4">
+          <circle class="workflow-halo workflow-screen" cx="1437" cy="512" r="25"/>
+          <polygon class="workflow-screen workflow-device-light" points="1298,618 1583,620 1596,784 1289,780"/>
+        </g>
+        <g clip-path="url(#workflowQrClip)"><path class="workflow-scan" d="M115 700 L180 712"/></g>
+        <polygon class="workflow-qr-confirm" points="135,674 177,683 162,728 118,718"/>
+      </svg>
+      <div class="workflow-heading"><small>POWERFUL FEATURES</small><h2 id="workflowTitle">Everything You Need in <span>One Place</span></h2><p>From the first scan to your business dashboard.</p></div>
+      <ol class="workflow-stages">
+        <li class="workflow-stage workflow-stage-0">
+          <div class="workflow-node" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 3h6v6H3z M15 3h6v6h-6z M3 15h6v6H3z M15 15h3v3h3v3h-6z"/></svg></div>
+          <h3><span>1.</span> Scan QR</h3><p>Scan to view the menu.</p>
+          <svg class="workflow-device" viewBox="0 622 334 200" aria-hidden="true">
+            <image href="/static/workflow-reference.png" width="1672" height="941"/>
+            <polygon class="workflow-screen" points="145,650 206,662 175,758 112,742"/><path class="workflow-scan" d="M128 700 L192 712"/>
+          </svg>
+          <span class="workflow-wire" aria-hidden="true"><i></i></span>
+        </li>
+        <li class="workflow-stage workflow-stage-1">
+          <div class="workflow-node" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 17a8 8 0 0 1 16 0H4Z M2 21h20 M12 6V3"/></svg></div>
+          <h3><span>2.</span> Order</h3><p>Choose your meal.</p>
+          <svg class="workflow-device" viewBox="334 622 334 200" aria-hidden="true">
+            <image href="/static/workflow-reference.png" width="1672" height="941"/>
+            <polygon class="workflow-screen" points="492,651 588,667 565,774 461,760"/>
+          </svg>
+          <span class="workflow-wire" aria-hidden="true"><i></i></span>
+        </li>
+        <li class="workflow-stage workflow-stage-2">
+          <div class="workflow-node" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 13h14l2 8H3z M7 3h10v7H7z M12 10v3"/></svg></div>
+          <h3><span>3.</span> Cashier</h3><p>Order received at the POS.</p>
+          <svg class="workflow-device" viewBox="668 622 334 200" aria-hidden="true">
+            <image href="/static/workflow-reference.png" width="1672" height="941"/>
+            <polygon class="workflow-screen" points="710,640 903,652 891,770 694,754"/>
+          </svg>
+          <span class="workflow-wire" aria-hidden="true"><i></i></span>
+        </li>
+        <li class="workflow-stage workflow-stage-3">
+          <div class="workflow-node" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 5h18v15H3z M3 10h18 M6 15h4"/></svg></div>
+          <h3><span>4.</span> Payment</h3><p>Payment confirmed.</p>
+          <svg class="workflow-device" viewBox="1002 622 334 200" aria-hidden="true">
+            <image href="/static/workflow-reference.png" width="1672" height="941"/>
+            <polygon class="workflow-screen" points="1109,649 1193,664 1170,799 1079,783"/>
+          </svg>
+          <span class="workflow-wire" aria-hidden="true"><i></i></span>
+        </li>
+        <li class="workflow-stage workflow-stage-4">
+          <div class="workflow-node" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 21V12h3v9 M10 21V6h3v15 M16 21V2h3v19"/></svg></div>
+          <h3><span>5.</span> Dashboard</h3><p>See the business update.</p>
+          <svg class="workflow-device" viewBox="1250 594 400 228" aria-hidden="true">
+            <image href="/static/workflow-reference.png" width="1672" height="941"/>
+            <polygon class="workflow-screen" points="1295,626 1580,628 1597,786 1290,779"/>
+          </svg>
 
-        <div class="feature-card">
-          <img class="feature-image" src="/static/features/qr-tables.png" alt="QR Tables" />
-          <div class="feature-body">
-            <strong>QR Tables</strong>
-            <p>Let customers open menus and place orders directly from their table.</p>
-          </div>
-        </div>
-
-        <div class="feature-card">
-          <img class="feature-image" src="/static/features/cashier.png" alt="Cashier" />
-          <div class="feature-body">
-            <strong>Cashier</strong>
-            <p>Fast and reliable cashier tools for day-to-day store operations.</p>
-          </div>
-        </div>
-
-        <div class="feature-card">
-          <img class="feature-image" src="/static/features/payments.png" alt="Payments" />
-          <div class="feature-body">
-            <strong>Payments</strong>
-            <p>Manage payment flows and keep transactions organized in one place.</p>
-          </div>
-        </div>
-
-        <div class="feature-card">
-          <img class="feature-image" src="/static/features/business-dashboard.png" alt="Business Dashboard" />
-          <div class="feature-body">
-            <strong>Business Dashboard</strong>
-            <p>See important activity and business performance at a glance.</p>
-          </div>
-        </div>
-      </div>
+        </li>
+      </ol>
     </section>
   </main>
 
@@ -625,29 +220,8 @@
       setSignedOut();
     }
 
-    const HOME_SLIDES = [
-      "/static/foods/chicken-inasal.jpg",
-      "/static/foods/pork-sisig.jpg",
-      "/static/foods/beef-tapa.jpg",
-      "/static/foods/pancit-canton.jpg",
-      "/static/foods/iced-tea.jpg",
-      "/static/foods/leche-flan.jpg",
-      "/static/foods/fried-chicken.jpg",
-      "/static/foods/classic-burger.jpg",
-      "/static/foods/pepperoni-pizza.jpg",
-      "/static/foods/salmon-sushi.jpg",
-      "/static/foods/shrimp-pasta.jpg",
-      "/static/foods/mango-smoothie.jpg",
-      "/static/foods/chocolate-brownie.jpg",
-      "/static/foods/grilled-liempo.jpg",
-      "/static/foods/garden-salad.jpg",
-      "/static/foods/sinigang.jpg",
-      "/static/foods/fish-and-chips.jpg",
-      "/static/foods/choco-milkshake.jpg",
-      "/static/foods/halo-halo.jpg",
-      "/static/foods/bbq-wings.jpg"
-    ];
-
+    const HOME_SLIDES = ["/static/home-slides/landscape-01.png", "/static/home-slides/landscape-02.png", "/static/home-slides/landscape-03.png", "/static/home-slides/landscape-04.png", "/static/home-slides/landscape-05.png", "/static/home-slides/landscape-06.png", "/static/home-slides/landscape-07.png", "/static/home-slides/landscape-08.png", "/static/home-slides/landscape-09.png"];
+    let homeSlidesPaused = matchMedia('(prefers-reduced-motion: reduce)').matches;
     let homeSlideIndex = 0;
     let homeSlideTimer = null;
 
@@ -659,7 +233,10 @@
         `<div class="home-slide${index === 0 ? " is-active" : ""}" style="background-image:url('${src}')"></div>`
       ).join("");
 
-      restartHomeSlideTimer();
+      document.getElementById('homeBackground').innerHTML = HOME_SLIDES.map(src =>
+        `<div class="home-background-slide" style="background-image:linear-gradient(90deg,#0009,#0005),linear-gradient(0deg,#0009,transparent 80%),url('${src}')"></div>`
+      ).join('');
+      goHomeSlide(0);
     }
 
     function goHomeSlide(nextIndex) {
@@ -672,12 +249,15 @@
         slide.classList.toggle("is-active", index === homeSlideIndex);
       });
 
+      document.querySelectorAll('.home-background-slide').forEach((slide, index) => {
+        slide.classList.toggle('is-active', index === homeSlideIndex);
+      });
       restartHomeSlideTimer();
     }
 
     function restartHomeSlideTimer() {
       clearInterval(homeSlideTimer);
-      homeSlideTimer = setInterval(() => goHomeSlide(homeSlideIndex + 1), 3200);
+      if (!homeSlidesPaused) homeSlideTimer = setInterval(() => goHomeSlide(homeSlideIndex + 1), 3000);
     }
 
     initHomeSlider();

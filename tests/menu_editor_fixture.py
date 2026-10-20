@@ -25,6 +25,18 @@ repo.update_owner_site(owner_id,custom_design={'editorDraft':{'objects':[]},'sen
 repo.create_owner_menu_item(owner_id,'Meals','Test meal','Test description',125)
 table=repo.create_owner_table(owner_id,'Editor Test Table')
 import json
-(artifacts / 'session.json').write_text(json.dumps({'token':create_owner_token(owner_id,'editor-test@example.test'),'cashier':create_access_token(),'table':table['access_code']}))
+session = {'token':create_owner_token(owner_id,'editor-test@example.test'),'cashier':create_access_token(),'table':table['access_code']}
+if os.environ.get('POS_AUTH_TEST') == '1':
+    import jwt
+    from app.auth import SECRET_KEY, JWT_ALGORITHM
+    other = conn.execute("INSERT INTO owners(email,restaurant_name,slug) VALUES ('other@example.test','Other Restaurant','other-test')").lastrowid
+    conn.commit()
+    foreign_table = repo.create_owner_table(other, 'Foreign table')
+    repo.create_owner_menu_item(other, 'Other', 'Private foreign meal', '', 50)
+    session['foreign_table_id'] = foreign_table['id']
+    session['foreign_owner_id'] = other
+    session['expired'] = jwt.encode({'sub':f'owner:{owner_id}','role':'owner','owner_id':owner_id,'exp':1},SECRET_KEY,algorithm=JWT_ALGORITHM)
+    session['missing_owner'] = create_owner_token(999999,'missing@example.test')
+(artifacts / 'session.json').write_text(json.dumps(session))
 import uvicorn
 uvicorn.run(app,host='127.0.0.1',port=8011)

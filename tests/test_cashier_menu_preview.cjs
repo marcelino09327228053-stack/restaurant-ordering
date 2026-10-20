@@ -1,0 +1,44 @@
+const {chromium}=require('playwright');
+const assert=require('assert/strict'), fs=require('fs'), path=require('path');
+(async()=>{
+ const browser=await chromium.launch({headless:true,channel:'chrome'});
+ try {
+  const page=await browser.newPage();
+  const s=require(path.join(require('os').tmpdir(),'restaurant-menu-editor-check/session.json'));
+  const base='http://127.0.0.1:8011', headers={Authorization:'Bearer '+s.token}, cash={Authorization:'Bearer '+s.cashier};
+  const req=async(url,method='GET',data)=>{const r=await page.request.fetch(base+url,{method,headers,...(data?{data}:{})});assert(r.ok(),await r.text());return r.status()===204?null:r.json()};
+  const itemData={name:'Download test',category:'Appetizers',description:'Original image',price:199,image_url:'/static/foods/sinigang.jpg'};
+  const item=await req('/api/owner/menu','POST',itemData);
+  await req('/api/owner/menu-appearance','PATCH',{font:'Playfair Display',currency:'USD',text_align:'center',font_size:22});
+  await page.route('https://fonts.googleapis.com/**',r=>r.abort());
+  const errors=[];page.on('pageerror',e=>errors.push(e.message));
+  await page.addInitScript(s=>{localStorage.setItem('restaurant_token',s.cashier);localStorage.setItem('owner_token',s.token)},s);
+  await page.goto(base+'/cashier');await page.getByRole('button',{name:'Menu',exact:true}).click();
+  await page.getByRole('button',{name:'Download picture',exact:true}).waitFor();
+  assert.equal(await page.locator('#menuPanel input,#menuPanel form').count(),0);
+  assert.deepEqual(await page.locator('#menuList button').allTextContents(),['Download picture']);
+  assert.deepEqual(await page.locator('#menuCategories button').allTextContents(),['All','Appetizers','Meals']);
+  await page.locator('#menuCategories').getByRole('button',{name:'Appetizers',exact:true}).click();
+  assert.equal(await page.locator('.menu-preview-card:visible').count(),1);
+  assert.match(await page.locator('.menu-preview-card:visible').innerText(),/Download test/);
+  assert.equal(await page.locator('.menu-preview-card').count(),(await req('/api/owner/menu')).length);
+  assert.match(await page.locator('#menu').getAttribute('style'),/Playfair Display/);
+  assert.match(await page.locator('#menu').innerText(),/199.00/);
+  const waiting=page.waitForEvent('download');await page.getByRole('button',{name:'Download picture',exact:true}).click();
+  const download=await waiting;assert.deepEqual(fs.readFileSync(await download.path()),fs.readFileSync('static/foods/sinigang.jpg'));
+  await req('/api/owner/menu/'+item.id,'PATCH',{...itemData,name:'Renamed meal'});
+  await page.getByRole('heading',{name:'Renamed meal',exact:true}).waitFor({timeout:12000});
+  assert.equal(await page.locator('#menuCategories [aria-pressed="true"]').innerText(),'Appetizers');
+  assert.equal(await page.locator('.menu-preview-card:visible').count(),1);
+  for(const [url,data] of [[`/api/menu/${item.id}/image`,{image_url:''}],[`/api/menu/${item.id}/availability`,{available:false}]])assert.equal((await page.request.patch(base+url,{headers:cash,data})).status(),403);
+  assert.equal((await page.request.post(base+'/api/menu',{headers:cash,data:itemData})).status(),403);
+  assert.equal((await page.request.get(base+'/api/menu-preview')).status(),401);
+  await page.setViewportSize({width:390,height:844});assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
+  await req('/api/owner/menu/'+item.id+'?confirm_delete=true','DELETE');
+  await page.waitForFunction(()=>!document.querySelector('#menu').textContent.includes('Renamed meal'),{},{timeout:12000}).catch(async e=>{console.log(await page.evaluate(()=>({hidden:document.hidden,active:document.querySelector('#menuPanel').className,text:document.querySelector('#menu').textContent})));console.log(await req('/api/owner/menu'));throw e;});
+  assert.deepEqual(errors,[]);
+  assert.equal(await page.locator('#menuCategories [aria-pressed="true"]').innerText(),'All');
+  assert.equal(await page.locator('.menu-preview-card:visible').count(),1);
+  console.log('PASS: owner menu synchronization, preview-only controls, theme, original image bytes download, cashier write protection, mobile layout, no JS errors.');
+ } finally {await browser.close()}
+})().catch(e=>{console.error(e);process.exit(1)});

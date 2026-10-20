@@ -162,6 +162,28 @@ def list_menu(available_only: bool = False) -> list[dict]:
     return [dict(row) for row in cursor.fetchall()]
 
 
+def list_cashier_menu(owner_id: int | None = None) -> list[dict]:
+    if owner_id is not None:
+        return without_legacy_samples(list_owner_menu(owner_id))
+    cursor = get_connection().execute(
+        """SELECT id, category, name, description, price, image_url, available, owner_id
+        FROM restaurant_menu_items
+        WHERE available = 1 AND (? IS NULL OR owner_id = ?)
+          AND (owner_id IS NOT NULL OR NOT EXISTS (SELECT 1 FROM owners))
+        ORDER BY category ASC, name ASC""", (owner_id, owner_id)
+    )
+    return without_legacy_samples([dict(row) for row in cursor.fetchall()])
+
+
+LEGACY_SAMPLE_NAMES = {
+    "Chicken Inasal", "Pork Sisig", "Beef Tapa", "Pancit Canton", "Iced Tea", "Leche Flan",
+}
+
+
+def without_legacy_samples(items: list[dict]) -> list[dict]:
+    return [item for item in items if str(item.get("name") or "").strip() not in LEGACY_SAMPLE_NAMES]
+
+
 def create_menu_item(
     category: str, name: str, description: str, price: float, image_url: str = ""
 ) -> dict | None:
@@ -219,15 +241,18 @@ def set_menu_item_availability(item_id: int, available: bool) -> dict | None:
     return dict(cursor.fetchone())
 
 
-def list_tables() -> list[dict]:
+def list_tables(owner_id: int | None = None) -> list[dict]:
     ensure_defaults()
     cursor = get_connection().cursor()
     cursor.execute(
         """
         SELECT id, name, access_code, active, created_at, qr_caption
         FROM restaurant_tables
+        WHERE active = 1
+          AND (? IS NULL OR owner_id = ?)
+          AND (owner_id IS NOT NULL OR NOT EXISTS (SELECT 1 FROM owners))
         ORDER BY id ASC
-        """
+        """, (owner_id, owner_id)
     )
     default_caption = get_settings()["qr_caption"]
     tables = []
@@ -544,7 +569,7 @@ def get_public_order(access_code: str, order_number: str) -> dict | None:
     return _attach_items([dict(row)])[0]
 
 
-def list_orders(status: str | None = None) -> list[dict]:
+def list_orders(status: str | None = None, owner_id: int | None = None) -> list[dict]:
     ensure_defaults()
     cursor = get_connection().cursor()
     sql = """
@@ -553,9 +578,15 @@ def list_orders(status: str | None = None) -> list[dict]:
         JOIN restaurant_tables t ON t.id = o.table_id
     """
     params: list = []
+    clauses = []
     if status:
-        sql += " WHERE o.status = ?"
+        clauses.append("o.status = ?")
         params.append(status)
+    if owner_id is not None:
+        clauses.append("t.owner_id = ?")
+        params.append(owner_id)
+    if clauses:
+        sql += " WHERE " + " AND ".join(clauses)
     sql += " ORDER BY o.created_at DESC, o.id DESC LIMIT 100"
     cursor.execute(sql, tuple(params))
     return _attach_items([dict(row) for row in cursor.fetchall()])

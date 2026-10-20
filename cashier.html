@@ -287,6 +287,26 @@
       .chat-layout { grid-template-columns: 1fr; }
     }
   </style>
+<script src="/static/menu-fonts.js?v=20261017type"></script>
+<link rel="stylesheet" href="/static/menu-typography.css?v=20261017">
+<style>
+.cashier-menu-gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px}
+.menu-preview-card{min-width:0;overflow:hidden;border:1px solid var(--line);border-radius:14px;background:var(--preview-card);font-family:var(--menu-font)}
+.menu-preview-image{display:block;width:100%;aspect-ratio:4/3;object-fit:cover;background:#111}
+.menu-preview-image.blank{display:grid;place-items:center;color:#aaa}
+#menu .card-body{padding:10px}
+#menu h3{margin:0;color:var(--preview-text)}
+#menu .desc{margin:4px 0;color:var(--preview-description)}
+#menu .menu-item-category{margin:0 0 4px;color:var(--preview-category);font-size:12px;line-height:1.35;overflow-wrap:anywhere}
+#menu .price{margin-top:8px;color:var(--preview-price)}
+.menu-preview-card>.toggle{margin:0 10px 12px}
+.menu-category-filters{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px}
+.menu-category-filters button{max-width:100%;white-space:normal;overflow-wrap:anywhere}
+.menu-category-filters button[aria-pressed="true"]{background:var(--orange);border-color:var(--orange);color:#fff}
+</style>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Lato:wght@400;700&family=Merriweather:wght@400;700&family=Montserrat:wght@400;500;600;700;800&family=Nunito:wght@400;500;600;700;800&family=Open+Sans:wght@400;500;600;700;800&family=Oswald:wght@400;500;600;700&family=Outfit:wght@400;500;600;700;800&family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@400;500;600;700;800&family=Roboto:wght@400;500;700&family=Lora:wght@400;500;600;700&family=Anton&family=Pacifico&family=Lobster&family=Dancing+Script&family=Cinzel&family=Abril+Fatface&family=Righteous&family=Permanent+Marker&display=swap" rel="stylesheet" />
+  <style>body:not(.pos-ready){visibility:hidden}</style>
+  <style>body:not(.pos-ready){visibility:hidden}</style>
 </head>
 <body>
   <header>
@@ -299,9 +319,9 @@
         </div>
       </div>
       <div class="header-actions">
+        <a class="home-button" href="/owner" title="Design Your Page, Customer Display, Menu &amp; QR">← Owner Workspace</a>
         <a class="home-button" href="/">← Home</a>
-        <a class="solid" href="/qr-generator" target="_blank" rel="noopener">▦ QR Generator</a>
-        <a class="ghost" href="/login" onclick="localStorage.removeItem('restaurant_token')">Logout</a>
+        <a class="ghost" href="/login" id="posLogout">Logout</a>
         <button id="soundButton" class="sound" onclick="enableSound()">🔕 Sound</button>
       </div>
     </div>
@@ -388,66 +408,12 @@
     </section>
 
     <section id="menuPanel" class="panel">
-      <div class="card">
-        <h2>Add menu item</h2>
-        <p>Items appear on the customer ordering page right away.</p>
-        <form class="form" onsubmit="addMenuItem(event)">
-          <input id="menuCategory" required maxlength="80" placeholder="Category" />
-          <input id="menuName" required maxlength="120" placeholder="Item name" />
-          <input id="menuDescription" maxlength="500" placeholder="Description" />
-          <input id="menuPrice" required min="1" step="0.01" type="number" placeholder="Price" />
-          <input id="menuImage" maxlength="500" type="url" placeholder="Photo URL (optional)" />
-          <button class="primary">Add item</button>
-        </form>
-        <div id="menuList"></div>
-      </div>
+      <div class="card"><h2>Menu Preview</h2><div id="menuCategories" class="menu-category-filters" role="group" aria-label="Filter menu by category"></div><div id="menu"><div id="menuList" class="cashier-menu-gallery"></div></div></div>
     </section>
 
     <section id="tablesPanel" class="panel">
       <div class="card">
-        <h2>QR text (editable)</h2>
-        <p>Default text for all QR cards. You can also set custom text per table below.</p>
-        <div class="inline-actions">
-          <button class="toggle" type="button" onclick="setCapPreset('Scan the QR code to order')">Scan to order</button>
-          <button class="toggle" type="button" onclick="setCapPreset('Scan to connect with cashier')">Connect cashier</button>
-          <button class="toggle" type="button" onclick="setCapPreset('I-scan para umorder')">Tagalog</button>
-        </div>
-        <form class="form" onsubmit="saveDefaultCaption(event)">
-          <input id="defaultCaptionInput" maxlength="120" required placeholder="Scan the QR code to order" />
-          <button class="primary">Save default text</button>
-        </form>
-      </div>
-
-      <div class="card">
-        <h2>QR Generator</h2>
-        <p>Type a table name → Generate. QR text + link appear under the code.</p>
-        <div id="lanBanner" class="lan-banner">Loading QR connection…</div>
-        <div class="inline-actions">
-          <a class="solid" href="/qr-generator" target="_blank" rel="noopener">Open full QR Generator page</a>
-        </div>
-        <form class="form" onsubmit="generateTableQr(event)">
-          <input id="tableNameInput" required maxlength="80" placeholder="e.g. Table 1" />
-          <input id="tableCaptionInput" maxlength="120" placeholder="Custom text (optional)" />
-          <button class="primary" id="genQrBtn">Generate QR</button>
-        </form>
-
-        <div class="qr-gen-result" id="qrResult">
-          <p class="eyebrow">Generated</p>
-          <h3 id="qrResultName">Table</h3>
-          <p id="qrResultCaption" style="margin:0 0 12px;font-weight:700"></p>
-          <div class="qr-big"><img id="qrResultImg" alt="QR code" /></div>
-          <code class="link-below" id="qrResultLink"></code>
-          <div class="result-actions">
-            <button class="toggle" type="button" onclick="copyLatestQr()">Copy link</button>
-            <button class="toggle" type="button" onclick="printLatestQr()">Print</button>
-            <a class="toggle" id="qrResultDownload" download="table-qr.png">Download</a>
-          </div>
-        </div>
-      </div>
-
-      <div class="card">
-        <h2>Generated QRs</h2>
-        <p>Edit text per QR, then Save text. Link is under the QR.</p>
+        <h2>Table QR</h2>
         <div class="qr-grid" id="tableList"></div>
       </div>
     </section>
@@ -473,16 +439,28 @@
       return div.innerHTML;
     };
 
+    const ownerPos = new URLSearchParams(location.search).get('source') === 'owner'
+      || (!localStorage.getItem('restaurant_token') && !!localStorage.getItem('owner_token'));
+    const posTokenKey = ownerPos ? 'owner_token' : 'restaurant_token';
+    let posReady = false;
+    function requirePosLogin() {
+      posReady = false;
+      document.body.classList.remove('pos-ready');
+      location.replace(ownerPos ? '/account' : '/login');
+    }
     function headers() {
-      const token = localStorage.getItem("restaurant_token");
-      if (!token) { location.href = "/login"; return {}; }
+      const token = localStorage.getItem(posTokenKey);
+      if (!token || (ownerPos && localStorage.getItem('owner_locked') === '1')) {
+        requirePosLogin();
+        throw new Error('Please sign in.');
+      }
       return {"Content-Type":"application/json", Authorization:`Bearer ${token}`};
     }
 
     async function api(path, options = {}) {
       options.headers = {...headers(), ...(options.headers || {})};
       const response = await fetch(path, options);
-      if (response.status === 401) { location.href = "/login"; throw new Error("Please sign in."); }
+      if (response.status === 401) { requirePosLogin(); throw new Error("Please sign in."); }
       const data = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(`${data.detail || "Request failed"} (${response.status}: ${path}).`);
       return data;
@@ -857,173 +835,141 @@
       } catch (error) { showError(error.message); }
     }
 
-    async function loadMenu() {
+    let menuLoading = false;
+    let menuSnapshot = '';
+    let selectedMenuCategory = null;
+    function filterMenuCategory(category) {
+      selectedMenuCategory = category;
+      document.querySelectorAll('#menuList .menu-preview-card').forEach(card => {
+        card.hidden = category !== null && card.dataset.category !== category;
+      });
+      document.querySelectorAll('#menuCategories button').forEach(button => {
+        button.setAttribute('aria-pressed', String(button.dataset.category === category || (category === null && !button.hasAttribute('data-category'))));
+      });
+    }
+    async function loadMenu(background = false) {
+      if (menuLoading) return;
+      menuLoading = true;
       try {
-        const items = await api("/api/menu");
-        document.getElementById("menuList").innerHTML = items.map(item => `
-          <div class="setup-row">
-            ${item.image_url
-              ? `<img class="thumb-sm" src="${escapeHtml(item.image_url)}" alt="${escapeHtml(item.name)}" />`
-              : `<div class="thumb-sm blank">🍽️</div>`}
-            <div class="grow"><strong>${escapeHtml(item.name)}</strong><small>${escapeHtml(item.category)} · ${money(item.price)} · ${escapeHtml(item.description)}</small></div>
-            <button class="toggle" onclick='setPhoto(${item.id}, ${JSON.stringify(item.image_url || "")})'>Photo</button>
-            <button class="toggle" onclick="toggleItem(${item.id}, ${!item.available})">${item.available ? "Available" : "Unavailable"}</button>
-          </div>`).join("");
-      } catch (error) { showError(error.message); }
+        const path = (await cashierTablesPath()).replace('/api/tables','/api/menu-preview');
+        const data = await api(path);
+        const snapshot = JSON.stringify(data);
+        if (background && snapshot === menuSnapshot) return;
+        const theme = data.theme || {};
+        const container = document.getElementById('menu');
+        MenuFonts.apply(container, theme.font); MenuFonts.typography(container, theme);
+        for (const [key,fallback] of Object.entries({card:'#17171b',text:'#f5f5f4',category:'#a8a8ad',description:'#a8a8ad',price:'#f97316'})) {
+          container.style.setProperty('--preview-'+key, /^#[0-9a-f]{6}$/i.test(theme[key] || '') ? theme[key] : fallback);
+        }
+        const currency = ['PHP','USD','EUR','GBP','JPY','AUD','CAD','SGD'].includes(theme.currency) ? theme.currency : 'PHP';
+        const format = value => new Intl.NumberFormat(undefined,{style:'currency',currency}).format(value);
+        const items = data.items || [];
+        const categories = [...new Set(items.map(item => item.category).filter(Boolean))];
+        if (!categories.includes(selectedMenuCategory)) selectedMenuCategory = null;
+        const filters = document.getElementById('menuCategories');
+        filters.replaceChildren();
+        [null, ...categories].forEach(category => {
+          const button = document.createElement('button');
+          button.type = 'button'; button.className = 'toggle';
+          button.textContent = category === null ? 'All' : category;
+          if (category !== null) button.dataset.category = category;
+          button.onclick = () => filterMenuCategory(category);
+          filters.append(button);
+        });
+        document.getElementById('menuList').innerHTML = items.map((item,index) => `
+          <article class="menu-preview-card" data-category="${escapeHtml(item.category || '')}">
+            ${item.image_url ? `<img class="menu-preview-image" src="${escapeHtml(item.image_url)}" alt="${escapeHtml(item.name)}">` : '<div class="menu-preview-image blank">No photo</div>'}
+            <div class="card-body">${item.category ? `<p class="menu-item-category">${escapeHtml(item.category)}</p>` : ''}<h3>${escapeHtml(item.name)}</h3><p class="desc">${escapeHtml(item.description || '')}</p><div class="price">${format(item.price)}</div></div>
+            ${item.image_url ? `<button type="button" class="toggle" data-download-image="${index}">Download picture</button>` : ''}
+          </article>`).join('') || '<p>No saved menu items.</p>';
+        document.querySelectorAll('[data-download-image]').forEach(button => {
+          button.onclick = () => downloadMenuPicture(items[Number(button.dataset.downloadImage)],button);
+        });
+        filterMenuCategory(selectedMenuCategory);
+        menuSnapshot = snapshot;
+      } catch(error) { showError(error.message); }
+      finally { menuLoading = false; }
+    }
+    async function downloadMenuPicture(item, button) {
+      button.disabled = true;
+      try {
+        const response = await fetch(item.image_url);
+        if (!response.ok) throw new Error('Picture download failed. Please try again.');
+        const blob = await response.blob();
+        if (!blob.type.startsWith('image/')) throw new Error('This file is not a picture.');
+        const extensions = {'image/jpeg':'jpg','image/png':'png','image/webp':'webp','image/gif':'gif','image/svg+xml':'svg','image/avif':'avif'};
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a'); link.href = url;
+        link.download = (item.name.replace(/[^a-z0-9_-]+/gi,'-') || 'menu-picture') + '.' + (extensions[blob.type] || 'img');
+        document.body.append(link);link.click();link.remove();
+        setTimeout(()=>URL.revokeObjectURL(url),10000);
+      } catch(error) { showError('Unable to download this picture: '+error.message); }
+      finally { button.disabled = false; }
     }
 
-    async function addMenuItem(event) {
-      event.preventDefault();
-      try {
-        await api("/api/menu", {method:"POST", body:JSON.stringify({
-          category:document.getElementById("menuCategory").value,
-          name:document.getElementById("menuName").value,
-          description:document.getElementById("menuDescription").value,
-          price:Number(document.getElementById("menuPrice").value),
-          image_url:document.getElementById("menuImage").value
-        })});
-        event.target.reset();
-        await loadMenu();
-      } catch (error) { showError(error.message); }
-    }
-
-    async function setPhoto(itemId, current) {
-      const imageUrl = prompt("Photo URL for this item (leave empty to remove):", current);
-      if (imageUrl === null) return;
-      try {
-        await api(`/api/menu/${itemId}/image`, {method:"PATCH", body:JSON.stringify({image_url:imageUrl.trim()})});
-        await loadMenu();
-      } catch (error) { showError(error.message); }
-    }
-
-    async function toggleItem(itemId, available) {
-      try {
-        await api(`/api/menu/${itemId}/availability`, {method:"PATCH", body:JSON.stringify({available})});
-        await loadMenu();
-      } catch (error) { showError(error.message); }
-    }
-
-    let latestQr = null;
     let defaultCaption = "Scan the QR code to order";
 
-    function setCapPreset(text) {
-      document.getElementById("defaultCaptionInput").value = text;
+    let tablesLoading = false;
+    let tablesSnapshot = "";
+    async function cashierTablesPath() {
+      const ownerToken = localStorage.getItem('owner_token');
+      if (!ownerToken) return '/api/tables';
+      const response = await fetch('/api/owner/me', {headers:{Authorization:`Bearer ${ownerToken}`}});
+      if (!response.ok) throw new Error('Please sign in to the owner account again to load its saved menu and tables.');
+      const owner = await response.json();
+      return `/api/tables?owner_id=${encodeURIComponent(owner.id)}`;
     }
-
-    async function saveDefaultCaption(event) {
-      event.preventDefault();
+    async function loadTables(background = false) {
+      if (tablesLoading) return;
+      tablesLoading = true;
       try {
-        const settings = await api("/api/settings/qr-caption", {
-          method: "PATCH",
-          body: JSON.stringify({ qr_caption: document.getElementById("defaultCaptionInput").value }),
-        });
-        defaultCaption = settings.qr_caption;
-        await loadTables();
-      } catch (error) { showError(error.message); }
-    }
-
-    async function loadTables() {
-      try {
-        const data = await api("/api/tables");
-        const conn = data.connection || {};
+        const data = await api(await cashierTablesPath());
+        const snapshot = JSON.stringify(data);
+        if (background && snapshot === tablesSnapshot) return;
+        tablesSnapshot = snapshot;
         const settings = data.settings || {};
         const tables = data.tables || [];
         defaultCaption = settings.qr_caption || "Scan the QR code to order";
-        document.getElementById("defaultCaptionInput").value = defaultCaption;
-        document.getElementById("lanBanner").innerHTML =
-          `<strong>${conn.mode === "online" ? "Website address:" : "Local Wi-Fi address:"}</strong> ${escapeHtml(conn.lan_base || "—")}<br>${escapeHtml(conn.hint || "")}`;
         document.getElementById("tableList").innerHTML = tables.length
-          ? tables.map(table => `
+          ? tables.map((table, index) => `
             <article class="qr-card">
               <strong>${escapeHtml(table.name)}</strong>
               <div style="margin:0 0 8px;font-weight:700;font-size:.9rem">${escapeHtml(table.display_caption || defaultCaption)}</div>
               <div class="qr-mid"><img src="${escapeHtml(table.qr_url)}" alt="QR ${escapeHtml(table.name)}" /></div>
               <code class="link-below">${escapeHtml(table.order_url)}</code>
-              <input id="cap-${table.id}" maxlength="120" style="width:100%;margin:0 0 8px;padding:9px 10px;border-radius:10px;border:1px solid var(--line);background:var(--panel);color:var(--text)"
-                value="${escapeHtml(table.qr_caption || "")}" placeholder="Custom text (blank = default)" />
               <div class="row">
-                <button class="toggle" onclick="saveTableCaption(${table.id})">Save text</button>
-                <button class="toggle" onclick='copyLink(${JSON.stringify(table.order_url)})'>Copy</button>
-                <button class="toggle" onclick='printQr(${JSON.stringify(table.name)}, ${JSON.stringify(table.qr_url)}, ${JSON.stringify(table.order_url)}, ${JSON.stringify(table.display_caption || defaultCaption)})'>Print</button>
-                <a class="toggle" href="${escapeHtml(table.qr_url)}" download="${escapeHtml(table.name)}-qr.png">Save</a>
+                <a class="toggle" href="${escapeHtml(table.qr_url)}" download="${escapeHtml(table.name)}-qr.png">Download</a>
+                <button class="toggle" type="button" data-print-table="${index}">Print</button>
               </div>
             </article>`).join("")
-          : `<p style="color:var(--muted);grid-column:1/-1;text-align:center">No QR yet. Generate one above.</p>`;
-      } catch (error) { showError(error.message); }
-    }
-
-    async function saveTableCaption(tableId) {
-      const input = document.getElementById(`cap-${tableId}`);
-      try {
-        await api(`/api/tables/${tableId}/caption`, {
-          method: "PATCH",
-          body: JSON.stringify({ qr_caption: input.value.trim() }),
+          : `<p style="color:var(--muted);grid-column:1/-1;text-align:center">No saved table QR codes.</p>`;
+        document.querySelectorAll('[data-print-table]').forEach(button => {
+          button.onclick = () => {
+            const table = tables[Number(button.dataset.printTable)];
+            printQr(table.name, table.qr_url, table.order_url, table.display_caption || defaultCaption);
+          };
         });
-        await loadTables();
       } catch (error) { showError(error.message); }
-    }
-
-    function showGenerated(table) {
-      latestQr = table;
-      document.getElementById("qrResult").classList.add("show");
-      document.getElementById("qrResultName").textContent = table.name;
-      document.getElementById("qrResultCaption").textContent = table.display_caption || defaultCaption;
-      document.getElementById("qrResultImg").src = table.qr_url;
-      document.getElementById("qrResultLink").textContent = table.order_url;
-      const dl = document.getElementById("qrResultDownload");
-      dl.href = table.qr_url;
-      dl.download = `${table.name.replace(/\s+/g, "-").toLowerCase()}-qr.png`;
-    }
-
-    function copyLatestQr() {
-      if (latestQr) copyLink(latestQr.order_url);
-    }
-    function printLatestQr() {
-      if (latestQr) printQr(latestQr.name, latestQr.qr_url, latestQr.order_url, latestQr.display_caption || defaultCaption);
+      finally { tablesLoading = false; }
     }
 
     function printQr(tableName, qrSrc, link = "", caption = "") {
       const win = window.open("", "_blank", "width=440,height=700");
       if (!win) { showError("Please allow pop-ups to print the QR code."); return; }
       const cap = caption || defaultCaption || "Scan the QR code to order";
-      win.document.write(`<!DOCTYPE html><html><head><title>${tableName} QR</title>
+      win.document.write(`<!DOCTYPE html><html><head><title>${escapeHtml(tableName)} QR</title>
         <style>body{font-family:system-ui,sans-serif;text-align:center;padding:40px}
         h1{font-size:22px;margin:0 0 6px}
         .cap{margin:0 0 18px;font-size:17px;font-weight:700;max-width:340px;margin-inline:auto}
         img{width:280px;height:280px;background:#fff;padding:12px;border-radius:12px}
         .link{margin-top:16px;font-size:13px;color:#444;overflow-wrap:anywhere}</style></head>
         <body onload="window.print()">
-        <h1>${tableName}</h1>
-        <p class="cap">${cap}</p>
-        <img src="${qrSrc}" />
-        <p class="link">${link || ""}</p>
+        <h1>${escapeHtml(tableName)}</h1>
+        <p class="cap">${escapeHtml(cap)}</p>
+        <img src="${escapeHtml(qrSrc)}" />
+        <p class="link">${escapeHtml(link || "")}</p>
         </body></html>`);
       win.document.close();
-    }
-
-    async function generateTableQr(event) {
-      event.preventDefault();
-      const btn = document.getElementById("genQrBtn");
-      const original = btn.textContent;
-      btn.disabled = true;
-      btn.textContent = "Generating…";
-      try {
-        const table = await api("/api/tables", {
-          method: "POST",
-          body: JSON.stringify({
-            name: document.getElementById("tableNameInput").value,
-            qr_caption: document.getElementById("tableCaptionInput").value,
-          }),
-        });
-        event.target.reset();
-        showGenerated(table);
-        await loadTables();
-        document.getElementById("qrResult").scrollIntoView({ behavior: "smooth", block: "center" });
-      } catch (error) { showError(error.message); }
-      finally {
-        btn.disabled = false;
-        btn.textContent = original;
-      }
     }
 
     async function copyLink(url) {
@@ -1035,15 +981,36 @@
     }
 
     function tickPolling() {
-      if (document.hidden) return;
+      if (document.hidden || !posReady) return;
+      if (document.getElementById('menuPanel').classList.contains('active')) loadMenu(true);
+      if (document.getElementById('tablesPanel').classList.contains('active')) loadTables(true);
       loadOrders();
       loadThreads();
       loadOpsThreads();
     }
 
-    loadOrders();
-    loadThreads();
-    loadOpsThreads();
+    async function startPos() {
+      try {
+        await api('/api/pos/session');
+        posReady = true;
+        document.body.classList.add('pos-ready');
+        tickPolling();
+      } catch (_) { requirePosLogin(); }
+    }
+    document.getElementById('posLogout').onclick = event => {
+      event.preventDefault();
+      localStorage.removeItem(posTokenKey);
+      if (ownerPos) localStorage.removeItem('owner_locked');
+      requirePosLogin();
+    };
+    document.getElementById('posLogout').href = ownerPos ? '/account' : '/login';
+    window.addEventListener('storage', event => {
+      if (event.key === posTokenKey || (ownerPos && event.key === 'owner_locked') || event.key === null) {
+        if (!localStorage.getItem(posTokenKey) || (ownerPos && localStorage.getItem('owner_locked') === '1')) requirePosLogin();
+      }
+    });
+    window.addEventListener('pageshow', event => { if (event.persisted) startPos(); });
+    startPos();
     setInterval(tickPolling, 4000);
     document.addEventListener("visibilitychange", () => {
       if (!document.hidden) tickPolling();

@@ -71,3 +71,19 @@ def require_owner(
     if payload.get("role") != "owner" or not payload.get("owner_id"):
         raise HTTPException(status_code=401, detail="Owner login required.")
     return payload
+
+
+def require_pos(
+    credentials: HTTPAuthorizationCredentials | None = Depends(bearer_scheme),
+) -> dict:
+    """Accept an existing owner session or the separate staff cashier session."""
+    payload = _decode(credentials)
+    if payload.get("role") == "owner":
+        from app.repository import get_owner
+
+        payload = require_owner(credentials)
+        if get_owner(payload["owner_id"]) is None:
+            raise HTTPException(status_code=401, detail="Owner login required.")
+        return payload
+    require_cashier(credentials)
+    return payload

@@ -13,22 +13,8 @@ from app.auth import require_owner
 from app.cloudinary_routes import _cloudinary_configured, router as cloudinary_router
 from app.db import get_connection, init_db, using_postgres
 from app.mail import send_security_email
-from app.repository import ensure_defaults
+from app.repository import ensure_defaults, LEGACY_SAMPLE_NAMES, without_legacy_samples
 from app.router import router
-
-
-LEGACY_SAMPLE_NAMES = {
-    "Chicken Inasal",
-    "Pork Sisig",
-    "Beef Tapa",
-    "Pancit Canton",
-    "Iced Tea",
-    "Leche Flan",
-}
-
-
-def without_legacy_samples(items: list[dict]) -> list[dict]:
-    return [item for item in items if str(item.get("name") or "").strip() not in LEGACY_SAMPLE_NAMES]
 
 
 def prepare_owner_menu_storage() -> None:

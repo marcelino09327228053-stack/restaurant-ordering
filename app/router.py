@@ -14,7 +14,7 @@ from pydantic import BaseModel, Field
 
 from app import repository as repo
 from app.menu_editor import MenuAppearance, validate_menu_upload
-from app.auth import create_access_token, create_owner_token, require_cashier, require_owner
+from app.auth import create_access_token, create_owner_token, require_pos, require_owner
 from app.mail import smtp_configured
 from app.network import connection_info, room_join_url, table_order_url
 
@@ -680,13 +680,44 @@ def public_react_to_message(access_code: str, message_id: int, body: TableMessag
     return message
 
 
+@router.get("/pos/session")
+def pos_session(actor=Depends(require_pos)):
+    return {"role": actor.get("role", "cashier")}
+
+
+def _pos_owner_id(actor: dict, requested: int | None = None) -> int | None:
+    if actor.get("role") == "owner":
+        owner_id = actor["owner_id"]
+        if requested is not None and requested != owner_id:
+            raise HTTPException(403, "This restaurant is outside your owner account.")
+        return owner_id
+    return requested
+
+
+def _pos_check_table(actor: dict, table_id: int) -> None:
+    if actor.get("role") == "owner":
+        table = repo.get_table_by_id(table_id)
+        if not table or table.get("owner_id") != actor["owner_id"]:
+            raise HTTPException(404, "Table not found.")
+
+
+def _pos_table_rows(actor: dict, rows: list[dict]) -> list[dict]:
+    if actor.get("role") != "owner":
+        return rows
+    ids = {row["id"] for row in repo.get_connection().execute(
+        "SELECT id FROM restaurant_tables WHERE owner_id = ?", (actor["owner_id"],)
+    ).fetchall()}
+    return [row for row in rows if row.get("table_id") in ids]
+
+
 @router.get("/messages/threads")
-def cashier_message_threads(_=Depends(require_cashier)):
-    return repo.list_message_threads()
+def cashier_message_threads(_=Depends(require_pos)):
+    return _pos_table_rows(_, repo.list_message_threads())
 
 
 @router.get("/tables/{table_id}/messages")
-def cashier_list_messages(table_id: int, after_id: int = 0, _=Depends(require_cashier)):
+def cashier_list_messages(table_id: int, after_id: int = 0, _=Depends(require_pos)):
+    _pos_check_table(_, table_id)
     table = repo.get_table_by_id(table_id)
     if table is None or not table.get("active"):
         raise HTTPException(status_code=404, detail="Table not found.")
@@ -700,8 +731,9 @@ def cashier_list_messages(table_id: int, after_id: int = 0, _=Depends(require_ca
 
 @router.post("/tables/{table_id}/messages", status_code=201)
 def cashier_send_message(
-    table_id: int, body: TableMessageCreate, _=Depends(require_cashier)
+    table_id: int, body: TableMessageCreate, _=Depends(require_pos)
 ):
+    _pos_check_table(_, table_id)
     table = repo.get_table_by_id(table_id)
     if table is None or not table.get("active"):
         raise HTTPException(status_code=404, detail="Table not found.")
@@ -713,8 +745,9 @@ def cashier_send_message(
 
 @router.patch("/tables/{table_id}/messages/{message_id}/reaction")
 def cashier_react_to_message(
-    table_id: int, message_id: int, body: TableMessageReaction, _=Depends(require_cashier)
+    table_id: int, message_id: int, body: TableMessageReaction, _=Depends(require_pos)
 ):
+    _pos_check_table(_, table_id)
     table = repo.get_table_by_id(table_id)
     if table is None or not table.get("active"):
         raise HTTPException(status_code=404, detail="Table not found.")
@@ -728,16 +761,21 @@ def cashier_react_to_message(
 
 
 @router.get("/orders")
-def cashier_orders(status: str | None = None, _=Depends(require_cashier)):
+def cashier_orders(status: str | None = None, _=Depends(require_pos)):
     if status and status not in repo.ORDER_STATUSES:
         raise HTTPException(status_code=400, detail="Invalid order status.")
-    return repo.list_orders(status)
+    return repo.list_orders(status, owner_id=_pos_owner_id(_))
 
 
 @router.patch("/orders/{order_id}/status")
 def change_order_status(
-    order_id: int, body: StatusUpdate, _=Depends(require_cashier)
+    order_id: int, body: StatusUpdate, _=Depends(require_pos)
 ):
+    if _.get("role") == "owner":
+        existing = repo.get_order_by_id(order_id)
+        if not existing:
+            raise HTTPException(404, "Order not found.")
+        _pos_check_table(_, existing["table_id"])
     if body.status not in repo.ORDER_STATUSES:
         raise HTTPException(status_code=400, detail="Invalid order status.")
     order, error = repo.update_order_status(order_id, body.status)
@@ -753,8 +791,13 @@ def change_order_status(
 
 @router.patch("/orders/{order_id}/payment-status")
 def change_payment_status(
-    order_id: int, body: PaymentStatusUpdate, _=Depends(require_cashier)
+    order_id: int, body: PaymentStatusUpdate, _=Depends(require_pos)
 ):
+    if _.get("role") == "owner":
+        existing = repo.get_order_by_id(order_id)
+        if not existing:
+            raise HTTPException(404, "Order not found.")
+        _pos_check_table(_, existing["table_id"])
     try:
         order = repo.update_payment_status(order_id, body.status)
     except ValueError as exc:
@@ -765,43 +808,44 @@ def change_payment_status(
 
 
 @router.get("/menu")
-def manage_menu(_=Depends(require_cashier)):
-    return repo.list_menu()
+def manage_menu(owner_id: int | None = None, _=Depends(require_pos)):
+    return repo.list_cashier_menu(_pos_owner_id(_, owner_id))
+
+
+@router.get("/menu-preview")
+def cashier_menu_preview(owner_id: int | None = None, _=Depends(require_pos)):
+    owner_id = _pos_owner_id(_, owner_id)
+    if owner_id is None:
+        owners = repo.get_connection().execute("SELECT id FROM owners ORDER BY id").fetchall()
+        if len(owners) == 1:
+            owner_id = owners[0]["id"]
+    owner = repo.get_owner(owner_id) if owner_id is not None else None
+    if owner_id is not None and owner is None:
+        raise HTTPException(404, "Restaurant not found.")
+    return {"items": repo.list_cashier_menu(owner_id),
+            "theme": ((owner or {}).get("custom_design") or {}).get("menuTheme") or {}}
 
 
 @router.post("/menu", status_code=201)
-def add_menu_item(body: MenuItemCreate, _=Depends(require_cashier)):
-    item = repo.create_menu_item(
-        body.category, body.name, body.description, body.price, body.image_url
-    )
-    if item is None:
-        raise HTTPException(status_code=409, detail="A menu item with that name already exists.")
-    return item
+def add_menu_item(body: MenuItemCreate, _=Depends(require_pos)):
+    raise HTTPException(403, "Menu is read-only for cashiers. Use owner Menu & QR.")
 
 
 @router.patch("/menu/{item_id}/image")
-def change_image(item_id: int, body: ImageUpdate, _=Depends(require_cashier)):
-    item = repo.set_menu_item_image(item_id, body.image_url)
-    if item is None:
-        raise HTTPException(status_code=404, detail="Menu item not found.")
-    return item
+def change_image(item_id: int, body: ImageUpdate, _=Depends(require_pos)):
+    raise HTTPException(403, "Menu is read-only for cashiers. Use owner Menu & QR.")
 
 
 @router.patch("/menu/{item_id}/availability")
-def change_availability(
-    item_id: int, body: AvailabilityUpdate, _=Depends(require_cashier)
-):
-    item = repo.set_menu_item_availability(item_id, body.available)
-    if item is None:
-        raise HTTPException(status_code=404, detail="Menu item not found.")
-    return item
+def change_availability(item_id: int, body: AvailabilityUpdate, _=Depends(require_pos)):
+    raise HTTPException(403, "Menu is read-only for cashiers. Use owner Menu & QR.")
 
 
 @router.get("/tables")
-def manage_tables(_=Depends(require_cashier)):
+def manage_tables(owner_id: int | None = None, _=Depends(require_pos)):
     info = connection_info()
     settings = repo.get_settings()
-    tables = repo.list_tables()
+    tables = repo.list_tables(_pos_owner_id(_, owner_id))
     for table in tables:
         table["order_url"] = table_order_url(table["access_code"])
         table["qr_url"] = f"/api/qr?table={table['access_code']}"
@@ -809,36 +853,18 @@ def manage_tables(_=Depends(require_cashier)):
 
 
 @router.post("/tables", status_code=201)
-def add_table(body: TableCreate, _=Depends(require_cashier)):
-    table = repo.create_table(body.name, body.qr_caption)
-    if table is None:
-        raise HTTPException(status_code=409, detail="A table with that name already exists.")
-    table["order_url"] = table_order_url(table["access_code"])
-    table["qr_url"] = f"/api/qr?table={table['access_code']}"
-    return table
+def add_table(body: TableCreate, owner_id: int | None = None, _=Depends(require_pos)):
+    raise HTTPException(403, "Table QR is read-only for cashiers. Manage tables in owner Menu & QR.")
 
 
 @router.patch("/settings/qr-caption")
-def update_default_qr_caption(body: QrCaptionUpdate, _=Depends(require_cashier)):
-    try:
-        return repo.update_qr_caption(body.qr_caption)
-    except ValueError as exc:
-        raise HTTPException(status_code=400, detail=str(exc)) from exc
+def update_default_qr_caption(body: QrCaptionUpdate, _=Depends(require_pos)):
+    raise HTTPException(403, "Table QR is read-only for cashiers.")
 
 
 @router.patch("/tables/{table_id}/caption")
-def update_table_caption(
-    table_id: int, body: TableCaptionUpdate, _=Depends(require_cashier)
-):
-    try:
-        table = repo.update_table_qr_caption(table_id, body.qr_caption)
-    except ValueError as exc:
-        raise HTTPException(status_code=400, detail=str(exc)) from exc
-    if table is None:
-        raise HTTPException(status_code=404, detail="Table not found.")
-    table["order_url"] = table_order_url(table["access_code"])
-    table["qr_url"] = f"/api/qr?table={table['access_code']}"
-    return table
+def update_table_caption(table_id: int, body: TableCaptionUpdate, _=Depends(require_pos)):
+    raise HTTPException(403, "Table QR is read-only for cashiers. Manage notes in owner Menu & QR.")
 
 
 def _decorate_room(room: dict) -> dict:
@@ -849,7 +875,7 @@ def _decorate_room(room: dict) -> dict:
 
 
 @router.get("/rooms")
-def cashier_list_rooms(_=Depends(require_cashier)):
+def cashier_list_rooms(_=Depends(require_pos)):
     info = connection_info()
     settings = repo.get_settings()
     rooms = [_decorate_room(room) for room in repo.list_ops_rooms()]
@@ -857,7 +883,7 @@ def cashier_list_rooms(_=Depends(require_cashier)):
 
 
 @router.post("/rooms", status_code=201)
-def cashier_create_room(body: OpsRoomCreate, _=Depends(require_cashier)):
+def cashier_create_room(body: OpsRoomCreate, _=Depends(require_pos)):
     try:
         room = repo.create_ops_room(body.name, body.room_type, body.qr_caption)
     except ValueError as exc:
@@ -869,7 +895,7 @@ def cashier_create_room(body: OpsRoomCreate, _=Depends(require_cashier)):
 
 @router.patch("/rooms/{room_id}/caption")
 def cashier_update_room_caption(
-    room_id: int, body: TableCaptionUpdate, _=Depends(require_cashier)
+    room_id: int, body: TableCaptionUpdate, _=Depends(require_pos)
 ):
     try:
         room = repo.update_ops_room_caption(room_id, body.qr_caption)
@@ -881,12 +907,12 @@ def cashier_update_room_caption(
 
 
 @router.get("/rooms/threads")
-def cashier_room_threads(_=Depends(require_cashier)):
+def cashier_room_threads(_=Depends(require_pos)):
     return repo.list_ops_room_threads()
 
 
 @router.get("/rooms/{room_id}/messages")
-def cashier_room_messages(room_id: int, after_id: int = 0, _=Depends(require_cashier)):
+def cashier_room_messages(room_id: int, after_id: int = 0, _=Depends(require_pos)):
     room = repo.get_ops_room_by_id(room_id)
     if room is None or not room.get("active"):
         raise HTTPException(status_code=404, detail="Room not found.")
@@ -898,7 +924,7 @@ def cashier_room_messages(room_id: int, after_id: int = 0, _=Depends(require_cas
 
 @router.post("/rooms/{room_id}/messages", status_code=201)
 def cashier_send_room_message(
-    room_id: int, body: RoomMessageCreate, _=Depends(require_cashier)
+    room_id: int, body: RoomMessageCreate, _=Depends(require_pos)
 ):
     room = repo.get_ops_room_by_id(room_id)
     if room is None or not room.get("active"):
@@ -953,15 +979,17 @@ class TableBillSelection(BaseModel):
 
 
 @router.get("/table-bills")
-def table_bills(_=Depends(require_cashier)):
-    return repo.list_table_bills()
+def table_bills(_=Depends(require_pos)):
+    return _pos_table_rows(_, repo.list_table_bills())
 
 
 @router.post("/table-bills/{table_id}/pay")
-def pay_table_bill(table_id: int, body: TableBillSelection, _=Depends(require_cashier)):
+def pay_table_bill(table_id: int, body: TableBillSelection, _=Depends(require_pos)):
+    _pos_check_table(_, table_id)
     return repo.settle_table_orders(table_id, body.order_ids)
 
 
 @router.post("/table-bills/{table_id}/close")
-def close_bill(table_id: int, body: TableBillSelection, _=Depends(require_cashier)):
+def close_bill(table_id: int, body: TableBillSelection, _=Depends(require_pos)):
+    _pos_check_table(_, table_id)
     return repo.close_table_bill(table_id, body.order_ids)
