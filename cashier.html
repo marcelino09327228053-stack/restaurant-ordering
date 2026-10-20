@@ -796,8 +796,14 @@
         const after = reset ? 0 : (lastMsgIds[tableId] || 0);
         const data = await api(`/api/tables/${tableId}/messages?after_id=${after}`);
         const log = document.getElementById("chatLog");
-        if (reset) log.innerHTML = "";
         const msgs = data.messages || [];
+        if (reset) {
+          const snapshot = JSON.stringify(msgs);
+          if (log.dataset.chatTableId === String(tableId) && log.dataset.chatSnapshot === snapshot) return;
+          log.dataset.chatTableId = String(tableId);
+          log.dataset.chatSnapshot = snapshot;
+          log.innerHTML = "";
+        }
         if (!msgs.length && reset) {
           log.innerHTML = `<div class="chat-empty">No messages yet. Reply to greet the table.</div>`;
           return;
